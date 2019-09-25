@@ -52,20 +52,18 @@
         </pdfaExtension:schemas> 
       </rdf:Description> 
       <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/"> 
-         <pdf:Producer>pdfTeX</pdf:Producer> 
+         <pdf:Producer>LuaTeX</pdf:Producer> 
          
       </rdf:Description> 
       <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/"> 
          <dc:format>application/pdf</dc:format> 
-         <dc:title><rdf:Alt><rdf:li xml:lang="x-default">Thesis title</rdf:li></rdf:Alt></dc:title>
-         <dc:creator><rdf:Seq><rdf:li>Name Surname</rdf:li></rdf:Seq></dc:creator>
+         <dc:title><rdf:Alt><rdf:li xml:lang="x-default">Context in Neural Machine Translation</rdf:li></rdf:Alt></dc:title>
+         <dc:creator><rdf:Seq><rdf:li>Jindřich Helcl</rdf:li></rdf:Seq></dc:creator>
          <dc:publisher><rdf:Bag><rdf:li>Charles University</rdf:li></rdf:Bag></dc:publisher>
          
          
-         <dc:description><rdf:Alt><rdf:li xml:lang="x-default">Abstract of thesis</rdf:li></rdf:Alt></dc:description>
-         <dc:subject><rdf:Bag><rdf:li>keywords</rdf:li>
-     <rdf:li>more such</rdf:li>
-     <rdf:li>yet another</rdf:li></rdf:Bag></dc:subject>
+         <dc:description><rdf:Alt><rdf:li xml:lang="x-default">TODO</rdf:li></rdf:Alt></dc:description>
+         <dc:subject><rdf:Bag><rdf:li>non-autoregressive neural machine translation, multimodal neural machine translation, neural machnie translation, deep learning</rdf:li></rdf:Bag></dc:subject>
       </rdf:Description> 
       <rdf:Description rdf:about="" xmlns:prism="http://prismstandard.org/namespaces/basic/2.2/"> 
          
@@ -90,9 +88,9 @@
       </rdf:Description> 
       <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/"> 
          <xmp:CreatorTool>LaTeX with hyperref package</xmp:CreatorTool> 
-         <xmp:ModifyDate>2018-09-28T14:24:19+02:00</xmp:ModifyDate> 
-         <xmp:CreateDate>2018-09-28T14:24:19+02:00</xmp:CreateDate> 
-         <xmp:MetadataDate>2018-09-28T14:24:19+02:00</xmp:MetadataDate> 
+         <xmp:ModifyDate>2019-09-25T16:05:50+02:00</xmp:ModifyDate> 
+         <xmp:CreateDate>2019-09-25T16:05:50+02:00</xmp:CreateDate> 
+         <xmp:MetadataDate>2019-09-25T16:05:50+02:00</xmp:MetadataDate> 
       </rdf:Description> 
       <rdf:Description rdf:about="" xmlns:xmpRights = "http://ns.adobe.com/xap/1.0/rights/"> 
          
@@ -100,7 +98,7 @@
       </rdf:Description> 
       <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/"> 
          <xmpMM:DocumentID>uuid:C8CFC28F-88E1-7995-E9AD-F6D12EAD346B</xmpMM:DocumentID> 
-         <xmpMM:InstanceID>uuid:AA91A144-FA0A-6FC7-EE9D-BACC967BA834</xmpMM:InstanceID> 
+         <xmpMM:InstanceID>uuid:FEFE7DB1-8CA4-9E8A-DB6A-B3D7281A5C39</xmpMM:InstanceID> 
       </rdf:Description> 
    </rdf:RDF> 
 </x:xmpmeta> 

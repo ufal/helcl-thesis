@@ -3,155 +3,301 @@
 %% Settings for single-side (simplex) printing
 % Margins: left 40mm, right 25mm, top and bottom 25mm
 % (but beware, LaTeX adds 1in implicitly)
-\documentclass[12pt,a4paper]{report}
-\setlength\textwidth{145mm}
-\setlength\textheight{247mm}
-\setlength\oddsidemargin{15mm}
-\setlength\evensidemargin{15mm}
-\setlength\topmargin{0mm}
-\setlength\headsep{0mm}
-\setlength\headheight{0mm}
-% \openright makes the following text appear on a right-hand page
-\let\openright=\clearpage
+\documentclass[12pt,notitlepage,a4paper,openright]{report}
+\pagestyle{plain}
 
-%% Settings for two-sided (duplex) printing
-% \documentclass[12pt,a4paper,twoside,openright]{report}
-% \setlength\textwidth{145mm}
-% \setlength\textheight{247mm}
-% \setlength\oddsidemargin{14.2mm}
-% \setlength\evensidemargin{0mm}
-% \setlength\topmargin{0mm}
-% \setlength\headsep{0mm}
-% \setlength\headheight{0mm}
-% \let\openright=\cleardoublepage
+\usepackage{filecontents}
+\begin{filecontents*}{\jobname.xmpdata}
+  \Author{Jindřich Helcl}
+  \Title{Context in Neural Machine Translation}
+  \Keywords{non-autoregressive neural machine translation, multimodal neural machine translation, neural machnie translation, deep learning}
+  \Subject{TODO}
+  \Publisher{Charles University}
+\end{filecontents*}
 
-%% Generate PDF/A-2u
 \usepackage[a-2u]{pdfx}
-
-%% Character encoding: usually latin2, cp1250 or utf8:
-\usepackage[utf8]{inputenc}
-
-%% Prefer Latin Modern fonts
+\usepackage{fontspec}
+% TODO zapnout až bude potřeba
+%\usepackage{microtype}
+\usepackage[czech,english]{babel}
 \usepackage{lmodern}
+\usepackage{textcomp}
+\usepackage[defaultlines=4,all]{nowidow}
 
-%% Further useful packages (included in most LaTeX distributions)
-\usepackage{amsmath}        % extensions for typesetting of math
-\usepackage{amsfonts}       % math fonts
-\usepackage{amsthm}         % theorems, definitions, etc.
-\usepackage{bbding}         % various symbols (squares, asterisks, scissors, ...)
-\usepackage{bm}             % boldface symbols (\bm)
-\usepackage{graphicx}       % embedding of pictures
-\usepackage{fancyvrb}       % improved verbatim environment
-\usepackage{natbib}         % citation style AUTHOR (YEAR), or AUTHOR [NUMBER]
-\usepackage[nottoc]{tocbibind} % makes sure that bibliography and the lists
-			    % of figures/tables are included in the table
-			    % of contents
-\usepackage{dcolumn}        % improved alignment of table columns
-\usepackage{booktabs}       % improved horizontal lines in tables
-\usepackage{paralist}       % improved enumerate and itemize
-\usepackage[usenames]{xcolor}  % typesetting in color
+\usepackage{graphicx} % nezbytné pro standardní vkládání obrázků do dokumentu
+\usepackage[usenames,dvipsnames,svgnames,table,rgb]{xcolor}
+\usepackage[twoside, inner=3.7cm, outer=2.9cm, top=2.6cm, bottom=3.4cm]{geometry} % nastavení dané velikosti okrajů
+\usepackage{thesis}
+\usepackage[round]{natbib}
+\usepackage{multirow}
+\usepackage{arydshln} % dashed lines in tables
+\usepackage{array}
+\usepackage{amssymb,latexsym,pifont}
+\usepackage{amsmath}
+%\usepackage{longtable}
+\usepackage{enumitem} % custom lists
+\usepackage[normalem]{ulem} % underlining
+\usepackage{setspace} % radkovani
+\usepackage{varioref} % nice references (above/below)
+\usepackage[above,section]{placeins} % avoid figures pushed at end of chapters
+\usepackage{listings}
 
-%%% Basic information on the thesis
+\usepackage{tabularx}
+\usepackage{booktabs} % nicer lines in table
+\usepackage{multicol}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{gnuplot-lua-tikz}
+\usetikzlibrary{shapes.geometric}
+\usepackage{epstopdf}
 
-% Thesis title in English (exactly as in the formal assignment)
-\def\ThesisTitle{Thesis title}
+\usepackage[acronym]{glossaries}
+\usepackage[automake]{glossaries-extra}
+\preto\chapter{\glsresetall}
 
-% Author of the thesis
-\def\ThesisAuthor{Name Surname}
+\setabbreviationstyle[acronym]{long-short}
 
-% Year when the thesis is submitted
-\def\YearSubmitted{YEAR}
+\usepackage{subcaption} % sub figures in a fiture
+\usepackage{standalone} % include standoalone tikz images
+\usepackage{bibentry}
 
-% Name of the department or institute, where the work was officially assigned
-% (according to the Organizational Structure of MFF UK in English,
-% or a full name of a department outside MFF)
-\def\Department{Name of the department}
-
-% Is it a department (katedra), or an institute (ústav)?
-\def\DeptType{Department}
-
-% Thesis supervisor: name, surname and titles
-\def\Supervisor{Supervisor's Name}
-
-% Supervisor's department (again according to Organizational structure of MFF)
-\def\SupervisorsDepartment{department}
-
-% Study programme and specialization
-\def\StudyProgramme{study programme}
-\def\StudyBranch{study branch}
-
-% An optional dedication: you can thank whomever you wish (your supervisor,
-% consultant, a person who lent the software, etc.)
-\def\Dedication{%
-Dedication.
+\hypersetup{
+    colorlinks=false,
+    pdfborder={0 0 0},
 }
 
-% Abstract (recommended length around 80-200 words; this is not a copy of your thesis assignment!)
-\def\Abstract{%
-Abstract.
+\makeglossaries{}
+\input{acronyms}
+
+% Czech babel conflicts with cline, hacky fix (http://tex.stackexchange.com/questions/111999/slovak-and-czech-babel-gives-problems-with-cmidrule-and-cline):
+% - basically disables hyphenation in tables, but it's not used anyway so it doesn't matter
+\usepackage{etoolbox}
+\preto\tabular{\shorthandoff{-}}
+%
+%
+\hyphenation{%
+da-ta-sets
+da-ta-set
+} % -- custom hyphenation
+
+%\setmainfont[Ligatures=Common]{TeX Gyre Pagella}
+%\setmainfont[Ligatures=Common]{GFS Bodoni}
+\setmainfont[Ligatures=Common]{Linux Libertine O}
+\setsansfont[Scale=MatchLowercase]{DejaVu Sans}
+\setmonofont[Scale=MatchLowercase]{DejaVu Sans Mono}
+
+
+\setstretch{1.1} % radkovani
+
+\expandafter\def\expandafter\quote\expandafter{\quote\small} % mensi pismo u quotations
+
+% orphan & widow control
+%\clubpenalty 10000
+%\widowpenalty 10000
+
+% odstup poznamek od textu
+\def\footnoteskip#1{
+  \renewcommand\footnoterule{
+     \vspace{#1}
+     \hrule width 0.4\columnwidth%
+     \vspace{3pt}
 }
-
-% 3 to 5 keywords (recommended), each enclosed in curly braces
-\def\Keywords{%
-{key} {words}
 }
+\footnoteskip{0.8em}
 
-%% The hyperref package for clickable links in PDF and also for storing
-%% metadata to PDF (including the table of contents).
-%% Most settings are pre-set by the pdfx package.
-\hypersetup{unicode}
-\hypersetup{breaklinks=true}
+% v obsahu budou jen sections
+\setcounter{tocdepth}{2}
+% necisluju subsections
+\setcounter{secnumdepth}{2}
 
-% Definitions of macros (see description inside)
-\include{macros}
+%% cutting down warnings
+%\hfuzz=2pt
+%\hbadness=10000
 
-% Title page and various mandatory informational pages
+% force-ordering citations according to dummy keys
+\newcommand{\dummybiborderkey}[1]{}
+
+\DeclareMathOperator*{\softmax}{softmax}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator{\relu}{ReLu}
+\def\Pr{\ensuremath\mathsf{P}}
+\let\emptyset\varnothing{}
+\DeclareMathOperator*{\sgn}{sgn}
+\DeclareMathOperator{\attn}{Attn}
+\DeclareMathOperator{\multihead}{Multihead}
+\DeclareMathOperator{\concat}{concat}
+
+\newcommand{\veryshortarrow}[1][3pt]{\mathrel{%
+     \vcenter{\hbox{\rule[-.5\fontdimen8\textfont3]{#1}{\fontdimen8\textfont3}}}%
+     \mkern-4mu\hbox{\usefont{U}{lasy}{m}{n}\symbol{41}}}}
+
+\newcommand{\paperdisclaim}[1]{%
+\begin{center}\begin{minipage}{0.9\textwidth}
+\footnotesize\it #1
+\end{minipage}\end{center}
+}
+\newcommand{\R}[2]{#1 \tiny $\pm$ \small #2}
+
+
+\title{On the Importance of Context in Neural Machine Translation}
+
+\def\fulldate{}
+\author{Jindřich Helcl}
+\date{2019}
+\dept{Institute of Formal and Applied Linguistics}
+\supervisor{prof. RNDr. Jan Hajič, Dr.}
+\studyprogram{Computer Science}
+\studyfield{Computational Linguistics}
+
+
+
 \begin{document}
-\include{title}
 
-%%% A page with automatically generated table of contents of the doctoral thesis
+%
+%
+%
+\renewcommand{\thepage}{\roman{page}}
+\selectlanguage{english}
+\maketitle
 
-\tableofcontents
+\pagestyle{plain}
+\normalsize % nastavení normální velikosti fontu
+\setcounter{page}{2} % nastavení číslování stránek
 
-%%% Each chapter is kept in a separate file
-\include{preface}
-\include{chap01}
-\include{chap02}
+\cleardoublepage{}
+\ \vspace{10mm}
 
-\include{epilog}
+\noindent \it
 
-%%% Bibliography
-\include{bibliography}
+\vspace{\fill}
+\noindent \rm
+I declare that I carried out this doctoral thesis independently,
+  and only with the cited sources, literature and other professional sources.
 
-%%% Figures used in the thesis (consider if this is needed)
-\listoffigures
+I understand that my work relates to the rights and obligations
+  under the Act No.~121/2000 Coll., the Copyright Act, as amended,
+  in particular the fact that Charles University has the right
+  to conclude a license agreement on the use of this work as a school work
+  pursuant to Section~60 paragraph~1 of the Copyright Act.
 
-%%% Tables used in the thesis (consider if this is needed)
-%%% In mathematical theses, it could be better to move the list of tables to the beginning of the thesis.
-\listoftables
+\vspace{2cm}
+\noindent Prague, March 21, 2019 \hspace{\fill}\theauthor\\ % doplňte patřičné datum, jméno a příjmení
 
-%%% Abbreviations used in the thesis, if any, including their explanation
-%%% In mathematical theses, it could be better to move the list of abbreviations to the beginning of the thesis.
-\chapwithtoc{List of Abbreviations}
+%%%   Výtisk pak na tomto míste nezapomeňte PODEPSAT!
+%%%                                         *********
 
-%%% Doctoral theses must contain a list of author's publications
-\chapwithtoc{List of publications}
+\cleardoublepage{} % přechod na novou stránku
+\pagestyle{plain}
+%\singlespacing
+\addcontentsline{toc}{chapter}{English Abstract}
+%%% Následuje strana s abstrakty. Doplňte vlastní údaje.
+%\selectlanguage{english}
+\begin{description}[leftmargin=7.5em,labelwidth=7em,labelindent=0em,labelsep=0.5em]
+\item[Title:] \thetitle{}
+\item[Author:] \theauthor{}
+\item[Department:] \thedept{}
+\item[Supervisor:] \thesupervisor{},\\ \thedept{}
+\end{description}
+\subsubsection{Abstract:}
 
-%%% Attachments to the doctoral thesis, if any. Each attachment must be
-%%% referred to at least once from the text of the thesis. Attachments
-%%% are numbered.
-%%%
-%%% The printed version should preferably contain attachments, which can be
-%%% read (additional tables and charts, supplementary text, examples of
-%%% program output, etc.). The electronic version is more suited for attachments
-%%% which will likely be used in an electronic form rather than read (program
-%%% source code, data files, interactive charts, etc.). Electronic attachments
-%%% should be uploaded to SIS and optionally also included in the thesis on a~CD/DVD.
-%%% Allowed file formats are specified in provision of the rector no. 72/2017.
-\appendix
-\chapter{Attachments}
+\input{abstract_en}
 
-\section{First Attachment}
+\begin{description}[leftmargin=7.5em,labelwidth=7em,labelindent=0em,labelsep=0.5em]
+        %
+\item[Keywords:] multimodal machine translation, neural machnie translation,
+    combining language and vision, deep learning
+    %
+\end{description}
 
-\openright
+
+\cleardoublepage{}
+\addcontentsline{toc}{chapter}{Czech Abstract}
+\selectlanguage{czech}
+\begin{description}[leftmargin=7.5em,labelwidth=7em,labelindent=0em,labelsep=0.5em]
+\item[Název práce:] Význam kontextu v neuronovém strojovém překladu
+\item[Autor:] \theauthor{}
+\item[Katedra:] Ústav formální a aplikované lingvistiky
+\item[Vedoucí práce:] \thesupervisor,\\ Ústav formální a aplikované lingvistiky
+\end{description}
+
+\subsubsection{Abstrakt:}
+
+\input{abstract_cs}
+
+\begin{description}[leftmargin=7.5em,labelwidth=7em,labelindent=0em,labelsep=0.5em]
+%
+\item[Klíčová slova:] neautoregresivní strojový překlad, multimodální strojový překlad, neuronový strojový překlad, hluboké učení
+%
+\end{description}
+
+\selectlanguage{english}
+
+
+
+
+\cleardoublepage{}
+\ \vspace{10mm}
+
+\addcontentsline{toc}{chapter}{Acknowledgements}
+\subsection*{Acknowledgements}
+
+{
+  děkuju. tos řek hezky.
+}
+
+\vfill
+
+
+{\noindent\footnotesize TODO akcknowledgementy}
+
+\cleardoublepage{}
+\addcontentsline{toc}{chapter}{Table of Contents}
+\tableofcontents % vkládá automaticky generovaný obsah dokumentu
+
+\cleardoublepage{}
+\renewcommand{\chapterheadstartvskip}{\vspace*{-10mm}} % mezera u kapitoly
+\setstretch{1.2} % radkovani
+
+%
+% TEXT START
+%
+\renewcommand{\thepage}{\arabic{page}}
+\setcounter{page}{1}
+
+\sloppy
+\include{01-intro}
+%\include{02-deep-learning}
+%\include{03-language-and-vision}
+%\include{04-mmt}
+%\include{05-architectures}
+%\include{06-analysis}
+%\include{07-conclusions}
+
+%
+% TEXT END
+%
+
+\renewcommand{\chapterheadstartvskip}{\vspace*{0mm}} % mezera u kapitoly
+
+\cleardoublepage{}
+\bibliographystyle{csplainnat}
+\addcontentsline{toc}{chapter}{Bibliography}
+{\small \bibliography{references}}
+
+\cleardoublepage{}
+\addcontentsline{toc}{chapter}{List of Publications}
+\include{list_of_publications}
+
+
+\cleardoublepage{}
+\addcontentsline{toc}{chapter}{List of Abbreviations}
+\renewcommand*{\acronymname}{List of Abbreviations}
+\printglossary[type=\acronymtype,style=index]
+
+\addcontentsline{toc}{chapter}{List of Tables}
+{\small \listoftables\par}
+
+\addcontentsline{toc}{chapter}{List of Figures}
+{\small \listoffigures\par}
+
 \end{document}

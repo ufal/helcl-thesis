@@ -1,7 +1,5 @@
-% Metadata to be stored in PDF, see documentation of the pdfx package for more details.
-
-\Author{Name Surname}
-\Title{Thesis title}
-\Keywords{keywords\sep more such\sep yet another}
-\Subject{Abstract of thesis}
-\Publisher{Charles University}
+  \Author{Jindřich Helcl}
+  \Title{Context in Neural Machine Translation}
+  \Keywords{non-autoregressive neural machine translation, multimodal neural machine translation, neural machnie translation, deep learning}
+  \Subject{TODO}
+  \Publisher{Charles University}
