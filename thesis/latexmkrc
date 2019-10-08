@@ -1,10 +1,11 @@
-# This shows how to use the glossary package 
+# This shows how to use the glossary package
 # (http://www.ctan.org/pkg/glossary) and the glossaries package
 # (http://www.ctan.org/pkg/glossaries) with latexmk.  Note that there
 # are important differences between these two packages, so you should
 # take careful note of the comments below.
 
-
+$pdf_previewer = "start evince";
+$pdf_update_method = 0;
 
 # 1. For glossaries using glossary package
 

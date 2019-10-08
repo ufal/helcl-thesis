@@ -1,0 +1,43 @@
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Neural Machine Translation}
+\label{chap:nmt}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{markdown}
+V týhle kapitole bude:
+
+* basics:
+    - segmentation
+    - word2id
+    - model
+    - softmax
+    - training objective
+    - decoding algorithms
+
+* models
+    - rnn based
+    - transformer
+
+sources:
+bahdanau+luong a cho, vaswani, BPE, sentencepiece, lstm+gru
+
+víceméně náplň kompendia.
+
+
+### Pohádka ###
+
+**preface**
+\gls{NMT} je to jak se dělá překlad;
+
+
+\end{markdown}
+
+
+\gls{nmt} is the current state-of-the-art approach to \gls{mt}. As the name
+suggests, the underlying machine learning concept in \gls{nmt} systems are
+neural networks.
+
+Most of the \gls{nmt} architectures have two parts: an \emph{encoder} and a
+\emph{decoder}. The encoder processes the input sentence and creates a hidden
+representation. The decoder then accesses this hidden representation and
+generates the output sentence.
