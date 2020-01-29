@@ -27,7 +27,18 @@ víceméně náplň kompendia.
 ### Pohádka ###
 
 **preface**
-\gls{nmt} je to jak se dělá překlad;
+
+* \gls{nmt} je to jak se dělá překlad
+* je to sequence-to-sequence a architektury jsou encoder-decoder
+* protože zpracováváme sekvence, používáme speciální typy neuronek
+* dva hlavní pro NLP - rnn a transformer
+* v týhle kapitole si to postupně vysvětlíme
+
+**zpracování textu neuronovýma sítěma**
+
+* neuronky jsou matematický funkce a jakožto takový musí žrát číselnej vstup
+* myšlenka je převést tokeny na čísla
+* rozdělování textu na tokeny je netriviální problém. v kapitolce o tokenizaci popíšem hlavní metody
 
 
 \end{markdown}
@@ -41,6 +52,44 @@ Most of the \gls{nmt} architectures have two parts: an \emph{encoder} and a
 \emph{decoder}. The encoder processes the input sentence and creates a hidden
 representation. The decoder then accesses this hidden representation and
 generates the output sentence.
+
+
+\section{Processing Text with Neural Networks}
+
+%Since sentences come in various lenghts,
+
+\subsection{Tokenization}
+
+
+\paragraph{Open Vocabulary Problem.}
+
+
+
+\paragraph{BPE.}
+Byte-pair encoding \citep{sennrich2016bpe} is an approach which tackles the
+open vocabulary problem by splitting words to so-called subword units.  The
+idea is to devise a vocabulary of a pre-defined size, such that nearly every
+word can be composed using the units from the vocabulary. An additional
+requirement is for the vocabulary to contain as many frequent words as
+possible, so only rare words need to be split to more subwords.
+
+
+\paragraph{SentencePiece.}
+
+
+\section{Recurrent Neural Networks}
+
+\section{Transformer Model}
+
+
+\section{Training vs. Inference}
+
+
+
+
+
+
+
 
 
 
