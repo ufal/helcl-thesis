@@ -3,87 +3,360 @@
 \label{chap:nmt}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{markdown}
-V týhle kapitole bude:
-
-* basics:
-    - segmentation
-    - word2id
-    - model
-    - softmax
-    - training objective
-    - decoding algorithms
-
-* models
-    - rnn based
-    - transformer
-
-sources:
-bahdanau+luong a cho, vaswani, BPE, sentencepiece, lstm+gru
-
-víceméně náplň kompendia.
-
-
-### Pohádka ###
-
-**preface**
-
-* \gls{nmt} je to jak se dělá překlad
-* je to sequence-to-sequence a architektury jsou encoder-decoder
-* protože zpracováváme sekvence, používáme speciální typy neuronek
-* dva hlavní pro NLP - rnn a transformer
-* v týhle kapitole si to postupně vysvětlíme
-
-**zpracování textu neuronovýma sítěma**
-
-* neuronky jsou matematický funkce a jakožto takový musí žrát číselnej vstup
-* myšlenka je převést tokeny na čísla
-* rozdělování textu na tokeny je netriviální problém. v kapitolce o tokenizaci popíšem hlavní metody
-
-
-\end{markdown}
-
-
 \gls{nmt} is the current state-of-the-art approach to \gls{mt}. As the name
 suggests, the underlying machine learning concept in \gls{nmt} systems are
 neural networks.
 
+\JH{už to řikám v \ref{sec:encdec}.}
 Most of the \gls{nmt} architectures have two parts: an \emph{encoder} and a
 \emph{decoder}. The encoder processes the input sentence and creates a hidden
 representation. The decoder then accesses this hidden representation and
-generates the output sentence.
+generates the output sentence. This framework is also known as \emph{sequence-to-sequence learning}.
+
+\JH{přepsat aby to odpovídalo}
+This chapter provides theoretical details about \gls{nmt} systems in general, 
+as well as particular features of the systems that are relevant to experiments
+described in this thesis later on. The contents of this chapter are structured as follows. Section \ref{sec:text-processing} analyzes the approaches to processing (sequential) textual data by neural networks. Further on, Sections \ref{sec:rnn} and \ref{sec:transformer} describe two of the most popular neural network architectures used for \gls{nmt}, \glspl{rnn} and the Transformer model.
+In Section \ref{sec:training-vs-inference}, we explain the different modes of
+operation of \gls{nmt} models for training and inference. This chapter concludes
+with the overview of the \gls{nmt} evaluation methods (Section \ref{sec:evaluation}).
 
 
 \section{Processing Text with Neural Networks}
+\label{sec:text-processing}
 
-%Since sentences come in various lenghts,
+% text nejsou čísla, neuronky hrotěj čísla
+There is a number of problems that arise when we want to use neural 
+networks for text processing. Foremost, neural networks are a mathematical
+model that deals with real numbers. In contrast, language is discreet and has 
+a complex structure; therefore, we need to find ways of representing textual
+data as numbers. Second, since language units (such as words, sentences or 
+documents) come in various lengths, we need to use neural network models
+tailored to sequential data.
 
-\subsection{Tokenization}
+% one-hot, simple
+In this section, we begin with representation of words. The most 
+straightforward, and also the most common way to represent words in neural
+networks is by having a vocabulary where each word receives an integer index.
+When a word with a vocabulary index $j$ is represented by a vector $\mathbf{w} \in \{0,1\}^N$ where 
+%
+\begin{equation}
+w_i =
+\begin{cases}
+	1, & \text{if } i = j \\
+	0, & \text{otherwise,}
+\end{cases}
+\end{equation}
+%
+we call this the \emph{one-hot representation}.
+
+% embeddingy
+Using one-hot representation help us convert discreet words to numbers,
+but it does not capture anything about the underlying linguistic structure.
+For this purpose, \emph{learned distributed feature vectors}, or \emph{word 
+embeddings} are used \citep{bengio2003neural} \JH{pridat vic citaček}. The idea is to associate
+a real-valued vector with each word, so that representations of words with 
+similar roles in language are closer together. \citet{mikolov2013distributed} 
+train these word embeddings using the \emph{skip-gram} and \emph{continuous bag 
+of words} models and find that the resulting embeddings have interesting 
+properties, such as arithmetic operations can express analogy.
+In some \gls{nlp} tasks, pre-trained embeddings can be used to greatly improve
+the model performance on the end task. In contemporary \gls{nmt} research,
+the most prevalent approach is to train the word embeddings end-to-end along
+ with the translation model. 
+% formalne embeddingy
+\JH{odstavce?} Formally, the word embedding layer is defined as follows. For a given word $\textbf{w}$ in one-hot representation and for a parameter matrix $E$ called the \emph{embedding matrix}, we retrieve a single row that corresponds to the
+vocabulary index of $\mathbf{w}$:
+%
+\begin{equation}
+e(\mathbf{w}) = E\mathbf{w}.
+\end{equation}
+%
+The embedding dimension is usually much lower than the size of the vocabulary 
+(in \gls{nmt}, the embedding dimension in state-of-the-art models is around 1,024).
 
 
-\paragraph{Open Vocabulary Problem.}
+\subsection{Open Vocabulary Problem}
+
+A well known characteristic of language is that it follows the Zipf law. As a 
+result, in a large enough sample of text, there is a huge amount of unique 
+words or words occurring with low frequency. Such words constitute a 
+substantial part of the data and cannot be ignored.
+Another issue is that our training datasets do not contain all words that
+can occur in the language. These \gls{oov} words usually also make up
+significant portions of the validation and/or test data.
+
+The problem of rare and unseen words is also referred to as the \emph{open 
+vocabulary} problem. Although some work in this direction exist \citep{jean2015using}, in neural networks for \gls{nlp}, it is difficult to use very large vocabularies. The main reason is that the embedding layer and the output projection layer would become too large for the computation to be efficient.
+
+The most common approach to the open vocabulary problem is to use smaller
+units than words. These \emph{subword} units can be constructed in a smart
+way, such that frequent words are left intact, whereas rare words are composed
+of more common strings of letters. Below, we describe two of the methods
+for subword segmentation. It is worth to mention that research on 
+character-level methods is still ongoing, but as of the writing of this thesis,
+this approach did not yet outperform the subword state-of-the-art 
+\citep{chung-etal-2016-character,lee-etal-2017-fully,gao-etal-2020-character}.
+%
+%
+%\begin{algorithm}
+%\centering
+%
+%\begin{algorithmic}
+%
+%\Function{InitializeVocab}{}
+%
+%\State $V \gets \emptyset$
+%\ForAll{$x \in $\text{ training data tokens}}
+%\State $w \gets $ \text{ characters in} $x$ \text{plus special end-of-word symbol} $\cdot$
+%
+%%\If{$w \in V$}
+%\State $V[w] \gets V[w] + 1$
+%%\Else
+%%\State $V[w] \gets 0$
+%%\EndIf
+%\EndFor
+%\State \Return{$V$}
+%\EndFunction
+%
+%\\
+%
+%\Function{GetCounts}{$V$}
+%
+%\State $P \gets \emptyset$
+%
+%\ForAll{$(w, c) \in V$}
+%\For{$i = 1 \ldots |w|$}
+%
+%\State $P[w_i, w_{i+1}] \gets P[w_i, w_{i+1}] + c$
+%
+%\EndFor
+%\EndFor	
+%
+%
+%\State \Return{$P$}
+%\EndFunction
+%
+%\\
+%
+%\Function{MergeVocab}{$V, s_1, s_2$}
+%
+%\State \Return{$V$}
+%\EndFunction
+%
+%\\
+%
+%\State $V \gets $ \Call{InitializeVocab}{}
+%
+%\For{$i = 1 \ldots M$}
+%\State $P \gets $ \Call{GetCounts}{$V$}
+%\State $(s_1, s_2) \gets \argmax_{(s_i, s_{i+1} \in P)} P[s_i, s_{i+1}]$
+%\State $V \gets $ \Call{MergeVocab}{$V, s_1, s_2$}
+%
+%\EndFor
+%
+%
+%\end{algorithmic}
+%
+%\caption{Learning BPE merges.}
+%\label{alg:learn-bpe}
+%\end{algorithm}
 
 
-
-\paragraph{BPE.}
-Byte-pair encoding \citep{sennrich2016bpe} is an approach which tackles the
-open vocabulary problem by splitting words to so-called subword units.  The
-idea is to devise a vocabulary of a pre-defined size, such that nearly every
+\paragraph{\acrshort{bpe}.}
+\Acrlong{bpe} (\acrshort{bpe}; \citealp{sennrich2016bpe}) is an approach which tackles the
+open vocabulary problem by splitting words to subword units.  The
+idea is to devise a vocabulary of a predefined size, such that nearly every
 word can be composed using the units from the vocabulary. An additional
 requirement is for the vocabulary to contain as many frequent words as
 possible, so only rare words need to be split to more subwords.
 
+The \gls{bpe} algorithm %(Algorithm ~\ref{alg:learn-bpe})
+proceeds as follows. First, the vocabulary is initialized with all characters 
+as symbols. Second, all tokens in the data are segmented using the symbols in
+the vocabulary (in first step, the tokens are split to characters).
+Third, the algorithm computes the counts of pairs of consecutive
+symbols in the training data, and selects the most frequent pair. Next,
+the most frequent pair of symbols is merged into a new symbol which is added to 
+the vocabulary. The algorithm iterates the segmentation, counting and 
+merging,until a predefined number of merges is done. In practice, instead 
+of working with the training corpus, the algorithm runs on the frequency 
+list of tokens, without loss of generality.
 
-\paragraph{SentencePiece.}
+\paragraph{SentencePiece.} 
+\JH{copied from JNLE:} SentencePiece \citep{kudo2018sentencepiece} is a
+toolkit that implements BPE and a unigram language model for subword
+segmentation \citep{kudo-2018-subword}. It supports a number of features, such as sampling and
+regularization by introducing noise on the source side. As opposed to BPEs and
+wordpieces, Sentencepiece does not require prior tokenization of the input
+text, and unlike other methods its pre-tokenization allows to fully reconstruct
+the original string.
+
 
 
 \section{Recurrent Neural Networks}
+\label{sec:rnn}
+
+The invention of \glspl{rnn} \citep{elman1990finding} allowed processing
+of sequential data by neural networks. \Glspl{rnn} process the sequence
+one item at a time, chaining consecutive steps with recurrence connections.
+
+In the early stages of the \gls{rnn} development, a single hidden layer of the
+network was altered to take into account the output of itself from the previous
+time step:
+
+%\begin{equation}
+%  h_t = f(x_t, h_{t-1})
+%\end{equation}
+%
+%\noindent
+%where $f$ is usually a non-linear projection:
+
+\begin{equation}
+  h_t = \tanh ( W x_t + U h_{t-1} + b_h ) \label{eq:vanilla-rnn}
+\end{equation}
+
+\noindent
+where $W \in \mathbb{R}^{m \times n}$, $U \in \mathbb{R}^{n \times n}$, $b_h \in \mathbb{R}^{n}$ are trainable parameters, $x_t \in \mathbb{R}^{m}$ is the \gls{rnn} input, and $h_{t-1} \in \mathbb{R}^{n}$ is the previous hidden state.
+
+This version of \glspl{rnn} however suffers from the \emph{vanishing gradient problem}. During backpropagation, the gradients are multiplied with the
+derivative of the hyperbolic tangent, which is always less or equal to one. In long sequences,
+the learning signal over distant parts of the sequence has therefore almost no 
+effect on the training. Due to this fact, the network 
+manifests poor performance in handling long-range dependencies.
+
+There has been several approaches to combat the vanishing gradient problem.
+The most prevailing types of \gls{rnn} architectures in \gls{nmt} are \gls{lstm} networks and \gls{gru} networks.
+
+\paragraph{\acrshort{lstm}.} \acrlong{lstm} networks \citep{hochreiter1997long}
+introduce gating mechanisms and a concept of \emph{information highway}, which ensures that
+only linear operations are applied on the states in the recurrent chain. A gating mechanism is
+an operation which computes a number between 0 and 1, which we refer to as \emph{gate value}.
+The output of the operation is the input multiplied by the gate value.
+
+Given a current time step $t$, input $x_t \in \mathbb{R}^m$, and previous hidden states $h_{t-1}, C_{t-1} \in \mathbb{R}^n$,
+\gls{lstm} networks proceed as follows:
+%
+\begin{eqnarray}
+f_t & = & \sigma\left(W_f x_t + U_f h_{t-1} + b_f\right) \label{eq:lstm-forget-gate}\\
+i_t & = & \sigma\left(W_i x_t + U_i h_{t-1} + b_i\right) \label{eq:lstm-input-gate}\\
+o_t & = & \sigma\left(W_o x_t + U_o h_{t-1} + b_o\right) \label{eq:lstm-output-gate}\\
+\tilde{C}_t & = & \tanh \left( W_c x_t + U_c h_{t-1} + b_c \right)\label{eq:lstm-candidate} \\
+C_t & = & f_t \odot C_{t-1} + i_t \odot \tilde{C}_t \label{eq:lstm-information-highway}\\
+h_t & = & o_t \odot \tanh C_t \label{eq:lstm-hidden-state}
+\end{eqnarray}
+%
+where $W_f, W_i, W_o, W_c \in \mathbb{R}^{m \times n}, U_f, U_i, U_o, U_c \in \mathbb{R}^{n \times n}, b_f, b_i, b_o, b_c \in \mathbb{R}^n$ are trainable parameters, $\sigma$ is the logistic function, and $\odot$ represents element-wise multiplication. The states $h_t$ and
+$C_t$ are also called public and private hidden states respectively. The intermediate value
+$\tilde{C}_t$ is called the candidate state.
+
+The three gates in the \gls{lstm} network are called \emph{forget gate}, \emph{input gate}, and \emph{output gate}. The forget gate (Eq. \ref{eq:lstm-forget-gate}) controls how much of the information from the previous private hidden state $C_{t-1}$ to the current private state (Eq. \ref{eq:lstm-information-highway}). The input gate (Eq. \ref{eq:lstm-input-gate})
+controls the amount of information received from the candidate state. Finally, the
+output gate (Eq. \ref{eq:lstm-output-gate}) decides which portion of the currently computed private hidden state is transferred to the current public hidden state (Eq. \ref{eq:lstm-output-gate}). Note that the values of the gates are computed in the same way, but with different parameters.
+
+The original recurrence relation from Equation \ref{eq:vanilla-rnn} is expressed by Equation \ref{eq:lstm-candidate}, where
+the new candidate state is computed. The transfer of information from the 
+previous private state and the current candidate state is done in Equation \ref{eq:lstm-information-highway}. Note that with respect to the states from the preceding steps, the previous state is only multiplied by a constant. This constitutes the information highway
+that allows propagating the gradients over long distances in the sequence.
+
+
+
+
+\paragraph{\acrshort{gru}.} \acrlong{gru} networks \citep{cho2014gru} are an alternative
+to \glspl{lstm}. Instead of four sets of parameter matrices, \glspl{gru} need only three, 
+while maintaining the theoretical strength. Unlike \glspl{lstm}, \glspl{gru} use only a 
+single hidden state in the recurrence relations.
+ 
+Given the time step $t$, input $x_t \in \mathbb{R}^m$, and previous hidden state $h_{t-1}$, 
+one \gls{gru} step is defined as follows:
+%
+\begin{eqnarray}
+r_t & = & \sigma\left(W_r x_t + U_r h_{t-1} + b_r\right) \label{eq:gru-reset-gate} \\
+z_t & = & \sigma\left(W_z x_t + U_z h_{t-1} + b_z\right) \label{eq:gru-update-gate} \\
+\tilde{h}_t & = & \tanh \left(W x_t + U \left( r_t \odot h_{t-1} \right) + b \right) \label{eq:gru-candidate} \\
+h_t & = & (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t \label{eq:gru-hidden-state}
+\end{eqnarray}
+%
+where $W, W_z, W_r \in \mathbb{R}^{m\times n}, U, U_z, U_r \in \mathbb{R}^{n \times n}, b, b_z, b_r \in \mathbb{R}^n$ are trainable parameters.
+
+The two gates in \gls{gru} networks are called \emph{reset gate} and \emph{update gate}.
+The reset gate (Eq. \ref{eq:gru-reset-gate}) determines how much of the information
+from the previous state is preserved and is applied in the recurrence relation for computing the candidate (Eq. \ref{eq:gru-candidate}). The update gate (Eq. \ref{eq:gru-update-gate})
+controls the merging of the previous state with the candidate state in Equation \ref{eq:gru-hidden-state}. Note that the information highway concept is expressed by this equation.
+
+\paragraph{Bidirectional RNNs.} There is a bidirectional variant of \glspl{rnn} which can be applied to any of the flavors of \glspl{rnn} discussed above. When the whole input sequence is known, we can apply a \gls{rnn} in both directions separately and then concatenate the
+states from the corresponding positions:
+%
+\begin{eqnarray}
+\overrightarrow{h}_t & = & \overrightarrow{\mathrm{RNN}}(x_{t-1}, \overrightarrow{h}_{t-1}) \\
+\overleftarrow{h}_t & = & \overleftarrow{\mathrm{RNN}}(x_{t+1}, \overleftarrow{h}_{t+1}) \\
+h_t & = & \left[ \begin{matrix}
+\overrightarrow{h}_t \\
+\overleftarrow{h}_t
+\end{matrix} \right]
+\end{eqnarray}
+
+\section{Encoder-Decoder Framework}
+\label{sec:encdec}
+
+The contemporary \gls{nmt} models share a common framework where each model is composed
+of two parts -- an \emph{encoder}, and a \emph{decoder}. The encoder reads in the input
+sentence and processes it in order to generate an intermediate hidden representation.
+The decoder then uses this intermediate hidden representation to produce the probability
+distributions over the output tokens.
+
+The early \gls{nmt} models based on \glspl{rnn} use the final encoder state as the
+intermediate representation \citep{sutskever2014sequence}:
+%
+\begin{eqnarray}
+h_j & = &  \mathrm{RNN}_{\text{enc}}(x_j, h_{j-1}), \quad j \in \{0, 1, \ldots, T_x \} \\
+s_0 & = & h_{T_x}
+\end{eqnarray}
+%
+where $\mathbf{x}$ is the input sentence and $h_0$ is the initial hidden state, usually set to $\mathbf{0}$. $T_x$ denotes the length of the input sentence. Note that the input words are represented as their embeddings. \citet{sutskever2014sequence} do not use subword segmentation and
+instead reserve a special OOV token for unseen words.
+
+The decoder is initialized with the state $s_0$ and runs the second \gls{rnn}:
+\begin{equation}
+s_i = \mathrm{RNN}_{\text{dec}}(y_{i-1}, s_{i-1})
+\end{equation}
+
+
+
+\section{Attention Mechanism}
+\label{sec:attention}
+
 
 \section{Transformer Model}
+\label{sec:transformer}
+
+\section{Autoregressive Decoding}
+\label{sec:training-vs-inference}
+
+The models we described in the previous two sections are \emph{autoregressive} -- 
+the output tokens are predicted left-to-right, while every decision is conditioned
+on the previously generated outputs. With this property, there comes an important distinction
+in behavior between training and decoding. Whereas during training, the ground-truth data
+are used to simulate the previous decisions, during decoding, the ground truth is unknown
+and therefore the model need to rely solely on its own decisions. This constitutes a theoretical 
+problem, called \emph{exposure bias} -- the model is never exposed to its own errors during 
+training.
+
+In the RNN-based models, the difference between training and decoding is minimal. The model 
+execution is done the same way, with the one exception of providing ground-truth data during 
+training. Another exception is that the final softmax does not need to be computed during 
+greedy decoding (there is no need for normalized distribution if we are interested only in the 
+token with maximum probability), but is still needed for beam search.
+
+The Transformer models are quite different in this aspect. Since there is no recurrence operation
+which requires accumulation of information in a hidden state, the network can be trained on a
+whole ground-truth sentence in one step. The only requirement is to prevent the decoder 
+self-attention from attending to the future positions. However, during training, the model still 
+needs to wait for its own decisions.
 
 
-\section{Training vs. Inference}
-
+\section{Evaluation}
+\label{sec:evaluation}
 
 
 

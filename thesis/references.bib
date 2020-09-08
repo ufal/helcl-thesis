@@ -1,3 +1,111 @@
+@inproceedings{gao-etal-2020-character,
+    title = "Character-Level Translation with Self-attention",
+    author = "Gao, Yingqiang  and
+      Nikolov, Nikola I.  and
+      Hu, Yuhuang  and
+      Hahnloser, Richard H.R.",
+    booktitle = "Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics",
+    month = jul,
+    year = "2020",
+    address = "Online",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/2020.acl-main.145",
+    doi = "10.18653/v1/2020.acl-main.145",
+    pages = "1591--1604",
+    abstract = "We explore the suitability of self-attention models for character-level neural machine translation. We test the standard transformer model, as well as a novel variant in which the encoder block combines information from nearby characters using convolutions. We perform extensive experiments on WMT and UN datasets, testing both bilingual and multilingual translation to English using up to three input languages (French, Spanish, and Chinese). Our transformer variant consistently outperforms the standard transformer at the character-level and converges faster while learning more robust character-level alignments.",
+}
+
+@inproceedings{kudo-2018-subword,
+    title = "Subword Regularization: Improving Neural Network Translation Models with Multiple Subword Candidates",
+    author = "Kudo, Taku",
+    booktitle = "Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)",
+    month = jul,
+    year = "2018",
+    address = "Melbourne, Australia",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/P18-1007",
+    doi = "10.18653/v1/P18-1007",
+    pages = "66--75",
+    abstract = "Subword units are an effective way to alleviate the open vocabulary problems in neural machine translation (NMT). While sentences are usually converted into unique subword sequences, subword segmentation is potentially ambiguous and multiple segmentations are possible even with the same vocabulary. The question addressed in this paper is whether it is possible to harness the segmentation ambiguity as a noise to improve the robustness of NMT. We present a simple regularization method, subword regularization, which trains the model with multiple subword segmentations probabilistically sampled during training. In addition, for better subword sampling, we propose a new subword segmentation algorithm based on a unigram language model. We experiment with multiple corpora and report consistent improvements especially on low resource and out-of-domain settings.",
+}
+
+@article{lee-etal-2017-fully,
+    title = "Fully Character-Level Neural Machine Translation without Explicit Segmentation",
+    author = "Lee, Jason  and
+      Cho, Kyunghyun  and
+      Hofmann, Thomas",
+    journal = "Transactions of the Association for Computational Linguistics",
+    volume = "5",
+    year = "2017",
+    url = "https://www.aclweb.org/anthology/Q17-1026",
+    doi = "10.1162/tacl_a_00067",
+    pages = "365--378",
+    abstract = "Most existing machine translation systems operate at the level of words, relying on explicit segmentation to extract tokens. We introduce a neural machine translation (NMT) model that maps a source character sequence to a target character sequence without any segmentation. We employ a character-level convolutional network with max-pooling at the encoder to reduce the length of source representation, allowing the model to be trained at a speed comparable to subword-level models while capturing local regularities. Our character-to-character model outperforms a recently proposed baseline with a subword-level encoder on WMT{'}15 DE-EN and CS-EN, and gives comparable performance on FI-EN and RU-EN. We then demonstrate that it is possible to share a single character-level encoder across multiple languages by training a model on a many-to-one translation task. In this multilingual setting, the character-level encoder significantly outperforms the subword-level encoder on all the language pairs. We observe that on CS-EN, FI-EN and RU-EN, the quality of the multilingual character-level translation even surpasses the models specifically trained on that language pair alone, both in terms of the BLEU score and human judgment.",
+}
+
+@inproceedings{chung-etal-2016-character,
+    title = "A Character-level Decoder without Explicit Segmentation for Neural Machine Translation",
+    author = "Chung, Junyoung  and
+      Cho, Kyunghyun  and
+      Bengio, Yoshua",
+    booktitle = "Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)",
+    month = aug,
+    year = "2016",
+    address = "Berlin, Germany",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/P16-1160",
+    doi = "10.18653/v1/P16-1160",
+    pages = "1693--1703",
+}
+
+@inproceedings{jean2015using,
+    title = "On Using Very Large Target Vocabulary for Neural Machine Translation",
+    author = "Jean, S{\'e}bastien  and
+      Cho, Kyunghyun  and
+      Memisevic, Roland  and
+      Bengio, Yoshua",
+    booktitle = "Proceedings of the 53rd Annual Meeting of the Association for Computational Linguistics and the 7th International Joint Conference on Natural Language Processing (Volume 1: Long Papers)",
+    month = jul,
+    year = "2015",
+    address = "Beijing, China",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/P15-1001",
+    doi = "10.3115/v1/P15-1001",
+    pages = "1--10",
+}
+
+@inproceedings{mikolov2013distributed,
+  title={Distributed representations of words and phrases and their compositionality},
+  author={Mikolov, Tomas and Sutskever, Ilya and Chen, Kai and Corrado, Greg S and Dean, Jeff},
+  booktitle={Advances in neural information processing systems},
+  pages={3111--3119},
+  year={2013}
+}
+
+@article{bengio2003neural,
+  title={A neural probabilistic language model},
+  author={Bengio, Yoshua and Ducharme, R{\'e}jean and Vincent, Pascal and Jauvin, Christian},
+  journal={Journal of machine learning research},
+  volume={3},
+  number={Feb},
+  pages={1137--1155},
+  year={2003}
+}
+
+@inproceedings{kudo2018sentencepiece,
+    title = "{S}entence{P}iece: A simple and language independent subword tokenizer and detokenizer for Neural Text Processing",
+    author = "Kudo, Taku  and
+      Richardson, John",
+    booktitle = "Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing: System Demonstrations",
+    month = nov,
+    year = "2018",
+    address = "Brussels, Belgium",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/D18-2012",
+    doi = "10.18653/v1/D18-2012",
+    pages = "66--71"
+}
+
 @inproceedings{agirre2012semeval,
     author        = {Agirre, Eneko and Cer, Daniel and Diab, Mona and Gonzalez-Agirre, Aitor},
     title         = {SemEval-2012 Task 6: A Pilot on Semantic Textual Similarity},

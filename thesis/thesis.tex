@@ -6,15 +6,16 @@
 \documentclass[12pt,notitlepage,a4paper,openright]{report}
 \pagestyle{plain}
 
-\usepackage{filecontents}
-\begin{filecontents*}{\jobname.xmpdata}
-  \Author{Jindřich Helcl}
-  \Title{On the Importance of Context in Neural Machine Translation}
-  \Keywords{non-autoregressive neural machine translation, multimodal neural machine translation, neural machine translation, deep learning}
-  \Subject{TODO}
-  \Publisher{Charles University}
-\end{filecontents*}
+%\usepackage{filecontents}
+%\begin{filecontents*}{\jobname.xmpdata}
+%  \Author{Jindřich Helcl}
+%  \Title{On the Importance of Context in Neural Machine Translation}
+%  \Keywords{non-autoregressive neural machine translation, multimodal neural machine translation, neural machine translation, deep learning}
+%  \Subject{TODO}
+%  \Publisher{Charles University}
+%\end{filecontents*}
 
+\usepackage[usenames,dvipsnames,svgnames,table,rgb]{xcolor}
 \usepackage[a-2u]{pdfx}
 \usepackage{fontspec}
 % TODO zapnout až bude potřeba
@@ -27,7 +28,6 @@
 \usepackage[hybrid]{markdown}
 
 \usepackage{graphicx} % nezbytné pro standardní vkládání obrázků do dokumentu
-\usepackage[usenames,dvipsnames,svgnames,table,rgb]{xcolor}
 \usepackage[twoside, inner=3.7cm, outer=2.9cm, top=2.6cm, bottom=3.4cm]{geometry} % nastavení dané velikosti okrajů
 \usepackage{thesis}
 \usepackage[round]{natbib}
@@ -52,7 +52,10 @@
 \usepackage{gnuplot-lua-tikz}
 \usetikzlibrary{shapes.geometric}
 \usepackage{epstopdf}
-
+\usepackage{algorithmicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode} 
+ 
 \usepackage[acronym]{glossaries}
 \usepackage[automake]{glossaries-extra}
 \preto\chapter{\glsresetall}
@@ -84,7 +87,7 @@ da-ta-set
 
 %\setmainfont[Ligatures=Common]{TeX Gyre Pagella}
 %\setmainfont[Ligatures=Common]{GFS Bodoni}
-\setmainfont[Ligatures=Common]{Linux Libertine O}
+\setmainfont[Ligatures=Common]{Linux Libertine}
 \setsansfont[Scale=MatchLowercase]{DejaVu Sans}
 \setmonofont[Scale=MatchLowercase]{DejaVu Sans Mono}
 
@@ -139,6 +142,8 @@ da-ta-set
 \end{minipage}\end{center}
 }
 \newcommand{\R}[2]{#1 \tiny $\pm$ \small #2}
+
+\def\JH#1{{\color{blue}JH: \it #1}}
 
 
 \title{On the Importance of Context in Neural Machine Translation}
@@ -271,6 +276,7 @@ I understand that my work relates to the rights and obligations
 \include{02-nmt}
 \include{03-context}
 %\include{04-mmt}
+\include{04-nonautoregressive}
 %\include{05-architectures}
 %\include{06-analysis}
 %\include{07-conclusions}
