@@ -3,5 +3,41 @@
 \label{chap:nat}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+So far we discussed the influence of combining additional sources of information
+on translation. This chapter presents a case study of \gls{nat} in which the
+contextual information is limited.
+
+\gls{nat} is a recent subtask of \gls{nmt} in which the decoding process cannot
+access the previously decoded outputs, imposing conditional independence on the
+output token probability distributions. This assumption allows parallelization
+of the decoding which can significantly reduce the latency of the translation
+system. On the other hand, it also presents a challenge to the language model,
+which usually leads to poorer translation quality.
+
+This chapter begins with the overview of the non-autoregressive methods (Section
+\ref{sec:nat-methods}). In Section \ref{sec:nat-ctc}, we introduce
+non-autoregressive \gls{nmt} with \gls{ctc}. We present our experiments with
+\gls{ctc} in Section \ref{sec:ctc-experiments}. We summarize our contributions
+and outline the possible future efforts in Section \ref{sec:nat-future}.
+
+
+\section{Related Work}
+\label{sec:nat-methods}
+
+\citep{lee2018deterministic} \citep{gu2017nonautoregressive}
+\citep{ghazvininejad2019mask} \citep{mansimov2019generalized}
+
+\section{Non-Autoregressive NMT with Connectionist Temporal Classification}
+\label{sec:nat-ctc}
+
+\JH{base this on the End-to-End paper}
+
+
+\section{Improving Fluency using N-gram Language Models}
+\label{sec:nat-lm}
+
+
+\section{Non-Autoregressive Model Optimizations}
+\label{sec:nat-opt}
 
 
