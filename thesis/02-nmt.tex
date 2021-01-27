@@ -68,13 +68,23 @@ given word $\textbf{w}$ in one-hot representation and for a parameter matrix $E$
 called the \emph{embedding matrix}, we retrieve a single row that corresponds to
 the vocabulary index of $\mathbf{w}$:
 %
-\begin{equation} e(\mathbf{w}) = E\mathbf{w}.
+\begin{equation}
+  e(\mathbf{w}) = E\mathbf{w}.
 \end{equation}
 %
 The embedding dimension is usually much lower than the size of the vocabulary
 (in \gls{nmt}, the embedding dimension in state-of-the-art models is around
 1,024).
 
+\JH{přidat text o output distributions:}
+%
+\begin{equation}
+  p(y|x) = \prod_{t=1}^{T_y}p(y_t|y_{<t},x,\theta)
+  \label{eq:output-distribution}
+\end{equation}
+%
+where $T_y \in \mathbb{R}$ is the length of the target sentence, $y_{<t}$ are
+the previously decoded words, and $\theta$ is a set of the model parameters.
 
 \subsection{Open Vocabulary Problem}
 
@@ -141,8 +151,8 @@ outperform the subword state-of-the-art
 %\State $V \gets $ \Call{InitializeVocab}{}
 %
 %\For{$i = 1 \ldots M$} %\State $P \gets $ \Call{GetCounts}{$V$} %\State $(s_1,
-s_2) \gets \argmax_{(s_i, s_{i+1} \in P)} P[s_i, s_{i+1}]$ %\State $V \gets $
-\Call{MergeVocab}{$V, s_1, s_2$}
+%s_2) \gets \argmax_{(s_i, s_{i+1} \in P)} P[s_i, s_{i+1}]$ %\State $V \gets $
+%\Call{MergeVocab}{$V, s_1, s_2$}
 %
 %\EndFor
 %
@@ -316,6 +326,34 @@ separately and then concatenate the states from the corresponding positions:
 \end{matrix} \right]
 \end{eqnarray}
 
+
+\paragraph{Deep RNNs.} Some NMT architectures based on RNNs use multiple
+recurrent layers \citep{barone2017deep,wu2016google}. In deep RNNs, each layer
+is a recurrent network. The inputs of the second and each layer onwards are the
+outputs of the preceding layer. The output of the whole deep RNN is the output
+of the last layer.
+
+In bidirectional RNNs, there are a few settings to consider. \JH{tell me more}
+
+To improve the convergence speed of the deep models, \emph{layer normalization}
+\citep{ba2016layer} is often employed between layers. For layer $l$ and its
+output states
+%$h_1^l, \ldots h_{T_x}^l$, $h_i^l \in \mathbb{R}^n$,
+$\mathbf{h}^l \in \mathbb{R}^{T_x \times n}$, we compute:
+%
+\begin{eqnarray}
+  \mu^l & = & \frac{1}{nT_x} \sum_{i=1}^{T_x}\sum_{j=1}^n h^l_{ij} \\
+  \sigma^l & = & \sqrt{\frac{1}{nT_x} \sum_{i=1}^{T_x}\sum_{j=1}^n (h^l_{ij} - \mu^l)^2} \\
+  \bar{\mathbf{h}}^l & = & \frac{\mathbf{h}^l - \mu^l}{\sigma^l} \odot \gamma^l + \beta^l
+\end{eqnarray}
+%
+where $\mu^l$ and $\sigma^l$ are the mean and standard deviation of the output
+state values, $\gamma^l, \beta^l \in \mathbb{R}^{T_x \times n}$ are learnable
+\emph{gain} and \emph{bias} parameters, and $\odot$ denotes element-wise
+multiplication. The normalized states $\bar{\mathbf{h}}^l$ are then used as the
+input to the $l+1$-th layer of the network instead.
+
+
 \section{Encoder-Decoder Framework}
 \label{sec:encdec}
 
@@ -369,25 +407,27 @@ the encoder hidden states rather than relying only on the value of the initial
 state.  Formally, based on a current decoder step $s_i$, the attention mechanism
 computes a local \emph{context vector} as a weighted average of the encoder
 states:
-
-\begin{eqnarray} % attn energies e_{ij} & = & v_a^\top \tanh (W_a s_{i-1} + U_a
-h_j + b_a) + b', \label{eq:attn-energies} \\
 %
-% attn distro \alpha_{ij} & = & \frac{\exp(e_{ij})}{\sum_{k=1}^{T_x}
-\exp(e_{ik})}, \\ %\softmax_{j \in 1, 2, \ldots, T_x } & = & e_{ij} \\
-%
-% context vector c_i & = & \sum_{j=1}^{T_x} \alpha_{ij} h_j.
-%
+\begin{eqnarray}
+  % attn energies
+  e_{ij} & = & v_a^\top \tanh (W_a s_{i-1} + U_a h_j + b_a) + b', \label{eq:attn-energies} \\
+  % attn distro
+  \alpha_{ij} & = & \frac{\exp(e_{ij})}{\sum_{k=1}^{T_x}\exp(e_{ik})}, \\
+  %
+  % \softmax_{j \in 1, 2, \ldots, T_x } & = & e_{ij} \\
+  % context vector
+  c_i & = & \sum_{j=1}^{T_x} \alpha_{ij} h_j.
 \end{eqnarray}
 %
 In the first step, the \emph{attention energies} are computed for every encoder
 hidden state using a single-hidden-layer feed-forward network parameterized by
-$W_a \in \mathbb{R}^{n' \times n}$, $U_a \in \mathbb{R}^{n' \times 2n}$, $b_a
-\in \mathbb{R}^{n'}$, $v_a \in \mathbb{R}^{n'}$, and $b' \in \mathbb{R}$ where
-$n'$ is the dimension of the hidden layer. Next, the attention energies are
-normalized using the softmax function into the \emph{attention distribution}.
-Finally, the context vector is computed as a weighted sum of the encoder states
-$h_0,\ldots, h_{T_x}$ using the attention distribution values as weights.
+$W_a \in \mathbb{R}^{n' \times n}$, $U_a \in \mathbb{R}^{n' \times 2n}$,
+$b_a \in \mathbb{R}^{n'}$, $v_a \in \mathbb{R}^{n'}$, and $b' \in \mathbb{R}$
+where $n'$ is the dimension of the hidden layer. Next, the attention energies
+are normalized using the softmax function into the \emph{attention
+  distribution}.  Finally, the context vector is computed as a weighted sum of
+the encoder states $h_0,\ldots, h_{T_x}$, using the attention distribution
+values as weights.
 
 The concept of attention can be viewed as a soft-lookup function over an
 associative memory. Given a \emph{query}, which is the decoder state in a given
@@ -398,8 +438,23 @@ attention keys and values are equal -- the encoder hidden states $h_j$. The
 similarity metric is defined in Equation \ref{eq:attn-energies}.
 
 
+\section{Deep Architectures}
+\label{sec:deep}
+\JH{deep architectures, cite sebe a GNMT}
+
+
 \section{Transformer Model}
 \label{sec:transformer}
+
+One of the disadvantages of the RNN-based models is the linear time nature of
+the recurrence relation. Few models have been proposed to remove the recurrence
+and thus allowing for simultaneous computation across time steps, at least at
+the training time. Most notably, these models include convolutional
+architectures \citep{gehring2017convolutional}, and the current state-of-the-art
+architecture, the \emph{Transformer} model \citep{vaswani2017attention}.
+
+
+
 
 
 
@@ -422,7 +477,6 @@ providing ground-truth data during training. Another exception is that the final
 softmax does not need to be computed during greedy decoding (there is no need
 for normalized distribution if we are interested only in the token with maximum
 probability), but is still needed for beam search.
-
 
 The Transformer models are quite different in this aspect. Since there is no
 recurrence operation which requires accumulation of information in a hidden

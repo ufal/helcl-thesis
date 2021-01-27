@@ -24,8 +24,78 @@ and outline the possible future efforts in Section \ref{sec:nat-future}.
 \section{Related Work}
 \label{sec:nat-methods}
 
-\citep{lee2018deterministic} \citep{gu2017nonautoregressive}
+This section lays grounds for understanding the key concepts in
+non-autoregressive \gls{nmt}. We first describe the attributes that most of the
+related literature has in common. Then, we provide a survey of notable
+approaches to \gls{nat}.
+
+\paragraph{Conditional Independence.} The defining feature of a
+non-autoregressive model is the conditional independence of the output
+distributions across time steps. Recall Equation \ref{eq:output-distribution}
+which defines the output distribution for autoregressive models:
+%
+\begin{equation}
+  p(y|x) = \prod_{t=1}^{T_y}p(y_t|y_{<t},x,\theta).
+  \tag{\ref{eq:output-distribution}}
+\end{equation}
+%
+Unlike Equation \ref{eq:output-distribution}, \Gls{nat} models do not condition
+the output token probabilities on the previously decoded outputs $y_{<t}$.  The
+probability of an output sentence $y$ given an input sequence $x$ can then be
+modeled as:
+%
+\begin{equation}
+  p(y|x) = \prod_{t=1}^{T_y}p(y_t|x,\theta).
+  \label{eq:nat-output-distribution}
+\end{equation}
+%
+Note that without any constraints, $p(y|x)$ might not be a probability
+distribution. In the equations above, $y_{T_y}$ must represent the
+end-of-sentence (\texttt{</s>}) token, with none of the preceding tokens
+$y_t, t < T_y$ being \texttt{</s>}, too. This requirement can be expressed as an
+explicit estimation of the target sentence length, leaving out the technical
+\texttt{</s>} symbol from the mathematical model:
+\begin{equation}
+  p(y|x) = p_L(T_y|x, \theta) \cdot \prod_{t=1}^{T_y}p(y_t|x,\theta).
+  \label{eq:explicit-length}
+\end{equation}
+
+\paragraph{Target Length Estimation.} As mentioned in above paragraph, in a
+standard NMT model such as the Transformer or a \gls{rnn}-based model with
+attention, the length of the output sentence is modeled implicitly by using the
+special end-of-sentence (\texttt{</s>}) token. \JH{Not sure if this fits the
+  narrative.}
+
+When using Equation \ref{eq:output-distribution} to model probability
+distribution over the set of all possible sentences, the probabilities assigned
+to longer sentences are considerably lower than the probabilities of sentences
+which are short. This follows from the multiplication of probabilities, which
+are numbers between zero and one. \JH{další věc je že je ten search space
+  exponenciálně roste -- This follows from the fact that the search space
+  (i.e. the number of all possible sentences of length $T_y$) grows
+  exponentially with $T_y$.}  \JH{odkazat spis na argmax nez na output
+  distribution.} To diminish the negative influence of this property,
+\citet{wu2016google} introduce length normalization to the beam search algorithm
+(\JH{odkazat na eq. v intro do MT}). The normalization acts as a prior imposed
+on the target sentence length distribution.
+
+It is, however, possible to estimate the target length explicitly. 
+
+
+
+
+
+\paragraph{Non-Autoregressive Neural Machine Translation \citep{gu2017nonautoregressive}.}
+
+\citet{gu2017nonautoregressive} were the first to propose non-autoregressive
+models applied to \gls{nmt}.
+
+\paragraph{Deterministic Non-Autoregressive Neural Sequence Modeling by Iterative Refinement \citep{lee2018deterministic}.}
+
+
 \citep{ghazvininejad2019mask} \citep{mansimov2019generalized}
+
+\JH{fully non-autoregressive + načerpat odtamtud citace}
 
 \section{Non-Autoregressive NMT with Connectionist Temporal Classification}
 \label{sec:nat-ctc}
@@ -41,3 +111,8 @@ and outline the possible future efforts in Section \ref{sec:nat-future}.
 \label{sec:nat-opt}
 
 
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "thesis"
+%%% End:
