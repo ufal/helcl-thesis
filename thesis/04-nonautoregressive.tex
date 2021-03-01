@@ -83,23 +83,153 @@ on the target sentence length distribution.
 It is, however, possible to estimate the target length explicitly. 
 \JH{...}
 
-
-
-
-\paragraph{Non-Autoregressive Neural Machine Translation \citep{gu2017nonautoregressive}.}
-
-\citet{gu2017nonautoregressive} were the first to propose non-autoregressive
-models applied to \gls{nmt}.
-
-\paragraph{Deterministic Non-Autoregressive Neural Sequence Modeling by Iterative Refinement \citep{lee2018deterministic}.}
-
-
 \citep{ghazvininejad2019mask} \citep{mansimov2019generalized}
 
-\JH{fully non-autoregressive + načerpat odtamtud citace}
 
-\JH{citace z fully non-autoregressive:}
-Iterative NAT:
+% ------------------------------------------------------------------------------
+
+\paragraph{Non-Autoregressive Neural Machine Translation
+  \citep{gu2017nonautoregressive}.} The first to propose non-autoregressive
+models applied to \gls{nmt}.
+
+Work with Equation \ref{eq:explicit-length} which brings the conditional
+independence and the explicit length estimation. Describe the
+\emph{multimodality problem}, which comes from poor capturing of multimodal
+distributions of the translations.
+
+Compared to the autoregressive Transformer model, the model has the following
+modifications. First, the inputs to the decoder are made up of the sequence of
+encoder inputs, either uniformly stretched to the predicted target sentence
+length, or copyied using a fertility model. Second, the decoder self-attention
+does not use the causal mask since all states can now attend to all other states
+in both directions. Third, \emph{positional attention} is added to every decoder
+layer where the positional encoding is used as queries and keys, and the decoder
+states as values.
+
+The multimodal problem is addressed by introducing a latent variable $z$ sampled
+from a prior distribution, and modeling the probability conditionally on $z$:
+\begin{equation}
+  p(Y|X) = p_L(T_Y|X, \theta) \cdot \prod_{t=1}^{T_Y}p(y_t|X, z, \theta).
+\end{equation}
+\JH{Sjednotit maly a velky X a Y.}
+
+The explicit length estimation model is replaced with fertility model,
+fertilities modeled with the latent variables.
+
+\textbf{Decoding} -- marginalizing over all possible fertilities is intractable,
+there are three methods to consider: Argmax decoding, average decoding, or
+\gls{npd}.
+
+\textbf{Training} -- Done with translation loss and fertility loss:
+\begin{align}
+  \mathcal{L}(\theta)  & = \log p(Y|X, \theta) \\
+                       & = log \sum_{F \in \mathcal{F}} p(F| X, \theta ) p(Y | X, F, \theta) \\
+                       & \geq \mathbb{E}_{\bar{F} \sim q}
+                         \left(
+                         \sum_{t=1}^{T_Y} \log p(y_t | X, \bar{F}, \theta)
+                         + \sum_{t=1}^{T_X} \log p(f_t | X, \theta)
+                         \right)
+                         + \mathcal{H}(q)
+\end{align}
+\JH{what is $\mathcal{H}(q)$?}
+
+The fertility model depends on an external module and is not trained end to
+end. The authors fine-tune the trained model using reinforcement learning.
+
+% ------------------------------------------------------------------------------
+
+\paragraph{Iterative refinement \citep{lee2018deterministic}.} One of the first
+papers on \gls{nat}. Introduce $L$ discrete sequential latent variables
+interpreted as stages of refinement, which are marginalized out.
+\begin{align*}
+  p(Y|X) & = \sum_{Y^L}
+           \left( \prod_{t=1}^{T_Y} p(y_t|Y^L, X) \right) p(Y^L|X) \\
+  p(Y^L|X) & = \sum_{Y^{L-1}}
+             \left( \prod_{t=1}^{T_Y} p(y_t^L | Y^{L-1}, X) \right)
+             p(Y^{L-1}|X) \\
+  \vdots \nonumber \\
+  p(Y^0|X) & = \prod_{t=1}^{T_Y} p(y_t^0|X)  
+\end{align*}
+Each summation in the equations above is computed over the whole space of
+possible sequences, and thus, it is intractable for the probablility $p(Y|X)$ to
+be caluculated exactly. To overcome this problem, the authors approximate the
+sums with only the element corresponding to the sequence with the largest
+probability, $\hat{y}_t = \argmax_{y_t}p(y_t|X)$.\footnote{Note that in
+  non-autoregressive model where the probability does not depend on previously
+  decoded outputs $y_{<t}$, getting the most probable tokens will also yield the
+  most probable sequence.}  Putting it together with the equations above and
+moving to logarithmic domain, we get:
+\begin{align}
+  \log p(Y|X) \geq
+    & \sum_{t=1}^{T_Y} \log p(y_t| \hat{Y}^L, X) + \\
+    & + \sum_{t=1}^{T_Y} \log p(\hat{y}_t^{L}| \hat{Y}^{L-1}, X) + \ldots \\
+    & + \sum_{t=1}^{T_Y} \log p(\hat{y}_t^0 | X) \label{eq:refinement-lowerbound}
+% = & \sum_{l=0}^{L} \sum_{t=1}^{T_Y} \log p(\hat{y}_t^{l+1} | \hat{Y}^l, X)
+\end{align}
+%where $Y^0 = X$ and $\hat{y}_t^{L+1} = y_t$.
+
+The initial sequence $\hat{y}_t^0$ is set to $x_{t'}$ where
+$t' = (T_X / T_Y) \cdot t$, i.e. the source sentence is either squished or
+stretched by copying or omitting some words in order to fit the target sentence
+length.
+
+All probability distributions in the above equations are modeled with neural
+networks with shared parameters. In this way, the number of intermediate
+refinement steps remains flexible during decoding.
+
+\textbf{Training} -- the latent variable model loss is trained by minimizing the
+negative log-likelihood of the target sequence $Y^*$ in each of the refinement
+steps:
+\begin{equation}
+  \mathcal{L}_{\text{LVM}}(\theta) = - \sum_{l=1}^{L+1} \left(
+    \sum_{t=1}^{T_Y} \log p(y_t^* | \hat{Y}^{l-1}, X, \theta)
+  \right) \label{eq:refinement-lvm-loss}
+\end{equation}
+
+
+\textbf{Denoising perspective} -- The authors introduce an additional denoising
+autoencoder loss to the model:
+\begin{equation}
+  \mathcal{L}-{\text{DAE}}(\theta) = - \sum_{t=1}^{T_Y} \log p(y_t^* | \bar{Y}, X, \theta)
+\end{equation}
+where $\bar{Y}$ is a corrupted version of a reference translation $Y^*$. The
+corruption operations are applied with probability $\beta$ on the tokens --
+either a token is replaced with a random word from the vocabulary, or a token is
+replaced (copied) with its neighbor, or the neighbors are swapped.
+
+During training, the two loss functions are stochastically mixed using a
+hyper-parameter $\alpha$, sampled from a Bernoulli distribution.
+
+They also use knowledge distillation.
+
+% ------------------------------------------------------------------------------
+
+\paragraph{Blockwise Parallel Decoding for Deep Autoregressive Models.}
+\citet{stern2018blockwise} propose a semi-autoregressive approach where chunks
+of the target sentence are generated in parallel.
+
+They start with a greedy decoding from an autoregressive model, $p_1$, and
+introduce additional ``look-ahead'' models $p_2, \ldots p_k$. In time step $t$,
+each model $p_i$ predicts the $(t + i)$-th word in the target sequence given the
+same prefix of $t$ previously decoded words.
+
+The decoding process has three stages. First, the block of predictions using the
+models $p_1, \ldots, p_k$ is computed. Second, model $p_1$ is used to verify the
+$(k-1)$ candidates (which is done in parallel in the Transformer model) and
+finds the largest $\hat{k}$ such that decoded words from models $p_i$,
+$1 \leq i \leq \hat{k}$ are all considered best by $p_1$. Third, the accepted
+$\hat{k}$ words are generated and the decoding process jumps to time step
+$t + \hat{k}$.
+
+
+
+  
+
+
+% ------------------------------------------------------------------------------
+
+\JH{add semiautroegressive paper from emnlp 2018}
+
 \begin{itemize}
 \item iNat \citep{lee2018deterministic} -- iterative refinement
 \item Blockwise \citep{stern2018blockwise}
@@ -114,6 +244,9 @@ Iterative NAT:
 \end{itemize}
 
 Fully NAT:
+
+
+% ------------------------------------------------------------------------------
 
 \paragraph{Latent Transformer \citep{kaiser2018fast}.} Latent transformer (fast
 decoding in seq. models using discrete latent vars) Use latent variables to make
@@ -179,6 +312,10 @@ Results measured on WMT'14 EN-DE. Baseline 27.3 BLEU, they achieve 22.5 with
 rescoring. p-DVQ and s-DVQ as well as improved semhash are comparable, semhash
 seems faster. Latency in the order of 100 ms, 7-8 ms per sentence with batch
 size of 64.
+
+
+
+
 
 \begin{itemize}
 \item vanilla \citep{gu2017nonautoregressive} 
