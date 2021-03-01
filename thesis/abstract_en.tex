@@ -1,1 +1,31 @@
-anstract abstract abstract
+In recent years, a number of mehtods for improving the decoding speed of neural
+machine translation systems have emerged.
+%
+One of the approaches that proposes fundamental changes to the model
+architecture are non-autoregressive models.
+%
+The autoregressive models impose conditional dependence of the generated words
+on the previously decoded outputs.
+%
+This dependency allows the model to keep track of the state of the decoding
+process, which improve the fluency of the output.
+%
+On the other hand, it requires the neural network computation to be run
+sequentially, and thus cannot be paralelized.
+%
+Non-autoregressive models impose conditional independence on the output
+probability distributions, which means that the decoding process is
+paralelizable and hence the decoding speed improves.
+%
+The goal of non-autoregressive machine translation is to match the translation
+quality of autoregressive models, while at the same time reducing the decoding
+latency.
+%
+In this thesis, we explore the research progress so far, and bring together
+a number of techniques that allow the fulfillment of the stated goal.
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "thesis"
+%%% End:
