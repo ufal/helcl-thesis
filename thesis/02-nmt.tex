@@ -3,33 +3,96 @@
 \label{chap:nmt}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Summary: Jak se procesuje text neuronkama, jak vypadají základní architektury
+% pro překlad - RNNs, Transformer, jak se to trénuje, jak se generuje a jak se
+% to vyhodnocuje
+
+% zpracování: slovník, segmentace, batche
+% RNN
+% Trafo
+
 \gls{nmt} is the current state-of-the-art approach to \gls{mt}. As the name
 suggests, the underlying machine learning concept in \gls{nmt} systems are
-neural networks.
+neural networks. The specific types, or \emph{architectures}, of neural
+networks used in an \gls{nmt} system vary across history, applications, or
+domains, but all share a few common traits.
 
-\JH{už to řikám v \ref{sec:encdec}.}  Most of the \gls{nmt} architectures have
-two parts: an \emph{encoder} and a \emph{decoder}. The encoder processes the
-input sentence and creates a hidden representation. The decoder then accesses
-this hidden representation and generates the output sentence. This framework is
-also known as \emph{sequence-to-sequence learning}.
+Neural networks are a mathematical model that works with real numbers: The
+inputs and the outputs to a neural network are real-valued vectors, the
+training objective is a differentiable function, and the space of the
+parameters needs to have a continuous gradient with respect to the loss
+function. Specific to neural networks is the computation of the gradient by the
+\emph{backpropagation} algorithm \JH{ocitovat}, and the large portfolio of
+optimization methods.
 
-\JH{přepsat aby to odpovídalo} This chapter provides theoretical details about
-\gls{nmt} systems in general, as well as particular features of the systems that
-are relevant to experiments described in this thesis later on. The contents of
-this chapter are structured as follows. Section \ref{sec:text-processing}
-analyzes the approaches to processing (sequential) textual data by neural
-networks. Further on, Sections \ref{sec:rnn} and \ref{sec:transformer} describe
-two of the most popular neural network architectures used for \gls{nmt},
-\glspl{rnn} and the Transformer model.  In Section
-\ref{sec:training-vs-inference}, we explain the different modes of operation of
-\gls{nmt} models for training and inference. This chapter concludes with the
-overview of the \gls{nmt} evaluation methods (Section \ref{sec:evaluation}).
+In Section \ref{sec:text-processing}, we explain how to adapt neural networks
+to the discrete nature of the textual data. Perhaps the most common way is to
+assign a real-valued vector to each word in the vocabulary. These
+representations are usually trained along with the whole network, end to end.
 
+Textual data are sequential and the lengths of the sequences are
+variable. Using feed-forward neural networks is therefore not
+suitable. Sequences can be processed by a number of network architectures,
+namely \glspl{cnn}, \glspl{rnn}, or \glspl{san}. All of those can be adapted
+for text processing, and we will describe the latter two in more detail in
+Sections \ref{sec:rnn} and \ref{sec:transformer}, respectively.
+
+In \acrshort{nlp} tasks like sentence classification or language modeling,
+there is only a single sequence on the input. In \acrshort{mt}, we have a
+source sentence on the input, and a target sentence on the output. To reflect
+this property, most of the \gls{nmt} architectures have two components: an
+\emph{encoder} and a \emph{decoder}. The encoder processes the input sentence
+and creates a hidden representation. The decoder then accesses this hidden
+representation and generates (or scores) the output sentence. When both
+components of the model are trained end to end, this framework is sometimes
+referred to as \emph{sequence-to-sequence learning}. \JH{We explore the
+  encoder-decoder architectures more closely in Sections \ref{sec:encdec},
+  \ref{sec:attention}, and \ref{sec:deep-arch}.}
+
+
+%Section about training: batching, optimization, multiple GPUs, ...
+A \gls{nmt} architecture is usually trained with \emph{teacher forcing} -- for
+a given source sentence and its translation, the neural network is trained to
+maximize the likelihood of $i$-th target word on $i$-th position, conditioned
+on the $i-1$ previous words of the reference sentence. During decoding, when
+this information is not available, the model is conditioned on previously
+decoded outputs instead. More details on this phenomenon and other practical
+considerations for training a model are presented in Section
+\ref{sec:training}. \JH{maybe this is already decoding?}
+
+% alternative paragraph for Training section overview. Focus on batching and
+% optimization instead of teacher forcing.
+
+
+
+
+
+\Gls{mt} is evaluated by automatic metrics such as \acrshort{bleu} and by human
+evaluation. This chapter concludes with a brief overview of the evaluation of
+\gls{nmt} systems (Section \ref{sec:evaluation}).
+
+
+
+% \JH{přepsat aby to odpovídalo} This chapter provides theoretical details about
+% \gls{nmt} systems in general, as well as particular features of the systems
+% that are relevant to experiments described in this thesis later on. The
+% contents of this chapter are structured as follows. Section
+% \ref{sec:text-processing} analyzes the approaches to processing (sequential)
+% textual data by neural networks. Further on, Sections \ref{sec:rnn} and
+% \ref{sec:transformer} describe two of the most popular neural network
+% architectures used for \gls{nmt}, \glspl{rnn} and the Transformer model.  In
+% Section \ref{sec:training-vs-inference}, we explain the different modes of
+% operation of \gls{nmt} models for training and inference. This chapter
+% concludes with the overview of the \gls{nmt} evaluation methods (Section
+% \ref{sec:evaluation}).
+
+% ------------------------------------------------------------------------------
 
 \section{Processing Text with Neural Networks}
 \label{sec:text-processing}
 
-% text nejsou čísla, neuronky hrotěj čísla There is a number of problems that
+% text nejsou čísla, neuronky hrotěj čísla
+There is a number of problems that
 arise when we want to use neural networks for text processing. Foremost, neural
 networks are a mathematical model that deals with real numbers. In contrast,
 language is discreet and has a complex structure; therefore, we need to find
@@ -288,7 +351,7 @@ alternative to \glspl{lstm}. Instead of four sets of parameter matrices,
 \glspl{gru} need only three, while maintaining the theoretical strength. Unlike
 \glspl{lstm}, \glspl{gru} use only a single hidden state in the recurrence
 relations.
- 
+
 Given the time step $t$, input $x_t \in \mathbb{R}^m$, and previous hidden state
 $h_{t-1}$, one \gls{gru} step is defined as follows:
 %
@@ -439,7 +502,7 @@ similarity metric is defined in Equation \ref{eq:attn-energies}.
 
 
 \section{Deep Architectures}
-\label{sec:deep}
+\label{sec:deep-arch}
 \JH{deep architectures, cite sebe a GNMT}
 
 
@@ -454,8 +517,8 @@ architectures \citep{gehring2017convolutional}, and the current state-of-the-art
 architecture, the \emph{Transformer} model \citep{vaswani2017attention}.
 
 
-
-
+\section{Training}
+\label{sec:training}
 
 
 \section{Autoregressive Decoding}
