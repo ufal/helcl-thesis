@@ -80,7 +80,7 @@ are numbers between zero and one. \JH{další věc je že je ten search space
 (\JH{odkazat na eq. v intro do MT}). The normalization acts as a prior imposed
 on the target sentence length distribution.
 
-It is, however, possible to estimate the target length explicitly. 
+It is, however, possible to estimate the target length explicitly.
 \JH{...}
 
 \citep{ghazvininejad2019mask} \citep{mansimov2019generalized}
@@ -148,7 +148,7 @@ interpreted as stages of refinement, which are marginalized out.
              \left( \prod_{t=1}^{T_Y} p(y_t^L | Y^{L-1}, X) \right)
              p(Y^{L-1}|X) \\
   \vdots \nonumber \\
-  p(Y^0|X) & = \prod_{t=1}^{T_Y} p(y_t^0|X)  
+  p(Y^0|X) & = \prod_{t=1}^{T_Y} p(y_t^0|X)
 \end{align*}
 Each summation in the equations above is computed over the whole space of
 possible sequences, and thus, it is intractable for the probablility $p(Y|X)$ to
@@ -223,7 +223,7 @@ $t + \hat{k}$.
 
 
 
-  
+
 
 
 % ------------------------------------------------------------------------------
@@ -314,11 +314,46 @@ seems faster. Latency in the order of 100 ms, 7-8 ms per sentence with batch
 size of 64.
 
 
+% ------------------------------------------------------------------------------
+\paragraph{Aligned Cross Entropy for \gls{nat}} The problem with using
+cross-entropy objective for training \gls{nat} models is that it heavily
+penalizes misaligned target words. If a correct word is generated at an
+incorrect position in the target sentence, the loss is the same as if the model
+generates a completely unrelated word. In autoregressive models, this problem
+is avoided with teacher forcing -- the model is provided with the preceding
+words from the reference sentence. Without teacher forcing, the alignment
+between the predicted distributions and the reference sentence needs to be
+considered as latent.
+
+Aligned cross entropy (AXE; \citealp{ghazvininejad2020aligned}) is an objective
+function that takes this consideration into account. It uses a dynamic
+programming algorithm to find the alignment with the minimum cross-entropy
+loss.
+
+Formally, ... \JH{doplnit}
 
 
+% ------------------------------------------------------------------------------
+\paragraph{\Gls{nat} with auxiliary regularization}
+\citet{wang2019nonautoregressive} use regularization terms to penalize
+similarity of hidden states corresponding to dissimilar words(which battles
+repeated translations), and to express a reconstruction loss using an external
+translation model (in order to battle incomplete translation problem).
+
+% ------------------------------------------------------------------------------
+\paragraph{\citep{shao2020minimizing}}
+
+
+
+% ------------------------------------------------------------------------------
+
+% ------------------------------------------------------------------------------
+
+
+% ------------------------------------------------------------------------------
 
 \begin{itemize}
-\item vanilla \citep{gu2017nonautoregressive} 
+\item vanilla \citep{gu2017nonautoregressive}
 \item CTC (to jsme my)
 \item NAT-REG \citep{wang2019nonautoregressive} -- NAR NMT with auxiliary regularization
 \item bag-of-ngrams \citep{shao2020minimizing} -- Minimizing the bag-of-ngrams diff for NAR NMT
@@ -335,11 +370,49 @@ size of 64.
 \section{Non-Autoregressive NMT with Connectionist Temporal Classification}
 \label{sec:nat-ctc}
 
-\JH{base this on the End-to-End paper}
+\paperdisclaim{This section is based on paper ``End-to-End Non-Autoregressive
+  Neural Machine Translation with Connectionist Temporal Classification'',
+  joint work with Jindřich Libovický, published at EMNLP 2018.}
+
+In this section, we describe our approach to \acrlong{nat}.
+
+The idea behind our approach is that we do not explicitly estimate the target
+sequence length. Instead, we fix the decoder length on an upper limit of the
+target length, given by a hyper-parameter. As the decoder input, we use the
+encoder states, split and linearly projected to match the decoder state
+dimension and the target length.
+
+As a consequence, we allow the model to generate special ``blank'' tokens in
+any given time steps. Since the alignment between the reference tokens and the
+corresponding output distribution is unknown, we treat it as a latent variable,
+and we use the loss function which marginalizes this latent variable out. In
+other words, our loss function is the sum of losses given any possible
+alignment. This loss, used mostly in speech recognition domain
+\citep{graves2006connectionist}, is known as the \acrfull{ctc}. We describe
+this function in more detail in Section \ref{subsec:ctc}.
+
+The \gls{ctc} loss is differentiable with respect to the model parameters,
+which means we can back-propagate the gradients returned by the \gls{ctc}
+computation. Thus, unlike the originally proposed architectures of
+\citet{gu2017nonautoregressive}, our model can be trained end to end.
+
+
+\subsection{Connectionist Temporal Classification}
+\label{subsec:ctc}
+
+
+
+
 
 
 \section{Improving Fluency using N-gram Language Models}
 \label{sec:nat-lm}
+
+\paperdisclaim{This section is based on paper \emph{``Improving Fluency of
+  Non-Autoregressive Neural Machine Translation''}, joint work with Zdeněk
+  Kasner and Jindřich Libovický, published online at \texttt{arXiv.org}.}
+
+
 
 
 \section{Non-Autoregressive Model Optimizations}

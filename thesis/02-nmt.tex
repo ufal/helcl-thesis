@@ -113,23 +113,27 @@ When a word with a vocabulary index $j$ is represented by a vector $\mathbf{w}
 %
 we call this the \emph{one-hot representation}.
 
-% embeddingy Using one-hot representation help us convert discreet words to
-numbers, but it does not capture anything about the underlying linguistic
-structure.  For this purpose, \emph{learned distributed feature vectors}, or
-\emph{word embeddings} are used \citep{bengio2003neural} \JH{pridat vic
-citaček}. The idea is to associate a real-valued vector with each word, so that
-representations of words with similar roles in language are closer
+% embeddingy
+Using one-hot representation help us convert discreet words to numbers, but it
+does not capture anything about the underlying linguistic structure.  For this
+purpose, \emph{learned distributed feature vectors}, or \emph{word embeddings}
+are used \citep{bengio2003neural} \JH{pridat vic citaček}. The idea is to
+associate a real-valued vector with each word, so that representations of words
+with similar roles in language are closer
 together. \citet{mikolov2013distributed} train these word embeddings using the
-\emph{skip-gram} and \emph{continuous bag of words} models and find that the
-resulting embeddings have interesting properties, such as arithmetic operations
-can express analogy.  In some \gls{nlp} tasks, pre-trained embeddings can be
-used to greatly improve the model performance on the end task. In contemporary
-\gls{nmt} research, the most prevalent approach is to train the word embeddings
-end-to-end along with the translation model.  % formalne embeddingy
+\emph{skip-gram} and \emph{continuous bag of words} objectives and find that
+the resulting embeddings have interesting properties, such as arithmetic
+operations expressing analogy.  In some \gls{nlp} tasks, pre-trained embeddings
+can be used to greatly improve the model performance on the end task. In
+contemporary \gls{nmt} research, the most prevalent approach is to train the
+word embeddings end-to-end along with the translation
+model.
+
+% formalne embeddingy
 \JH{odstavce?} Formally, the word embedding layer is defined as follows. For a
-given word $\textbf{w}$ in one-hot representation and for a parameter matrix $E$
-called the \emph{embedding matrix}, we retrieve a single row that corresponds to
-the vocabulary index of $\mathbf{w}$:
+given word $\textbf{w}$ in one-hot representation and for a parameter matrix
+$E$ called the \emph{embedding matrix}, we retrieve a single row that
+corresponds to the vocabulary index of $\mathbf{w}$:
 %
 \begin{equation}
   e(\mathbf{w}) = E\mathbf{w}.
@@ -139,15 +143,19 @@ The embedding dimension is usually much lower than the size of the vocabulary
 (in \gls{nmt}, the embedding dimension in state-of-the-art models is around
 1,024).
 
-\JH{přidat text o output distributions:}
-%
-\begin{equation}
-  p(y|x) = \prod_{t=1}^{T_y}p(y_t|y_{<t},x,\theta)
-  \label{eq:output-distribution}
-\end{equation}
-%
-where $T_y \in \mathbb{R}$ is the length of the target sentence, $y_{<t}$ are
-the previously decoded words, and $\theta$ is a set of the model parameters.
+% výstup
+% Once the input text is converted into real-valued numeric data and the neural
+% network computation is executed, we need to interpret the results
+
+% \JH{přidat text o output distributions:}
+% %
+% \begin{equation}
+%   p(y|x) = \prod_{t=1}^{T_y}p(y_t|y_{<t},x,\theta)
+%   \label{eq:output-distribution}
+% \end{equation}
+% %
+% where $T_y \in \mathbb{R}$ is the length of the target sentence, $y_{<t}$ are
+% the previously decoded words, and $\theta$ is a set of the model parameters.
 
 \subsection{Open Vocabulary Problem}
 
