@@ -1,0 +1,82 @@
+*NON-AUTOREGRESSIVE NEURAL MACHINE TRANSLATION*
+/Structure of the thesis/
+
+
+* Introduction
+  - generic text about NMT, motivation for non-autoregressive methods
+  - what else?
+
+* Neural Machine Translation
+  - introductory chapter to NMT models, thorough, but not a survey
+  - reader should learn how NMT models work, perhaps even be able to implement
+    one, or at least train using a toolkit.
+  - readers expected to know some algebra, some computer science concepts.
+  - mention TOOLKITS, mention NEURAL MONKEY! :-) and Marian.
+
+** Processing Text with Neural Networks
+- section describes how text is loaded by the network
+- also should mention post/preprocessing (segmentation, tokenization,
+  truecasing, various tools, mention non-latin scripts)
+- closer look on BPEs/sentencepiece
+
+** Encoder-Decoder Framework (The Model)
+- present formulas for the model in general
+
+*** Recurrent Neural Networks
+- present formulas + schemas of RNN models
+- mention LSTMs, GRUs, and bidirectional RNNs.
+- explain vanishing gradient problem
+
+*** Attention Mechanism
+- show formulas and schemas for attention in RNNs
+- explain associative memory conceptualization from transformer
+
+*** Deep Architectures
+- describe deep RNNs, based loosely on our paper
+- mention layer normalization + residual connections and explain the related
+  problems
+
+*** Transformer Model
+- describe the architecture using formulas and schemas
+- use widely-used schemas from the transformer paper, rather than trying to
+  re-draw them.
+- mention base vs big hyperparameters
+
+** Training
+- define the objective function
+- describe concept of teacher forcing, mention exposure bias
+- explain difference between training of transformer and RNNs, hint to
+  autoregressivity
+- summarize training methodology, including:
+  - variable initialization
+  - batching, i.e. batch size, maxi batch, maxi batch sorting, length cropping,
+    padding
+  - optimizers, i.e. sgd vs adam, learning rate, other hyperparameters
+  - validation and early stopping
+  - data ? (i.e. shuffling, deduplication, *backtranslation, knowledge distillation*)
+  - hardware, i.e. computing on GPUs, multi-GPU training, gradient accumulation
+    via optimzier delay, synchronous vs asynchronous training
+
+** Inference (Autoregressive Decoding)
+- describe standard autoregressive decoding
+- explain greedy and beam search, mention sampling, perhaps dig a little into
+  search error vs modeling error
+
+** Evaluation
+- describe BLEU, mention other metrics exist
+- say that human evaluation still main method, but expensive
+
+
+* NAR NMT
+  - survey of methods for non-autoregressive NMT.
+  - nechat na zaèátku stùj co stùj i pøes forward odkazy
+
+* NAR NMT with CTC
+  - zalo¾eno na èlánku end to end ...
+  - detailed version of that paper, includes description of the CTC algorithm
+
+* CTC with n-gram LMs
+  - zalo¾eno na èlánku
+
+* CTC optimizations
+  - zalo¾eno na current work + èlánku
