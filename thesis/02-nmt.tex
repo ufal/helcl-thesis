@@ -35,7 +35,7 @@ variable. Using feed-forward neural networks is therefore not
 suitable. Sequences can be processed by a number of network architectures,
 namely \glspl{cnn}, \glspl{rnn}, or \glspl{san}. All of those can be adapted
 for text processing, and we will describe the latter two in more detail in
-Sections \ref{sec:rnn} and \ref{sec:transformer}, respectively.
+Sections \ref{sec:encdec:rnn} and \ref{sec:transformer}, respectively.
 
 In \acrshort{nlp} tasks like sentence classification or language modeling,
 there is only a single sequence on the input. In \acrshort{mt}, we have a
@@ -91,57 +91,65 @@ evaluation. This chapter concludes with a brief overview of the evaluation of
 \section{Processing Text with Neural Networks}
 \label{sec:text-processing}
 
-% text nejsou čísla, neuronky hrotěj čísla
-There is a number of problems that
-arise when we want to use neural networks for text processing. Foremost, neural
-networks are a mathematical model that deals with real numbers. In contrast,
-language is discreet and has a complex structure; therefore, we need to find
-ways of representing textual data as numbers. Second, since language units (such
-as words, sentences or documents) come in various lengths, we need to use neural
-network models tailored to sequential data.
+% Text are not numbers, NNs work with numbers
+There are a number of problems that arise when we want to use neural networks
+for text processing. Foremost, neural networks are a mathematical model that
+deals with real numbers. In contrast, language is discreet and has a complex
+structure. Thus, we need to find ways of expressing textual data
+numerically. Second, since language units (such as words, sentences, or
+documents) come in various lengths, we need to use neural network models
+designed for processing sequential data.
 
-% one-hot, simple In this section, we begin with representation of words. The
-most straightforward, and also the most common way to represent words in neural
-networks is by having a vocabulary where each word receives an integer index.
-When a word with a vocabulary index $j$ is represented by a vector $\mathbf{w}
-\in \{0,1\}^N$ where
+% One-hot representation are straightforward.
+In this section, we begin with the representation of words. The most
+straightforward, and also the most common way to represent words in neural
+networks is by having a list (a \emph{vocabulary}) of words $V$, where each
+word has a corresponding integer index $j$ pointing at it. Each word $w$ at
+index $j$ in this list can be represented by a vector
+$x \in \{0,1\}^N$ where
 %
-\begin{equation} w_i =
-\begin{cases} 1, & \text{if } i = j \\ 0, & \text{otherwise,}
+\begin{equation} x_i =
+\begin{cases} 1, & \text{if } i = j \\ 0, & \text{otherwise.}
 \end{cases}
 \end{equation}
 %
-we call this the \emph{one-hot representation}.
+We call this vector the \emph{one-hot representation} of $w$.
 
-% embeddingy
+% One-hot representation do not capture word roles in language.
 Using one-hot representation help us convert discreet words to numbers, but it
 does not capture anything about the underlying linguistic structure.  For this
 purpose, \emph{learned distributed feature vectors}, or \emph{word embeddings}
 are used \citep{bengio2003neural} \JH{pridat vic citaček}. The idea is to
 associate a real-valued vector with each word, so that representations of words
-with similar roles in language are closer
-together. \citet{mikolov2013distributed} train these word embeddings using the
+with similar roles in language are closer together in the assigned vector
+space. \citet{mikolov2013distributed} train these word embeddings using the
 \emph{skip-gram} and \emph{continuous bag of words} objectives and find that
-the resulting embeddings have interesting properties, such as arithmetic
-operations expressing analogy.  In some \gls{nlp} tasks, pre-trained embeddings
-can be used to greatly improve the model performance on the end task. In
-contemporary \gls{nmt} research, the most prevalent approach is to train the
-word embeddings end-to-end along with the translation
-model.
+the resulting embeddings have interesting properties. For example, arithmetic
+operations on embeddings can express word analogy.  In some \gls{nlp} tasks,
+pre-trained embeddings can be used to greatly improve the model performance on
+the end task. In contemporary \gls{nmt} research, the most prevalent approach
+is to train the word embeddings end-to-end along with the translation model.
 
-% formalne embeddingy
-\JH{odstavce?} Formally, the word embedding layer is defined as follows. For a
-given word $\textbf{w}$ in one-hot representation and for a parameter matrix
-$E$ called the \emph{embedding matrix}, we retrieve a single row that
-corresponds to the vocabulary index of $\mathbf{w}$:
-%
-\begin{equation}
-  e(\mathbf{w}) = E\mathbf{w}.
-\end{equation}
-%
+% Word embedding layer is inserted to help.
+We provide the model with the distributed representation of words using an
+embedding layer as follows. For a given one-hot vector $x$, and a
+parameter matrix $E$ called the \emph{embedding matrix}, we retrieve a single
+row that corresponds to the vocabulary index of $x$ by the
+multiplication $E x$.
+% %
+% \begin{equation}
+%   e(\mathbf{w}) = E\mathbf{w}.
+% \end{equation}
+% %
 The embedding dimension is usually much lower than the size of the vocabulary
 (in \gls{nmt}, the embedding dimension in state-of-the-art models is around
 1,024).
+
+% There are out-of-vocabulary tokens
+A major drawback of having a fixed-size vocabulary is the fact that there will
+be unseen words in the data. The following section lists methods that solve
+this problem.
+
 
 % výstup
 % Once the input text is converted into real-valued numeric data and the neural
@@ -159,13 +167,16 @@ The embedding dimension is usually much lower than the size of the vocabulary
 
 \subsection{Open Vocabulary Problem}
 
-A well known characteristic of language is that it follows the Zipf law. As a
-result, in a large enough sample of text, there is a huge amount of unique words
-or words occurring with low frequency. Such words constitute a substantial part
-of the data and cannot be ignored.  Another issue is that our training datasets
-do not contain all words that can occur in the language. These \gls{oov} words
-usually also make up significant portions of the validation and/or test data.
+% Zipf nature of language
+A well known characteristic of language is that it follows the Zipf's law
+\citep{zipf1949human}. As a result, in a large enough sample of text, there is
+a huge amount of unique words or words occurring with low frequency. Such words
+constitute a substantial part of the data and cannot be ignored.  Another issue
+is that our training datasets do not contain all words that can occur in the
+language. These \gls{oov} words usually also make up significant portions of
+the validation and/or test data.
 
+% Open vocabulary problem
 The problem of rare and unseen words is also referred to as the \emph{open
 vocabulary} problem. Although some work in this direction exist
 \citep{jean2015using}, in neural networks for \gls{nlp}, it is difficult to use
@@ -173,13 +184,14 @@ very large vocabularies. The main reason is that the embedding layer and the
 output projection layer would become too large for the computation to be
 efficient.
 
-The most common approach to the open vocabulary problem is to use smaller units
-than words. These \emph{subword} units can be constructed in a smart way, such
-that frequent words are left intact, whereas rare words are composed of more
-common strings of letters. Below, we describe two of the methods for subword
-segmentation. It is worth to mention that research on character-level methods is
-still ongoing, but as of the writing of this thesis, this approach did not yet
-outperform the subword state-of-the-art
+% Most common solution
+The most common solution of the open vocabulary problem is to use smaller units
+than words \citep{sennrich2016neural}. These \emph{subword} units can be
+constructed in a smart way, such that frequent words are left intact, whereas
+rare words are composed of more common strings of letters. Below, we describe
+two of the methods for subword segmentation. It is worth to mention that
+research on character-level methods is still ongoing, but as of the writing of
+this thesis, this approach did not yet outperform the subword state-of-the-art
 \citep{chung-etal-2016-character,lee-etal-2017-fully,gao-etal-2020-character}.
 %
 %
@@ -236,24 +248,24 @@ outperform the subword state-of-the-art
 
 
 \paragraph{\acrshort{bpe}.}  \Acrlong{bpe} (\acrshort{bpe};
-\citealp{sennrich2016bpe}) is an approach which tackles the open vocabulary
-problem by splitting words to subword units.  The idea is to devise a vocabulary
-of a predefined size, such that nearly every word can be composed using the
-units from the vocabulary. An additional requirement is for the vocabulary to
-contain as many frequent words as possible, so only rare words need to be split
-to more subwords.
+\citealp{sennrich2016neural}) is an approach which tackles the open vocabulary
+problem by splitting words to subword units.  The idea is to devise a
+vocabulary of a predefined size, such that nearly every word can be composed
+using the units from the vocabulary. An additional requirement is for the
+vocabulary to contain as many frequent words as possible, so only rare words
+need to be split to more subwords.
 
-The \gls{bpe} algorithm %(Algorithm ~\ref{alg:learn-bpe}) proceeds as
-follows. First, the vocabulary is initialized with all characters as
-symbols. Second, all tokens in the data are segmented using the symbols in the
-vocabulary (in first step, the tokens are split to characters).  Third, the
-algorithm computes the counts of pairs of consecutive symbols in the training
-data, and selects the most frequent pair. Next, the most frequent pair of
-symbols is merged into a new symbol which is added to the vocabulary. The
-algorithm iterates the segmentation, counting and merging,until a predefined
-number of merges is done. In practice, instead of working with the training
-corpus, the algorithm runs on the frequency list of tokens, without loss of
-generality.
+The \acrshort{bpe} algorithm %(Algorithm ~\ref{alg:learn-bpe})
+proceeds as follows. First, the vocabulary is initialized with all characters
+as symbols. Second, all tokens in the data are segmented using the symbols in
+the vocabulary (in the first step, the tokens are split to characters).  Third,
+the algorithm computes the counts of pairs of consecutive symbols in the
+training data, and selects the most frequent pair. Next, the most frequent pair
+of symbols is merged into a new symbol which is added to the vocabulary. Then
+the algorithm iterates the segmentation, counting and merging, until a
+predefined number of merges is done. In practice, instead of working with the
+training corpus, the algorithm runs on the frequency list of tokens, without
+loss of generality.
 
 \paragraph{SentencePiece.}  \JH{copied from JNLE:} SentencePiece
 \citep{kudo2018sentencepiece} is a toolkit that implements BPE and a unigram
@@ -263,10 +275,55 @@ the source side. As opposed to BPEs and wordpieces, Sentencepiece does not
 require prior tokenization of the input text, and unlike other methods its
 pre-tokenization allows to fully reconstruct the original string.
 
+% ------------------------------------------------------------------------------
+\section{Encoder-Decoder Framework}
+\label{sec:encdec}
+% ------------------------------------------------------------------------------
+
+The contemporary \gls{nmt} models share a common framework where each model is
+composed of two parts -- an \emph{encoder}, and a \emph{decoder}. The encoder
+reads in the input sentence and processes it in order to generate an
+intermediate hidden representation.  The decoder then uses this intermediate
+hidden representation to produce the probability distributions over the output
+tokens.
+
+The early \gls{nmt} models based on \glspl{rnn} use the final encoder state as
+the intermediate representation \citep{sutskever2014sequence}:
+%
+\begin{eqnarray} h_j & = & \mathrm{RNN}_{\text{enc}}(x_j, h_{j-1}), \quad j \in
+\{0, 1, \ldots, T_x \} \\ s_0 & = & h_{T_x}
+\end{eqnarray}
+%
+where $\mathbf{x}$ is the input sentence and $h_0$ is the initial hidden state,
+usually set to $\mathbf{0}$. $T_x$ denotes the length of the input sentence.
+Note that the input words are represented as their embeddings.
+\citet{sutskever2014sequence} do not use subword segmentation and instead
+reserve a special OOV token for unseen words.
+
+The decoder is initialized with the state $s_0$ and runs the second \gls{rnn}:
+\begin{equation} s_i = \mathrm{RNN}_{\text{dec}}(y_{i-1}, s_{i-1})
+\end{equation}
+%
+where $y_{i-1}$ is the preceding word in the reference output sentence (during
+training), with $s_0$ being a special symbol which expresses the start of a
+sequence (denoted \texttt{<s>}).
+
+While recurrent neural networks are not used as the underlying model in the most
+of the current research anymore, the encoder-decoder framework is independent of
+the actual neural network structure and the concept is still used as a main
+approach for designing sequence-to-sequence models.
+
+In this section, we introduce the two most notable encoder-decoder
+architectures. The first is based on \glspl{rnn} and became the first neural
+architecture to outperform statistical \gls{mt} models. The second
+architecture, called \emph{Transformer}, is based on self-attentive networks
+and is the best-performing architecture for many \gls{nlp} tasks today.
 
 
-\section{Recurrent Neural Networks}
-\label{sec:rnn}
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsection{Recurrent Neural Networks}
+\label{sec:encdec:rnn}
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 The invention of \glspl{rnn} \citep{elman1990finding} allowed processing of
 sequential data by neural networks. \Glspl{rnn} process the sequence one item at
@@ -425,44 +482,11 @@ multiplication. The normalized states $\bar{\mathbf{h}}^l$ are then used as the
 input to the $l+1$-th layer of the network instead.
 
 
-\section{Encoder-Decoder Framework}
-\label{sec:encdec}
-
-The contemporary \gls{nmt} models share a common framework where each model is
-composed of two parts -- an \emph{encoder}, and a \emph{decoder}. The encoder
-reads in the input sentence and processes it in order to generate an
-intermediate hidden representation.  The decoder then uses this intermediate
-hidden representation to produce the probability distributions over the output
-tokens.
-
-The early \gls{nmt} models based on \glspl{rnn} use the final encoder state as
-the intermediate representation \citep{sutskever2014sequence}:
-%
-\begin{eqnarray} h_j & = & \mathrm{RNN}_{\text{enc}}(x_j, h_{j-1}), \quad j \in
-\{0, 1, \ldots, T_x \} \\ s_0 & = & h_{T_x}
-\end{eqnarray}
-%
-where $\mathbf{x}$ is the input sentence and $h_0$ is the initial hidden state,
-usually set to $\mathbf{0}$. $T_x$ denotes the length of the input sentence.
-Note that the input words are represented as their embeddings.
-\citet{sutskever2014sequence} do not use subword segmentation and instead
-reserve a special OOV token for unseen words.
-
-The decoder is initialized with the state $s_0$ and runs the second \gls{rnn}:
-\begin{equation} s_i = \mathrm{RNN}_{\text{dec}}(y_{i-1}, s_{i-1})
-\end{equation}
-%
-where $y_{i-1}$ is the preceding word in the reference output sentence (during
-training), with $s_0$ being a special symbol which expresses the start of a
-sequence (denoted \texttt{<s>}).
-
-While recurrent neural networks are not used as the underlying model in the most
-of the current research anymore, the encoder-decoder framework is independent of
-the actual neural network structure and the concept is still used as a main
-approach for designing sequence-to-sequence models.
-
-\section{Attention Mechanism}
+% ------------------------------------------------------------------------------
+\subsection{Attention Mechanism}
 \label{sec:attention}
+% ------------------------------------------------------------------------------
+\JH{demote this to paragraph, move above deep rnns.}
 
 Another important concept introduced as a part of \gls{rnn}-based \gls{nmt}
 models is the \emph{attention mechanism}
@@ -509,13 +533,14 @@ attention keys and values are equal -- the encoder hidden states $h_j$. The
 similarity metric is defined in Equation \ref{eq:attn-energies}.
 
 
-\section{Deep Architectures}
+\subsection{Deep Architectures}
 \label{sec:deep-arch}
 \JH{deep architectures, cite sebe a GNMT}
+\JH{make this a paragraph}
 
 
-\section{Transformer Model}
-\label{sec:transformer}
+\subsection{Transformer Model}
+\label{sec:encdec:transformer}
 
 One of the disadvantages of the RNN-based models is the linear time nature of
 the recurrence relation. Few models have been proposed to remove the recurrence
@@ -529,18 +554,57 @@ architecture, the \emph{Transformer} model \citep{vaswani2017attention}.
 \label{sec:training}
 
 
+
+%
+\begin{equation}
+  J_{\theta} = - \sum_{(x, y) \in D} \log p(y | x, \theta)
+\end{equation}
+%
+
+Since the probability distributions are conditioned on the previously decoded
+tokens, the likelihood of the target sentence is reformulated using the chain
+rule:
+%
+\begin{equation}
+  J_{\theta} = - \sum_{(x, y) \in D} \sum_{i = 1}^{T_y} \log p(y_i | x, y_{<i}, \theta)
+\end{equation}
+%
+where $T_y$ is the length of the target sentence.
+
+Note that in the equation above, the probability distributions are conditioned
+on the reference target prefix, rather than the model outputs. This technique
+is known as \emph{teacher forcing}, and is essential for the training
+convergence. When the model is exposed to its own outputs from the start of the
+training, it will very likely fail to converge.
+
+Teacher forcing, however, brings along a problem called \emph{exposure bias} --
+the model is never exposed to its own errors, which makes it less robust
+against them.
+
+Methods have been proposed to address this issue, including a curriculum
+learning approach which gradually replaces teacher forcing with the model
+predictions \citep{scheduled}. Other methods focus on sequence-level training
+or beam search optimization methods, mostly based on reinforcement learning
+\citep{williams, rush-bso, mixer}. However, none of these methods was widely
+adopted, and current models are believed to be capable of recover from their
+errors despite being explicitly trained to do so.
+
+
+
+
+
 \section{Autoregressive Decoding}
 \label{sec:training-vs-inference}
 
-The models we described in the previous two sections are \emph{autoregressive}
--- the output tokens are predicted left-to-right, while every decision is
-conditioned on the previously generated outputs. With this property, there comes
-an important distinction in behavior between training and decoding. Whereas
-during training, the ground-truth data are used to simulate the previous
-decisions, during decoding, the ground truth is unknown and therefore the model
-need to rely solely on its own decisions. This constitutes a theoretical
-problem, called \emph{exposure bias} -- the model is never exposed to its own
-errors during training.
+The models we described in the sections above are \emph{autoregressive} -- the
+output tokens are predicted left-to-right, while every decision is conditioned
+on the previously generated outputs. With this property, there comes an
+important distinction in behavior between training and decoding. Whereas during
+training, the ground-truth data are used to simulate the previous decisions,
+during decoding, the ground truth is unknown and therefore the model need to
+rely solely on its own decisions. This constitutes a theoretical problem,
+called \emph{exposure bias} -- the model is never exposed to its own errors
+during training.
 
 In the RNN-based models, the difference between training and decoding is
 minimal. The model execution is done the same way, with the one exception of
@@ -553,15 +617,14 @@ The Transformer models are quite different in this aspect. Since there is no
 recurrence operation which requires accumulation of information in a hidden
 state, the network can be trained on a whole ground-truth sentence in one step.
 The only requirement is to prevent the decoder self-attention from attending to
-the future positions. However, during training, the model still needs to wait
-for its own decisions.
+the future positions. However, during training, the model is still conditioned
+on its own decisions.
 
 
 
 
 \section{Evaluation}
 \label{sec:evaluation}
-
 
 The problem of \gls{mt} evaluation is almost as challenging as \gls{mt} itself.
 The most reliable method for assessing the quality of \gls{mt} systems remains
@@ -574,11 +637,12 @@ Perhaps the best-known automatic \gls{mt} metric is BLEU
 \citep{papineni2002bleu}.  Despite a long term effort led by the organizers of
 the WMT Metrics shared task to create an automatic evaluation metric that would
 be better correlated with scores assigned by humans, BLEU continues to be the
-most widely used metric in contemporary literature. However, over the nearly two
-decades of using BLEU, it has been criticized for being prone to errors due to
-outliers or being too inaccurate when the score itself is low.
+most widely used metric in the contemporary literature. However, over the nearly
+two decades of using BLEU, it has been criticized for being prone to errors due
+to outliers or being too inaccurate when the score itself is low.
 \citep{callison-burch-etal-2006-evaluating,bojar-etal-2010-tackling,reiter2018structured,mathur-etal-2020-tangled}
 
+\JH{evaluation of decoding speed -- latency, throughput}
 
 
 
