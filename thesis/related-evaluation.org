@@ -1,0 +1,41 @@
+
+* Evaluation methodologies in non-autoregressive papers
+
+
+ | paper                                                       | CPU / GPU | batched decoding | report                                                            | notes                                                                                     |
+ |-------------------------------------------------------------+-----------+------------------+-------------------------------------------------------------------+-------------------------------------------------------------------------------------------|
+ | gu et al, non-autoreg                                       | GPU       | 1                | latency (avg over dataset), relative speedup                      |                                                                                           |
+ | lee et al, deterministic                                    | both      | 1 ?              | tokens per second                                                 | "decoding efficiency is measured sentence-by-sentence"                                    |
+ | fully NAT                                                   | both      |                  | speedup in comparison table, latency and speedup in their results | contains plot showing pareto frontier of BLEU/latency trade-off                           |
+ | mask-predict (CMLM)                                         | GPU       | 10 sent.         | plot BLEU vs relative speedup, not really detailed                | both same implementation, AR use state caching (128.5s with, 210s without), NAR does not. |
+ | AXE                                                         | dnr       | dnr              | they just say it is same speed as CMLM (their previous work)      |                                                                                           |
+ | CTC (my)                                                    | both      | unclear :)       | do not compare speeds against others (gu and lee at the time)     |                                                                                           |
+ | laNMT                                                       | GPU       | unclear          | avg latency incl std, relative speedup, compare rel. speedups     | they compare rel speedups local to a given publication; plot BLEU v. speedup tradeoff     |
+ | latent transformer                                          | GPU       | 1 or 64          | latency (avg over dataset)                                        |                                                                                           |
+ | NAT-REG nat with aux prediction (wang2019nonautoregressive) | GPU       | 1                | latency (avg over dataset), relative speedup,                     | copy times from different papers, some reproduction                                       |
+ | bag-of-ngrams  shao2020minimizing                           | GPU       | unclear          | relative speedup, seconds-per-batch in one setting;               | compare relative speedups under different settings           (copy gu et al's 15,6x)      |
+ | GLAT (qian et al 2008 glancing)                             | unclear   | unclear          | relative speedup,                                                 | no abs times; relative to numbers reported on different hardware                          |
+ | flowSeq (ma et al)                                          | GPU       | varying          | latency plots                                                     | plot batch size vs latency, length vs latency                                             |
+ | imputer/ctc (saharia et al)                                 | unclear   | unclear          | relative speedup                                                  |                                                                                           |
+ | JM-NAT                                                      | GPU       | 1                | latency, relative speedup                                         | copy times from different papers, some reproduction                                       |
+ | hint-NAT                                                    | GPU       | 1                | latency, relative speedup                                         | some measured on reproduction, some copied (but absolute times, speedup computed here)    |
+ | reorder-NAT                                                 | GPU       | 1                | relative speedup, NO latency                                      |                                                                                           |
+ |-------------------------------------------------------------+-----------+------------------+-------------------------------------------------------------------+-------------------------------------------------------------------------------------------|
+
+
+ ** Notes
+
+   - CMLM: the absolute numbers can be reconstructed using the information in
+     the paper. (i.e. assuming that rel. speedup 1x is 128.5 seconds).
+
+   - noisy parallel decoding: create many candidates, rescore using AR
+     transformer (scoring is cheap with transformer).
+
+   - in flowseq, they find that increased batch size helps non-autoregressive
+     models more than it helps autoregressive models
+
+   - insertion transformer, kermit, SMART, do not report latency
+
+   - even though mostly single GPU with batch size 1, the GPUs themselves
+     differ, so is the underlying hardware the research teams have at their
+     disposal

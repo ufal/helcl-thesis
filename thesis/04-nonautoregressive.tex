@@ -3,18 +3,43 @@
 \label{chap:nat}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-So far we discussed the influence of combining additional sources of information
-on translation. This chapter presents a case study of \gls{nat} in which the
-contextual information is limited.
+The efficiency of \gls{mt} models is often crucial in real-world applications.
+Most commercial \gls{mt} models are available through a cloud-based service,
+such as Microsoft Translator\footnote{\url{https://microsoft.com/translator}}
+or Google Translate\footnote{\url{https://translate.google.com}}. Scaling
+cloud-based solutions for large user bases is simple but costly. But even with
+a large pool of computational resources, it is worthwhile to implement some
+optimizations which decrease the model latency and improve the user experience.
 
-\gls{nat} is a recent subtask of \gls{nmt} in which the decoding process cannot
+Using state-of-the-art translation models locally often requires specialized
+hardware, such as one or more GPU cards. Otherwise, the time for translating a
+single sentence can easily reach more than a second with unoptimized models
+running on a standard CPU.
+
+%lokální modely maj tu výhodu, že to běží u mně, takže to jde pouyžít offline a taky se nemusím bát o svoje soukromý data.
+
+However, locally-deployed \gls{mt} models does provide a number of advantages.
+First, the models can be used in places without internet connection. Second,
+the data are not being sent to a 3rd party server, and therefore it is suitable
+for translating private or confidential data.
+
+
+% přehled real-world aplikací kde efficiency je důležitá
+%Most
+%\JH{Research projects like Bergamot (cite) try to bring the MT models to the
+%  end-user, opening possibilities for  }
+
+
+
+
+\Gls{nat} is a recent subtask of \gls{nmt} in which the decoding process cannot
 access the previously decoded outputs, imposing conditional independence on the
 output token probability distributions. This assumption allows parallelization
 of the decoding which can significantly reduce the latency of the translation
 system. On the other hand, it also presents a challenge to the language model,
 which usually leads to poorer translation quality.
 
-This chapter begins with the overview of the non-autoregressive methods (Section
+This chapter begins with an overview of the non-autoregressive methods (Section
 \ref{sec:nat-methods}). In Section \ref{sec:nat-ctc}, we introduce
 non-autoregressive \gls{nmt} with \gls{ctc}. \JH{rewrite following commented:}
 % We present our experiments with \gls{ctc} in Section
@@ -26,7 +51,7 @@ non-autoregressive \gls{nmt} with \gls{ctc}. \JH{rewrite following commented:}
 \label{sec:nat-methods}
 
 This section lays grounds for understanding the key concepts in
-non-autoregressive \gls{nmt}. We first describe the attributes that most of the
+non-autoregressive \gls{nmt}. We first describe the principles that most of the
 related literature has in common. Then, we provide a survey of notable
 approaches to \gls{nat}.
 
@@ -61,8 +86,8 @@ explicit estimation of the target sentence length, leaving out the technical
   \label{eq:explicit-length}
 \end{equation}
 
-\paragraph{Target Length Estimation.} As mentioned in above paragraph, in a
-standard NMT model such as the Transformer or a \gls{rnn}-based model with
+\paragraph{Target Length Estimation.} As mentioned in the above paragraph, in a
+standard NMT model such as the Transformer or an \acrshort{rnn}-based model with
 attention, the length of the output sentence is modeled implicitly by using the
 special end-of-sentence (\texttt{</s>}) token. \JH{Not sure if this fits the
   narrative.}

@@ -68,8 +68,22 @@
 
 
 * NAR NMT
+  Tohle je to hlavní téma tý disertace.
+  Úvod sekce obsahuje popis hlavních konceptù a problémù:
+  - neautoregresivita
+  - length estimation
+  - multimodality problem
+  - teacher forcing
+  - knowledge distillation
+
   - survey of methods for non-autoregressive NMT.
   - nechat na zaèátku stùj co stùj i pøes forward odkazy
+
+** Related work
+
+*** Fully NAT
+
+*** Iterative NAT
 
 * NAR NMT with CTC
   - zalo¾eno na èlánku end to end ...
