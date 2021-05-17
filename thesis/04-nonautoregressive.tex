@@ -4,31 +4,40 @@
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The efficiency of \gls{mt} models is often crucial in real-world applications.
-Most commercial \gls{mt} models are available through a cloud-based service,
+Most commercial \gls{nmt} models are available through a cloud-based service,
 such as Microsoft Translator\footnote{\url{https://microsoft.com/translator}}
 or Google Translate\footnote{\url{https://translate.google.com}}. Scaling
 cloud-based solutions for large user bases is simple but costly. But even with
 a large pool of computational resources, it is worthwhile to implement some
 optimizations which decrease the model latency and improve the user experience.
 
-Using state-of-the-art translation models locally often requires specialized
-hardware, such as one or more GPU cards. Otherwise, the time for translating a
-single sentence can easily reach more than a second with unoptimized models
-running on a standard CPU.
+% lokální modely maj tu výhodu, že to běží u mně, takže to jde pouyžít offline
+% a taky se nemusím bát o svoje soukromý data. ale jsou pomalý.
 
-%lokální modely maj tu výhodu, že to běží u mně, takže to jde pouyžít offline a taky se nemusím bát o svoje soukromý data.
+Locally-deployed \gls{nmt} models provide a number of advantages over
+cloud-based solutions. First, the models can be used in places without internet
+connection. Second, the data are not being sent to a 3rd party server, and
+therefore it is suitable for translating private or confidential data.
+However, without optimization, running state-of-the-art translation models
+locally often requires specialized hardware, such as one or more GPU
+cards. Otherwise, the time for translating a single sentence can easily reach
+more than a second on a standard CPU.
 
-However, locally-deployed \gls{mt} models does provide a number of advantages.
-First, the models can be used in places without internet connection. Second,
-the data are not being sent to a 3rd party server, and therefore it is suitable
-for translating private or confidential data.
+Higher decoding speeds can be achieved by model optimization. In their 2019
+submission to the \gls{wngt} shared task on efficiency,
+\citet{kim-etal-2019-research} successfully employed knowledge distillation,
+quantization, shortlisting \citep{jean2015using} and a simpler recurrent unit
+design to bring the throughput of the translation model up to 3,600 words per
+second on a CPU, for a modest drop in the BLEU score. Following this
+submission, \citet{bogoychev-etal-2020-edinburghs} reported further
+improvements with attention head pruning. The work has been a part of the
+Bergamot research project, which aims to bring offline translation models into
+a browser (\JH{cite}).
 
+% vedle toho tu jsou neautoregresivní modely který se na to snaží jít jinak
 
-% přehled real-world aplikací kde efficiency je důležitá
-%Most
-%\JH{Research projects like Bergamot (cite) try to bring the MT models to the
-%  end-user, opening possibilities for  }
-
+An alternative approach to model optimization is using a different (and faster)
+model and its decoding algorithm.
 
 
 

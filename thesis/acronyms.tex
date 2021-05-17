@@ -1,21 +1,30 @@
+\newcommand*\myglsentry[1]{%
+  \protect\ifglsused{#1}{%
+    \glsentryshort{#1}%
+  }{%
+    \glsentrylong{#1}%
+  }%
+}
+
 \newacronym{nmt}{NMT}{neural machine translation}
 \newacronym{nlp}{NLP}{natural language processing}
-\newacronym{rnn}{RNN}{Recurrent neural network}
+\newacronym{rnn}{RNN}{recurrent neural network}
 \newacronym{cnn}{CNN}{convolutional neural network}
-\newacronym{san}{SAN}{Self-attentive network}
-\newacronym{ai}{AI}{Artificial intelligence}
-\newacronym{mmt}{MMT}{Multimodal machine translation}
+\newacronym{san}{SAN}{self-attentive network}
+\newacronym{ai}{AI}{artificial intelligence}
+\newacronym{mmt}{MMT}{multimodal machine translation}
 \newacronym{wmt}{WMT}{Conference on Machine Translation}
-\newacronym{ml}{ML}{Machine learning}
+\newacronym{ml}{ML}{machine learning}
 \newacronym{lstm}{LSTM}{Long Short-Term Memory}
 \newacronym{gru}{GRU}{Gated Recurrent Unit}
 \newacronym{relu}{ReLU}{Rectified Linear Unit}
-\newacronym{mt}{MT}{Machine translation}
-\newacronym{lm}{LM}{Language model}
+\newacronym{mt}{MT}{machine translation}
+\newacronym{lm}{LM}{language model}
 \newacronym{oov}{OOV}{out-of-vocabulary}
 \newacronym{bpe}{BPE}{byte-pair encoding}
-\newacronym{nat}{NAT}{non-autoregressive NMT}
+\newacronym{nat}{NAT}{non-autoregressive \myglsentry{nmt}}
 \newacronym{nar}{NAR}{non-autoregressive}
 \newacronym{ctc}{CTC}{connectionist temporal classification}
 \newacronym{npd}{NPD}{noisy parallel decoding}
 \newacronym{bleu}{BLEU}{bilingual evaluation understudy}
+\newacronym{wngt}{WNGT}{Workshop on Neural Generation and Translation}

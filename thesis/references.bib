@@ -1,3 +1,44 @@
+@inproceedings{kim-etal-2019-research,
+    title = "From Research to Production and Back: Ludicrously Fast Neural Machine Translation",
+    author = "Kim, Young Jin  and
+      Junczys-Dowmunt, Marcin  and
+      Hassan, Hany  and
+      Fikri Aji, Alham  and
+      Heafield, Kenneth  and
+      Grundkiewicz, Roman  and
+      Bogoychev, Nikolay",
+    booktitle = "Proceedings of the 3rd Workshop on Neural Generation and Translation",
+    month = nov,
+    year = "2019",
+    address = "Hong Kong",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/D19-5632",
+    doi = "10.18653/v1/D19-5632",
+    pages = "280--288",
+    abstract = "This paper describes the submissions of the {``}Marian{''} team to the WNGT 2019 efficiency shared task. Taking our dominating submissions to the previous edition of the shared task as a starting point, we develop improved teacher-student training via multi-agent dual-learning and noisy backward-forward translation for Transformer-based student models. For efficient CPU-based decoding, we propose pre-packed 8-bit matrix products, improved batched decoding, cache-friendly student architectures with parameter sharing and light-weight RNN-based decoder architectures. GPU-based decoding benefits from the same architecture changes, from pervasive 16-bit inference and concurrent streams. These modifications together with profiler-based C++ code optimization allow us to push the Pareto frontier established during the 2018 edition towards 24x (CPU) and 14x (GPU) faster models at comparable or higher BLEU values. Our fastest CPU model is more than 4x faster than last year{'}s fastest submission at more than 3 points higher BLEU. Our fastest GPU model at 1.5 seconds translation time is slightly faster than last year{'}s fastest RNN-based submissions, but outperforms them by more than 4 BLEU and 10 BLEU points respectively.",
+}
+
+@inproceedings{bogoychev-etal-2020-edinburghs,
+    title = "{E}dinburgh{'}s Submissions to the 2020 Machine Translation Efficiency Task",
+    author = "Bogoychev, Nikolay  and
+      Grundkiewicz, Roman  and
+      Aji, Alham Fikri  and
+      Behnke, Maximiliana  and
+      Heafield, Kenneth  and
+      Kashyap, Sidharth  and
+      Farsarakis, Emmanouil-Ioannis  and
+      Chudyk, Mateusz",
+    booktitle = "Proceedings of the Fourth Workshop on Neural Generation and Translation",
+    month = jul,
+    year = "2020",
+    address = "Online",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/2020.ngt-1.26",
+    doi = "10.18653/v1/2020.ngt-1.26",
+    pages = "218--224",
+    abstract = "We participated in all tracks of the Workshop on Neural Generation and Translation 2020 Efficiency Shared Task: single-core CPU, multi-core CPU, and GPU. At the model level, we use teacher-student training with a variety of student sizes, tie embeddings and sometimes layers, use the Simpler Simple Recurrent Unit, and introduce head pruning. On GPUs, we used 16-bit floating-point tensor cores. On CPUs, we customized 8-bit quantization and multiple processes with affinity for the multi-core setting. To reduce model size, we experimented with 4-bit log quantization but use floats at runtime. In the shared task, most of our submissions were Pareto optimal with respect the trade-off between time and quality.",
+}
+
 @inproceedings{espla-etal-2019-paracrawl,
   title =	 "{P}ara{C}rawl: Web-scale parallel corpora for the languages
                   of the {EU}",
