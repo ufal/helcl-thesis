@@ -1,57 +1,36 @@
-@inproceedings{kim-etal-2019-research,
-    title = "From Research to Production and Back: Ludicrously Fast Neural Machine Translation",
-    author = "Kim, Young Jin  and
-      Junczys-Dowmunt, Marcin  and
-      Hassan, Hany  and
-      Fikri Aji, Alham  and
-      Heafield, Kenneth  and
-      Grundkiewicz, Roman  and
-      Bogoychev, Nikolay",
-    booktitle = "Proceedings of the 3rd Workshop on Neural Generation and Translation",
-    month = nov,
-    year = "2019",
-    address = "Hong Kong",
-    publisher = "Association for Computational Linguistics",
-    url = "https://www.aclweb.org/anthology/D19-5632",
-    doi = "10.18653/v1/D19-5632",
-    pages = "280--288",
-    abstract = "This paper describes the submissions of the {``}Marian{''} team to the WNGT 2019 efficiency shared task. Taking our dominating submissions to the previous edition of the shared task as a starting point, we develop improved teacher-student training via multi-agent dual-learning and noisy backward-forward translation for Transformer-based student models. For efficient CPU-based decoding, we propose pre-packed 8-bit matrix products, improved batched decoding, cache-friendly student architectures with parameter sharing and light-weight RNN-based decoder architectures. GPU-based decoding benefits from the same architecture changes, from pervasive 16-bit inference and concurrent streams. These modifications together with profiler-based C++ code optimization allow us to push the Pareto frontier established during the 2018 edition towards 24x (CPU) and 14x (GPU) faster models at comparable or higher BLEU values. Our fastest CPU model is more than 4x faster than last year{'}s fastest submission at more than 3 points higher BLEU. Our fastest GPU model at 1.5 seconds translation time is slightly faster than last year{'}s fastest RNN-based submissions, but outperforms them by more than 4 BLEU and 10 BLEU points respectively.",
+@inproceedings{ranzato2016sequence,
+  author    = {Marc'Aurelio Ranzato and
+               Sumit Chopra and
+               Michael Auli and
+               Wojciech Zaremba},
+  editor    = {Yoshua Bengio and
+               Yann LeCun},
+  title     = {Sequence Level Training with Recurrent Neural Networks},
+  booktitle = {4th International Conference on Learning Representations, {ICLR} 2016,
+               San Juan, Puerto Rico, May 2-4, 2016, Conference Track Proceedings},
+  year      = {2016},
+  url       = {http://arxiv.org/abs/1511.06732},
+  timestamp = {Thu, 25 Jul 2019 14:25:39 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/RanzatoCAZ15.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
-@inproceedings{bogoychev-etal-2020-edinburghs,
-    title = "{E}dinburgh{'}s Submissions to the 2020 Machine Translation Efficiency Task",
-    author = "Bogoychev, Nikolay  and
-      Grundkiewicz, Roman  and
-      Aji, Alham Fikri  and
-      Behnke, Maximiliana  and
-      Heafield, Kenneth  and
-      Kashyap, Sidharth  and
-      Farsarakis, Emmanouil-Ioannis  and
-      Chudyk, Mateusz",
-    booktitle = "Proceedings of the Fourth Workshop on Neural Generation and Translation",
-    month = jul,
-    year = "2020",
-    address = "Online",
-    publisher = "Association for Computational Linguistics",
-    url = "https://www.aclweb.org/anthology/2020.ngt-1.26",
-    doi = "10.18653/v1/2020.ngt-1.26",
-    pages = "218--224",
-    abstract = "We participated in all tracks of the Workshop on Neural Generation and Translation 2020 Efficiency Shared Task: single-core CPU, multi-core CPU, and GPU. At the model level, we use teacher-student training with a variety of student sizes, tie embeddings and sometimes layers, use the Simpler Simple Recurrent Unit, and introduce head pruning. On GPUs, we used 16-bit floating-point tensor cores. On CPUs, we customized 8-bit quantization and multiple processes with affinity for the multi-core setting. To reduce model size, we experimented with 4-bit log quantization but use floats at runtime. In the shared task, most of our submissions were Pareto optimal with respect the trade-off between time and quality.",
+@article{williams1992simple,
+  title={Simple statistical gradient-following algorithms for connectionist reinforcement learning},
+  author={Williams, Ronald J},
+  journal={Machine learning},
+  volume={8},
+  number={3-4},
+  pages={229--256},
+  year={1992},
+  publisher={Springer}
 }
 
-@inproceedings{espla-etal-2019-paracrawl,
-  title =	 "{P}ara{C}rawl: Web-scale parallel corpora for the languages
-                  of the {EU}",
-  author =	 "Espl{\`a}, Miquel and Forcada, Mikel and
-                  Ram{\'\i}rez-S{\'a}nchez, Gema and Hoang, Hieu",
-  booktitle =	 "Proceedings of Machine Translation Summit XVII Volume 2:
-                  Translator, Project and User Tracks",
-  month =	 aug,
-  year =	 "2019",
-  address =	 "Dublin, Ireland",
-  publisher =	 "European Association for Machine Translation",
-  url =		 "https://www.aclweb.org/anthology/W19-6721",
-  pages =	 "118--119",
+@article{bengio2015scheduled,
+  title={Scheduled sampling for sequence prediction with recurrent neural networks},
+  author={Bengio, Samy and Vinyals, Oriol and Jaitly, Navdeep and Shazeer, Noam},
+  journal={arXiv preprint arXiv:1506.03099},
+  year={2015}
 }
 
 @article{schwenk2019wikimatrix,
@@ -690,52 +669,6 @@
   biburl =	 {https://dblp.org/rec/journals/corr/abs-1905-12790.bib},
   bibsource =	 {dblp computer science bibliography, https://dblp.org}
 }
-
-@inproceedings{callison-burch-etal-2006-evaluating,
-  title =	 "Re-evaluating the Role of {B}leu in Machine Translation
-                  Research",
-  author =	 "Callison-Burch, Chris and Osborne, Miles and Koehn, Philipp",
-  booktitle =	 "11th Conference of the {E}uropean Chapter of the Association
-                  for Computational Linguistics",
-  month =	 apr,
-  year =	 2006,
-  address =	 "Trento, Italy",
-  publisher =	 "Association for Computational Linguistics",
-  url =		 "https://www.aclweb.org/anthology/E06-1032",
-}
-
-@inproceedings{mathur-etal-2020-tangled,
-  title =	 "Tangled up in {BLEU}: Reevaluating the Evaluation of Automatic
-                  Machine Translation Evaluation Metrics",
-  author =	 "Mathur, Nitika and Baldwin, Timothy and Cohn, Trevor",
-  booktitle =	 "Proceedings of the 58th Annual Meeting of the Association for
-                  Computational Linguistics",
-  month =	 jul,
-  year =	 2020,
-  address =	 "Online",
-  publisher =	 "Association for Computational Linguistics",
-  url =		 "https://www.aclweb.org/anthology/2020.acl-main.448",
-  doi =		 "10.18653/v1/2020.acl-main.448",
-  pages =	 "4984--4997",
-  abstract =	 "Automatic metrics are fundamental for the development and
-                  evaluation of machine translation systems. Judging whether,
-                  and to what extent, automatic metrics concur with the gold
-                  standard of human evaluation is not a straightforward
-                  problem. We show that current methods for judging metrics are
-                  highly sensitive to the translations used for assessment,
-                  particularly the presence of outliers, which often leads to
-                  falsely confident conclusions about a metric{'}s
-                  efficacy. Finally, we turn to pairwise system ranking,
-                  developing a method for thresholding performance improvement
-                  under an automatic metric against human judgements, which
-                  allows quantification of type I versus type II errors
-                  incurred, i.e., insignificant human differences in system
-                  quality that are accepted, and significant human differences
-                  that are rejected. Together, these findings suggest
-                  improvements to the protocols for metric evaluation and system
-                  performance evaluation in machine translation.",
-}
-
 @article{reiter2018structured,
   author =	 {Reiter, Ehud},
   title =	 {A Structured Review of the Validity of BLEU},
@@ -758,146 +691,6 @@
                   MT systems (which is what it was originally proposed for), but
                   does not support using BLEU outside of MT, for evaluation of
                   individual texts, or for scientific hypothesis testing. }
-}
-
-@inproceedings{bojar-etal-2010-tackling,
-  title =	 "Tackling Sparse Data Issue in Machine Translation Evaluation",
-  author =	 "Bojar, Ond{\v{r}}ej and Kos, Kamil and Mare{\v{c}}ek, David",
-  booktitle =	 "Proceedings of the {ACL} 2010 Conference Short Papers",
-  month =	 jul,
-  year =	 2010,
-  address =	 "Uppsala, Sweden",
-  publisher =	 "Association for Computational Linguistics",
-  url =		 "https://www.aclweb.org/anthology/P10-2016",
-  pages =	 "86--91",
-}
-
-@article{brown-etal-1993-mathematics,
-  title =	 "The Mathematics of Statistical Machine Translation: Parameter
-                  Estimation",
-  author =	 "Brown, Peter F.  and Della Pietra, Stephen A.  and Della
-                  Pietra, Vincent J.  and Mercer, Robert L.",
-  journal =	 "Computational Linguistics",
-  volume =	 19,
-  number =	 2,
-  year =	 1993,
-  url =		 "https://www.aclweb.org/anthology/J93-2003",
-  pages =	 "263--311",
-}
-
-@inproceedings{koehn-etal-2003-statistical,
-  title =	 "Statistical Phrase-Based Translation",
-  author =	 "Koehn, Philipp and Och, Franz J.  and Marcu, Daniel",
-  booktitle =	 "Proceedings of the 2003 Human Language Technology Conference
-                  of the North {A}merican Chapter of the Association for
-                  Computational Linguistics",
-  year =	 2003,
-  url =		 "https://www.aclweb.org/anthology/N03-1017",
-  pages =	 "127--133",
-}
-
-@inproceedings{gao-etal-2020-character,
-  title =	 "Character-Level Translation with Self-attention",
-  author =	 "Gao, Yingqiang and Nikolov, Nikola I.  and Hu, Yuhuang and
-                  Hahnloser, Richard H.R.",
-  booktitle =	 "Proceedings of the 58th Annual Meeting of the Association for
-                  Computational Linguistics",
-  month =	 jul,
-  year =	 2020,
-  address =	 "Online",
-  publisher =	 "Association for Computational Linguistics",
-  url =		 "https://www.aclweb.org/anthology/2020.acl-main.145",
-  doi =		 "10.18653/v1/2020.acl-main.145",
-  pages =	 "1591--1604",
-  abstract =	 "We explore the suitability of self-attention models for
-                  character-level neural machine translation. We test the
-                  standard transformer model, as well as a novel variant in
-                  which the encoder block combines information from nearby
-                  characters using convolutions. We perform extensive
-                  experiments on WMT and UN datasets, testing both bilingual and
-                  multilingual translation to English using up to three input
-                  languages (French, Spanish, and Chinese). Our transformer
-                  variant consistently outperforms the standard transformer at
-                  the character-level and converges faster while learning more
-                  robust character-level alignments.",
-}
-
-@inproceedings{kudo-2018-subword,
-  title =	 "Subword Regularization: Improving Neural Network Translation
-                  Models with Multiple Subword Candidates",
-  author =	 "Kudo, Taku",
-  booktitle =	 "Proceedings of the 56th Annual Meeting of the Association for
-                  Computational Linguistics (Volume 1: Long Papers)",
-  month =	 jul,
-  year =	 2018,
-  address =	 "Melbourne, Australia",
-  publisher =	 "Association for Computational Linguistics",
-  url =		 "https://www.aclweb.org/anthology/P18-1007",
-  doi =		 "10.18653/v1/P18-1007",
-  pages =	 "66--75",
-  abstract =	 "Subword units are an effective way to alleviate the open
-                  vocabulary problems in neural machine translation (NMT). While
-                  sentences are usually converted into unique subword sequences,
-                  subword segmentation is potentially ambiguous and multiple
-                  segmentations are possible even with the same vocabulary. The
-                  question addressed in this paper is whether it is possible to
-                  harness the segmentation ambiguity as a noise to improve the
-                  robustness of NMT. We present a simple regularization method,
-                  subword regularization, which trains the model with multiple
-                  subword segmentations probabilistically sampled during
-                  training. In addition, for better subword sampling, we propose
-                  a new subword segmentation algorithm based on a unigram
-                  language model. We experiment with multiple corpora and report
-                  consistent improvements especially on low resource and
-                  out-of-domain settings.",
-}
-
-@article{lee-etal-2017-fully,
-  title =	 "Fully Character-Level Neural Machine Translation without
-                  Explicit Segmentation",
-  author =	 "Lee, Jason and Cho, Kyunghyun and Hofmann, Thomas",
-  journal =	 "Transactions of the Association for Computational Linguistics",
-  volume =	 5,
-  year =	 2017,
-  url =		 "https://www.aclweb.org/anthology/Q17-1026",
-  doi =		 "10.1162/tacl_a_00067",
-  pages =	 "365--378",
-  abstract =	 "Most existing machine translation systems operate at the level
-                  of words, relying on explicit segmentation to extract
-                  tokens. We introduce a neural machine translation (NMT) model
-                  that maps a source character sequence to a target character
-                  sequence without any segmentation. We employ a character-level
-                  convolutional network with max-pooling at the encoder to
-                  reduce the length of source representation, allowing the model
-                  to be trained at a speed comparable to subword-level models
-                  while capturing local regularities. Our character-to-character
-                  model outperforms a recently proposed baseline with a
-                  subword-level encoder on WMT{'}15 DE-EN and CS-EN, and gives
-                  comparable performance on FI-EN and RU-EN. We then demonstrate
-                  that it is possible to share a single character-level encoder
-                  across multiple languages by training a model on a many-to-one
-                  translation task. In this multilingual setting, the
-                  character-level encoder significantly outperforms the
-                  subword-level encoder on all the language pairs. We observe
-                  that on CS-EN, FI-EN and RU-EN, the quality of the
-                  multilingual character-level translation even surpasses the
-                  models specifically trained on that language pair alone, both
-                  in terms of the BLEU score and human judgment.",
-}
-
-@inproceedings{chung-etal-2016-character,
-  title =	 "A Character-level Decoder without Explicit Segmentation for
-                  Neural Machine Translation",
-  author =	 "Chung, Junyoung and Cho, Kyunghyun and Bengio, Yoshua",
-  booktitle =	 "Proceedings of the 54th Annual Meeting of the Association for
-                  Computational Linguistics (Volume 1: Long Papers)",
-  month =	 aug,
-  year =	 2016,
-  address =	 "Berlin, Germany",
-  publisher =	 "Association for Computational Linguistics",
-  url =		 "https://www.aclweb.org/anthology/P16-1160",
-  doi =		 "10.18653/v1/P16-1160",
-  pages =	 "1693--1703",
 }
 
 @inproceedings{jean2015using,
@@ -2401,19 +2194,6 @@
   year =	 2004
 }
 
-@inproceedings{rozis-skadins-2017-tilde,
-    title = "Tilde {MODEL} - Multilingual Open Data for {EU} Languages",
-    author = "Rozis, Roberts  and
-      Skadi{\c{n}}{\v{s}}, Raivis",
-    booktitle = "Proceedings of the 21st Nordic Conference on Computational Linguistics",
-    month = may,
-    year = "2017",
-    address = "Gothenburg, Sweden",
-    publisher = "Association for Computational Linguistics",
-    url = "https://www.aclweb.org/anthology/W17-0235",
-    pages = "263--265",
-}
-
 @inproceedings{koehn2005europarl,
   author =	 {Koehn, Philipp},
   title =	 {Europarl: A parallel corpus for statistical machine
@@ -3445,19 +3225,6 @@
   publisher =	 {{IEEE}Computer Society},
   volume =	 20,
   year =	 1987
-}
-
-@inproceedings{sennrich2016backtranslation,
-  author =	 {Sennrich, Rico and Haddow, Barry and Birch, Alexandra},
-  title =	 {Improving Neural Machine Translation Models with Monolingual
-                  Data},
-  booktitle =	 {Proceedings of the 54th Annual Meeting of the Association for
-                  Computational Linguistics (Volume 1: Long Papers)},
-  address =	 {Berlin, Germany},
-  month =	 {August},
-  pages =	 {86--96},
-  publisher =	 {Association for Computational Linguistics},
-  year =	 2016
 }
 
 @inproceedings{sennrich2016neural,

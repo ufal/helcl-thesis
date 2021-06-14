@@ -47,6 +47,11 @@
 - describe concept of teacher forcing, mention exposure bias
 - explain difference between training of transformer and RNNs, hint to
   autoregressivity
+  - it's actually more similar than I thought. the RNNs also get all the
+    inputs beforehand and the RNN can be evaluated in one go, but it still
+    need to go left to right whereas transformer can be parallelized. This
+    should be mentioned in the transformer model section rathrer than the
+    training section.
 - summarize training methodology, including:
   - variable initialization
   - batching, i.e. batch size, maxi batch, maxi batch sorting, length cropping,

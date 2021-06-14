@@ -35,7 +35,7 @@ variable. Using feed-forward neural networks is therefore not
 suitable. Sequences can be processed by a number of network architectures,
 namely \glspl{cnn}, \glspl{rnn}, or \glspl{san}. All of those can be adapted
 for text processing, and we will describe the latter two in more detail in
-Sections \ref{sec:encdec:rnn} and \ref{sec:transformer}, respectively.
+Sections \ref{sec:encdec:rnn} and \ref{sec:encdec:transformer}, respectively.
 
 In \acrshort{nlp} tasks like sentence classification or language modeling,
 there is only a single sequence on the input. In \acrshort{mt}, we have a
@@ -73,13 +73,13 @@ evaluation. This chapter concludes with a brief overview of the evaluation of
 
 
 
-% \JH{přepsat aby to odpovídalo} This chapter provides theoretical details about
-% \gls{nmt} systems in general, as well as particular features of the systems
-% that are relevant to experiments described in this thesis later on. The
-% contents of this chapter are structured as follows. Section
+% \JH{přepsat aby to odpovídalo} This chapter provides theoretical details
+% about \gls{nmt} systems in general, as well as particular features of the
+% systems that are relevant to experiments described in this thesis later
+% on. The contents of this chapter are structured as follows. Section
 % \ref{sec:text-processing} analyzes the approaches to processing (sequential)
 % textual data by neural networks. Further on, Sections \ref{sec:rnn} and
-% \ref{sec:transformer} describe two of the most popular neural network
+% \ref{sec:encdec:transformer} describe two of the most popular neural network
 % architectures used for \gls{nmt}, \glspl{rnn} and the Transformer model.  In
 % Section \ref{sec:training-vs-inference}, we explain the different modes of
 % operation of \gls{nmt} models for training and inference. This chapter
@@ -103,7 +103,7 @@ designed for processing sequential data.
 % One-hot representation are straightforward.
 In this section, we begin with the representation of words. The most
 straightforward, and also the most common way to represent words in neural
-networks is by having a list (a \emph{vocabulary}) of words $V$, where each
+networks is by having a list (a \emph{vocabulary}) of words $\mathcal{V}$, where each
 word has a corresponding integer index $j$ pointing at it. Each word $w$ at
 index $j$ in this list can be represented by a vector
 $x \in \{0,1\}^N$ where
@@ -247,6 +247,7 @@ this thesis, this approach did not yet outperform the subword state-of-the-art
 %\end{algorithm}
 
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{\acrshort{bpe}.}  \Acrlong{bpe} (\acrshort{bpe};
 \citealp{sennrich2016neural}) is an approach which tackles the open vocabulary
 problem by splitting words to subword units.  The idea is to devise a
@@ -267,7 +268,8 @@ predefined number of merges is done. In practice, instead of working with the
 training corpus, the algorithm runs on the frequency list of tokens, without
 loss of generality.
 
-\paragraph{SentencePiece.}  \JH{copied from JNLE:} SentencePiece
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{SentencePiece.}  \JH{copied from JNLE:} Sentencepiece
 \citep{kudo2018sentencepiece} is a toolkit that implements BPE and a unigram
 language model for subword segmentation \citep{kudo-2018-subword}. It supports a
 number of features, such as sampling and regularization by introducing noise on
@@ -290,9 +292,9 @@ tokens.
 The early \gls{nmt} models based on \glspl{rnn} use the final encoder state as
 the intermediate representation \citep{sutskever2014sequence}:
 %
-\begin{eqnarray} h_j & = & \mathrm{RNN}_{\text{enc}}(x_j, h_{j-1}), \quad j \in
+\begin{align} h_j & = & \mathrm{RNN}_{\text{enc}}(x_j, h_{j-1}), \quad j \in
 \{0, 1, \ldots, T_x \} \\ s_0 & = & h_{T_x}
-\end{eqnarray}
+\end{align}
 %
 where $\mathbf{x}$ is the input sentence and $h_0$ is the initial hidden state,
 usually set to $\mathbf{0}$. $T_x$ denotes the length of the input sentence.
@@ -357,6 +359,7 @@ There has been several approaches to combat the vanishing gradient problem.  The
 most prevailing types of \gls{rnn} architectures in \gls{nmt} are \gls{lstm}
 networks and \gls{gru} networks.
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{\acrshort{lstm}.} \acrlong{lstm} networks \citep{hochreiter1997long}
 introduce gating mechanisms and a concept of \emph{information highway}, which
 ensures that only linear operations are applied on the states in the recurrent
@@ -368,17 +371,14 @@ Given a current time step $t$, input $x_t \in \mathbb{R}^m$, and previous hidden
 states $h_{t-1}, C_{t-1} \in \mathbb{R}^n$, \gls{lstm} networks proceed as
 follows:
 %
-\begin{eqnarray} f_t & = & \sigma\left(W_f x_t + U_f h_{t-1} + b_f\right)
-\label{eq:lstm-forget-gate}\\ i_t & = & \sigma\left(W_i x_t + U_i h_{t-1} +
-b_i\right)
-\label{eq:lstm-input-gate}\\ o_t & = & \sigma\left(W_o x_t + U_o h_{t-1} +
-b_o\right)
-\label{eq:lstm-output-gate}\\ \tilde{C}_t & = & \tanh \left( W_c x_t + U_c
-h_{t-1} + b_c \right)\label{eq:lstm-candidate} \\ C_t & = & f_t \odot C_{t-1} +
-i_t \odot \tilde{C}_t
-\label{eq:lstm-information-highway}\\ h_t & = & o_t \odot \tanh
-C_t \label{eq:lstm-hidden-state}
-\end{eqnarray}
+\begin{align}
+  f_t &= \sigma\left(W_f x_t + U_f h_{t-1} + b_f\right) \label{eq:lstm-forget-gate} \\
+  i_t &= \sigma\left(W_i x_t + U_i h_{t-1} + b_i\right) \label{eq:lstm-input-gate} \\
+  o_t &= \sigma\left(W_o x_t + U_o h_{t-1} + b_o\right) \label{eq:lstm-output-gate} \\
+  \tilde{C}_t &= \tanh \left( W_c x_t + U_c h_{t-1} + b_c \right) \label{eq:lstm-candidate} \\
+  C_t &= f_t \odot C_{t-1} + i_t \odot \tilde{C}_t \label{eq:lstm-information-highway} \\
+  h_t &= o_t \odot \tanh C_t \label{eq:lstm-hidden-state}
+\end{align}
 %
 where $W_f, W_i, W_o, W_c \in \mathbb{R}^{m \times n}, U_f, U_i, U_o, U_c \in
 \mathbb{R}^{n \times n}, b_f, b_i, b_o, b_c \in \mathbb{R}^n$ are trainable
@@ -408,9 +408,7 @@ preceding steps, the previous state is only multiplied by a constant. This
 constitutes the information highway that allows propagating the gradients over
 long distances in the sequence.
 
-
-
-
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{\acrshort{gru}.} \acrlong{gru} networks \citep{cho2014gru} are an
 alternative to \glspl{lstm}. Instead of four sets of parameter matrices,
 \glspl{gru} need only three, while maintaining the theoretical strength. Unlike
@@ -420,17 +418,16 @@ relations.
 Given the time step $t$, input $x_t \in \mathbb{R}^m$, and previous hidden state
 $h_{t-1}$, one \gls{gru} step is defined as follows:
 %
-\begin{eqnarray} r_t & = & \sigma\left(W_r x_t + U_r h_{t-1} + b_r\right)
-\label{eq:gru-reset-gate} \\ z_t & = & \sigma\left(W_z x_t + U_z h_{t-1} +
-b_z\right)
-\label{eq:gru-update-gate} \\ \tilde{h}_t & = & \tanh \left(W x_t + U \left( r_t
-\odot h_{t-1} \right) + b \right) \label{eq:gru-candidate} \\ h_t & = & (1 -
-z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t
-\label{eq:gru-hidden-state}
-\end{eqnarray}
+\begin{align}
+  r_t &= \sigma\left(W_r x_t + U_r h_{t-1} + b_r\right) \label{eq:gru-reset-gate} \\
+  z_t &= \sigma\left(W_z x_t + U_z h_{t-1} + b_z\right) \label{eq:gru-update-gate} \\
+  \tilde{h}_t &= \tanh \left(W x_t + U \left( r_t \odot h_{t-1} \right) + b \right) \label{eq:gru-candidate} \\
+  h_t &= (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t \label{eq:gru-hidden-state}
+\end{align}
 %
-where $W, W_z, W_r \in \mathbb{R}^{m\times n}, U, U_z, U_r \in \mathbb{R}^{n
-\times n}, b, b_z, b_r \in \mathbb{R}^n$ are trainable parameters.
+where $W, W_z, W_r \in \mathbb{R}^{m\times n}$,
+$U, U_z, U_r \in \mathbb{R}^{n \times n}$, and $b, b_z, b_r \in \mathbb{R}^n$
+are trainable parameters.
 
 The two gates in \gls{gru} networks are called \emph{reset gate} and
 \emph{update gate}.  The reset gate (Eq. \ref{eq:gru-reset-gate}) determines how
@@ -441,55 +438,21 @@ controls the merging of the previous state with the candidate state in Equation
 \ref{eq:gru-hidden-state}. Note that the information highway concept is
 expressed by this equation.
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Bidirectional RNNs.} There is a bidirectional variant of \glspl{rnn}
 which can be applied to any of the flavors of \glspl{rnn} discussed above. When
 the whole input sequence is known, we can apply a \gls{rnn} in both directions
 separately and then concatenate the states from the corresponding positions:
 %
-\begin{eqnarray} \overrightarrow{h}_t & = &
-\overrightarrow{\mathrm{RNN}}(x_{t-1}, \overrightarrow{h}_{t-1}) \\
-\overleftarrow{h}_t & = & \overleftarrow{\mathrm{RNN}}(x_{t+1},
-\overleftarrow{h}_{t+1}) \\ h_t & = & \left[ \begin{matrix} \overrightarrow{h}_t
-\\ \overleftarrow{h}_t
-\end{matrix} \right]
-\end{eqnarray}
+\begin{align}
+  \overrightarrow{h}_t &= \overrightarrow{\mathrm{RNN}}(x_{t-1}, \overrightarrow{h}_{t-1}) \\
+  \overleftarrow{h}_t &= \overleftarrow{\mathrm{RNN}}(x_{t+1}, \overleftarrow{h}_{t+1}) \\
+  h_t &= \left[ \begin{matrix} \overrightarrow{h}_t \\ \overleftarrow{h}_t \end{matrix} \right]
+\end{align}
 
-
-\paragraph{Deep RNNs.} Some NMT architectures based on RNNs use multiple
-recurrent layers \citep{barone2017deep,wu2016google}. In deep RNNs, each layer
-is a recurrent network. The inputs of the second and each layer onwards are the
-outputs of the preceding layer. The output of the whole deep RNN is the output
-of the last layer.
-
-In bidirectional RNNs, there are a few settings to consider. \JH{tell me more}
-
-To improve the convergence speed of the deep models, \emph{layer normalization}
-\citep{ba2016layer} is often employed between layers. For layer $l$ and its
-output states
-%$h_1^l, \ldots h_{T_x}^l$, $h_i^l \in \mathbb{R}^n$,
-$\mathbf{h}^l \in \mathbb{R}^{T_x \times n}$, we compute:
-%
-\begin{eqnarray}
-  \mu^l & = & \frac{1}{nT_x} \sum_{i=1}^{T_x}\sum_{j=1}^n h^l_{ij} \\
-  \sigma^l & = & \sqrt{\frac{1}{nT_x} \sum_{i=1}^{T_x}\sum_{j=1}^n (h^l_{ij} - \mu^l)^2} \\
-  \bar{\mathbf{h}}^l & = & \frac{\mathbf{h}^l - \mu^l}{\sigma^l} \odot \gamma^l + \beta^l
-\end{eqnarray}
-%
-where $\mu^l$ and $\sigma^l$ are the mean and standard deviation of the output
-state values, $\gamma^l, \beta^l \in \mathbb{R}^{T_x \times n}$ are learnable
-\emph{gain} and \emph{bias} parameters, and $\odot$ denotes element-wise
-multiplication. The normalized states $\bar{\mathbf{h}}^l$ are then used as the
-input to the $l+1$-th layer of the network instead.
-
-
-% ------------------------------------------------------------------------------
-\subsection{Attention Mechanism}
-\label{sec:attention}
-% ------------------------------------------------------------------------------
-\JH{demote this to paragraph, move above deep rnns.}
-
-Another important concept introduced as a part of \gls{rnn}-based \gls{nmt}
-models is the \emph{attention mechanism}
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Attention Mechanism.} Another important concept introduced as a part
+of \gls{rnn}-based \gls{nmt} models is the \emph{attention mechanism}
 \citep{bahdanau2014neural,luong2015effective}.
 
 The problem with the encoder-decoder framework as described in the previous
@@ -503,16 +466,16 @@ state.  Formally, based on a current decoder step $s_i$, the attention mechanism
 computes a local \emph{context vector} as a weighted average of the encoder
 states:
 %
-\begin{eqnarray}
+\begin{align}
   % attn energies
-  e_{ij} & = & v_a^\top \tanh (W_a s_{i-1} + U_a h_j + b_a) + b', \label{eq:attn-energies} \\
+  e_{ij} &= v_a^\top \tanh (W_a s_{i-1} + U_a h_j + b_a) + b', \label{eq:attn-energies} \\
   % attn distro
-  \alpha_{ij} & = & \frac{\exp(e_{ij})}{\sum_{k=1}^{T_x}\exp(e_{ik})}, \\
+  \alpha_{ij} &= \frac{\exp(e_{ij})}{\sum_{k=1}^{T_x}\exp(e_{ik})}, \\
   %
   % \softmax_{j \in 1, 2, \ldots, T_x } & = & e_{ij} \\
   % context vector
-  c_i & = & \sum_{j=1}^{T_x} \alpha_{ij} h_j.
-\end{eqnarray}
+  c_i &= \sum_{j=1}^{T_x} \alpha_{ij} h_j.
+\end{align}
 %
 In the first step, the \emph{attention energies} are computed for every encoder
 hidden state using a single-hidden-layer feed-forward network parameterized by
@@ -532,46 +495,269 @@ normalize the similarities and use them as weights in the weighted sum of
 attention keys and values are equal -- the encoder hidden states $h_j$. The
 similarity metric is defined in Equation \ref{eq:attn-energies}.
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Deep RNNs.} Some NMT architectures based on RNNs use multiple
+recurrent layers \citep{barone2017deep,wu2016google}. In deep RNNs, each layer
+is a recurrent network. The inputs of the second and each layer onwards are the
+outputs of the preceding layer. The output of the whole deep RNN is the output
+of the last layer.
 
-\subsection{Deep Architectures}
-\label{sec:deep-arch}
-\JH{deep architectures, cite sebe a GNMT}
-\JH{make this a paragraph}
+In bidirectional RNNs, there are a few settings to consider. \JH{tell me more}
+
+\JH{first layer norm paragraph should give better motivation, last paragraph
+  should provide some insight to the formulas.}  To improve the convergence
+speed of the deep models, \emph{layer normalization} \citep{ba2016layer} is
+often employed between layers. For layer $l$ and its output states
+%$h_1^l, \ldots h_{T_x}^l$, $h_i^l \in \mathbb{R}^n$,
+$\mathbf{h}^l \in \mathbb{R}^{T_x \times n}$, we compute:
+%
+\begin{align}
+  \mu^l &= \frac{1}{nT_x} \sum_{i=1}^{T_x}\sum_{j=1}^n h^l_{ij} \\
+  \sigma^l &= \sqrt{\frac{1}{nT_x} \sum_{i=1}^{T_x}\sum_{j=1}^n (h^l_{ij} - \mu^l)^2} \\
+  \bar{\mathbf{h}}^l &= \frac{\mathbf{h}^l - \mu^l}{\sigma^l} \odot \gamma^l + \beta^l
+\end{align}
+%
+where $\mu^l$ and $\sigma^l$ are the mean and standard deviation of the output
+state values, $\gamma^l, \beta^l \in \mathbb{R}^{T_x \times n}$ are learnable
+\emph{gain} and \emph{bias} parameters, and $\odot$ denotes element-wise
+multiplication. The normalized states $\bar{\mathbf{h}}^l$ are then used as the
+input to the $l+1$-th layer of the network instead.
 
 
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsection{Transformer Model}
 \label{sec:encdec:transformer}
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-One of the disadvantages of the RNN-based models is the linear time nature of
+One of the disadvantages of the RNN-based models is the sequential nature of
 the recurrence relation. Few models have been proposed to remove the recurrence
 and thus allowing for simultaneous computation across time steps, at least at
 the training time. Most notably, these models include convolutional
-architectures \citep{gehring2017convolutional}, and the current state-of-the-art
-architecture, the \emph{Transformer} model \citep{vaswani2017attention}.
+architectures \citep{gehring2017convolutional}, and the current
+state-of-the-art architecture, the \emph{Transformer} model
+\citep{vaswani2017attention}.
+
+Instead of recurrence relations, the Transformer model uses
+\emph{self-attention} layers, stacked into a deep network. The states in each
+layer can be computed independently on each other, which makes room for
+training speed improvements. We follow with detailed description of the
+Transformer model components. Refer to Figure \ref{fig:transformer} for
+the overview of the model components.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=9cm]{img/transformer.png}
+
+  \caption{The overall schema of the Transformer model. Inputs are summed with
+    positional encodings. Encoder processes the input in $N$ stack layers. Each
+    encoder layer consists of self-attention and feed-forward sub-layer. Layers
+    are interconnected with residual connections and layer normalization is
+    applied on the output of each layer. The decoder stack uses three
+    sub-layers, where the additional cross-attention layer attends to the
+    encoder output. We use the original image from
+    \citet{vaswani2017attention}.}
+  \label{fig:transformer}
+\end{figure}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Positional Encoding.} Since the self attention is a commutative
+operation, the ordering of the input tokens needs to be modeled explicitly.
+The standard technique is to use sinusoidal encodings, proposed in the original
+paper. Positional encoding is a vector of the same dimension as the word
+embedding which is computed using the position of the word on the input.
+The $2i$-th and $(2i+1)$-th elements of the positional encoding of word on
+position $j$ is computed as follows:
+%
+\begin{equation}
+  \begin{split}
+    E_{\text{pos}}(j, 2i) &= \sin(j / 10000^{2i/d}) \\
+    E_{\text{pos}}(j, 2i + 1) &= \cos(j / 10000^{2i/d})
+  \end{split}
+\end{equation}
+%
+where $d$ is the \emph{model dimension}. This number is equal to the dimension
+of the word embeddings. Before an input word $w_i$ is processed by the network,
+the positional encodings are added to the word embeddings:
+\begin{equation}
+  E(w_i) = E(w) + E_{\text{pos}}(i)
+\end{equation}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Self-Attention.} The key component of the Transformer model is the
+self-attention. As the name suggests, self-attention is run with the same set
+of states used as both queries, keys, and values. Scaled dot-product is used as
+the similarity metric, so the attention itself does not use any trainable
+parameters. Formally, self-attention is defined as function:
+%
+\begin{equation}
+  \mathcal{A}(Q,K,V) = \softmax \left( \frac{QK^\top}{\sqrt{d}} V  \right)
+  \label{eq:scaled-dot-product}
+\end{equation}
+%
+where the values $Q, K, V \in \mathbb{R}^{T \times d}$ ($T$ being the sequence
+length) are computed from the same input, usually using a linear projection.
+
+Self-attention sub-layers are used both in the encoder and the decoder. Because
+the decoder is autoregressive, the self-attention module needs to be
+constrained to attend only to the preceding states (so the model does not
+``glance into the future''). This is implemented by applying a triangular mask
+on the attention query and key matrix, hence the name \emph{masked
+  self-attetnion}.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Multi-Head Attention.} Instead of running a single self-attention
+per layer, the model structure is enriched by splitting the self-attention into
+multiple \emph{heads}. First, each state is projected into $h$ triples of
+queries, keys, and values. Then, self-attention is computed on each triple.
+Finally, the self attention outputs are mixed together into a single output
+sequence:
+%
+\begin{equation}
+  \mathcal{A}^h(Q, K, V) = \sum_{i=1}^h C_i W_i^O \\
+\end{equation}
+%
+where $W_i^O \in \mathbb{R}^{d_h \times d}$ is a parameter matrix used for
+projecting the outputs from the individual attention heads into a single
+output, and
+%
+\begin{equation}
+  C_i = \mathcal{A}(QW_i^Q, KW_i^K, VW_i^V)
+\end{equation}
+where $W_i^Q, W_i^K, W_i^V \in \mathbb{R}^{d \times d_h}$ are trainable
+matrices that project the states to inputs for the $i$-th attention head
+(defined in Equation \ref{eq:scaled-dot-product}). In self-attention,
+$Q = K = V \in \mathbb{R}^{T \times d}$ is the set of $T$ states of the current
+layer.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Cross-Attention.} Each layer in Transformer encoder consists of a
+self-attention and a feed-forward sub-layer. The decoder inserts an
+\emph{encoder-decoder attetnion}, or \emph{cross-attention} layer.  The
+cross-attention layer functions exactly like self-attention layer, but the
+queries $Q$ are the decoder states (i.e. the output of the preceding
+self-attention), and the keys and values $K = V$ correspond to the encoder
+output states.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Feed-Forward Layer.} Each Transformer layer consists
+of self-attention, optionally a cross-attention, followed by a feed-forward
+network. This feed-forward network uses the same parameters for all positions
+along the state sequence. The network takes a state $x$ and feeds it through a
+single hidden layer with a ReLU activation:
+
+\begin{equation}
+  \mathcal{F}(x) = \max(0, W_1^Fx + b_1^F)W_2^F + b_2^F
+\end{equation}
+where $W_1^F \in \mathbb{R}^{d \times d_f}$, $b_1 \in \mathbb{R}^{d_f}$,
+$W_2^F \in \mathbb{R}^{d_f \times d}$, and $b_2^F \in \mathbb{R}^d$ are the
+weight and bias parameters of the feed-forward network $\mathcal{F}$, and $d_f$
+is the dimension of the hidden state.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Residual Connections and Layer Normalization.} As a post-processing
+step, the output of each sub-layer is connected with the output of the previous
+sub-layer with residual connections. \JH{zkontrolovat jestli se to definovalo v
+  Deep Architectures, stejně jako Layer Norm.} Similarly to the
+\glsentryshort{rnn}-based deep architectures, layer normalization is used in
+combination, which ties all states in the sub-layer stack into a shared vector
+space.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Model Hyperparameters.} The parameters that control the model size
+are the model dimension $d$, the number of attention heads $h$, the dimension
+of the feed-forward hidden layer $d_f$, and the number of Transformer layers in
+the encoder and decoder stack. Note that the dimension of keys and values in a
+single attention head $d_h$ is commonly set to be $d / h$, but can be
+customized as well.  As a regularization, dropout \citep{srivastava2014dropout}
+is applied with rate $P_d$ to the output of each sub-layer before
+normalization.
+
+The authors of the architecture propose two presets for these parameters, named
+\emph{base} and \emph{big}. Table~\ref{tab:transformer-hyperparams} shows the
+hyperparameter values for these two settings.
+
+\begin{table}
+  \centering
+  \begin{tabular}{lrrrrrr}
+    \toprule
+      & \# of layers &  $d$  &  $h$  & $d_h$ & $d_f$ & $P_d$ \\
+    \midrule
+    Transformer base  & 6 &  512  & 8 & 64 &  2,048 & 0.1 \\
+    Transformer big  & 6 &  1,024  & 16 & 64 &  4,096 & 0.3 \\
+    \bottomrule
+  \end{tabular}
+  \caption{The hyperparameter values for Transformer base and big variants.}%
+  \label{tab:transformer-hyperparams}
+\end{table}
 
 
+% ------------------------------------------------------------------------------
 \section{Training}
 \label{sec:training}
+% ------------------------------------------------------------------------------
 
+Training of \gls{nmt} models is usually done under \emph{supervised}
+conditions, using a dataset of parallel sentences. \JH{move the following to
+  the experimental section:} The size of the available data varies a lot with
+different language pairs. Although there is no formal definition, when there is
+less than a million sentence pairs available, the language pair is reffered to
+as being \emph{low-resource}. For many languages, even a million sentences is a
+very large number compared to what is actually available. The data quality is
+also a factor. For example, when the only available data is crawled from the
+web, data cleaning can filter out a major part of the corpus. In this thesis,
+we focus on language pairs where the data size is not a major issue and we
+simulate the low-resource scenario using Romanian-English translation.
 
-
+Translation models are trained by minimizing the loss function, usually
+expressed by cross-entropy between the output distribution and the one-hot
+distribution which assigns the probability of one to the correct target word,
+and zero probabilities to the other words. Assuming $y_i$ is the correct target
+word at position $i$, $p_{\text{ref}}$ is the one-hot distribution, and $p$ is
+the distribution predicted by the model, we have:
 %
 \begin{equation}
-  J_{\theta} = - \sum_{(x, y) \in D} \log p(y | x, \theta)
+  \begin{split}
+    H(p_{\text{ref}}, p) &=  - \sum_{w \in \mathcal{V}} p_{\text{ref}}(w) \log p(w) = \\
+    &=  - \log p(y_i)
+  \end{split}
 \end{equation}
 %
+where $\mathcal{V}$ is the vocabulary. Note that in autoregressive models, the
+output distributions $p$ and $p_{\text{ref}}$ are conditioned on the preceding
+target words.
 
-Since the probability distributions are conditioned on the previously decoded
-tokens, the likelihood of the target sentence is reformulated using the chain
-rule:
+Given model parameters $\theta$, the word-level cross-entropy is summed across
+the sentence pairs in the data $D$ to obtain the negative log likelihood of the
+dataset $J_{\theta}$:
 %
 \begin{equation}
-  J_{\theta} = - \sum_{(x, y) \in D} \sum_{i = 1}^{T_y} \log p(y_i | x, y_{<i}, \theta)
+  \begin{split}
+  J_{\theta} &= - \sum_{(x, y) \in D} \sum_{i = 1}^{T_y} \log p(y_i | x, y_{<i}, \theta) \\
+  &= - \sum_{(x, y) \in D} \log p(y | x, \theta)
+  \end{split}
 \end{equation}
 %
-where $T_y$ is the length of the target sentence.
+where $y_{<i}$ denote the target prefix and $T_{y}$ is the length of the target
+sentence $y$. The probability of a sentence can be reformulated using the chain
+rule.
 
-Note that in the equation above, the probability distributions are conditioned
+% Since the probability distributions are conditioned on the previously decoded
+% tokens, the likelihood of the target sentence is reformulated using the chain
+% rule:
+% %
+% \begin{equation}
+%   J_{\theta} = - \sum_{(x, y) \in D} \sum_{i = 1}^{T_y} \log p(y_i | x, y_{<i}, \theta)
+% \end{equation}
+% %
+% where $T_y$ is the length of the target sentence.
+
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Teacher Forcing.}
+Note that in the equations above, the probability distributions are conditioned
 on the reference target prefix, rather than the model outputs. This technique
 is known as \emph{teacher forcing}, and is essential for the training
 convergence. When the model is exposed to its own outputs from the start of the
@@ -583,12 +769,91 @@ against them.
 
 Methods have been proposed to address this issue, including a curriculum
 learning approach which gradually replaces teacher forcing with the model
-predictions \citep{scheduled}. Other methods focus on sequence-level training
-or beam search optimization methods, mostly based on reinforcement learning
-\citep{williams, rush-bso, mixer}. However, none of these methods was widely
-adopted, and current models are believed to be capable of recover from their
-errors despite being explicitly trained to do so.
+predictions \citep{bengio2015scheduled}. Other methods focus on sequence-level
+training or beam search optimization methods, mostly based on reinforcement
+learning \citep{williams1992simple, wiseman-rush-2016-sequence,
+  ranzato2016sequence}. However, none of these methods was widely adopted, and
+current models are believed to be capable of recover from their errors despite
+being explicitly trained to do so.
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+%\paragraph{RNNs vs Transformer Training.} A significant difference in training
+%\glspl{rnn} and the Transformer model is
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\subsection{Training Methodology}
+\label{sec:training:methodology}
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+In this section, we go through the common techniques for successful training of
+\gls{nmt} models. These include data cleaning and augmentation methods,
+optimization settings, and hardware considerations.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Data Cleaning.} With a few exceptions for high-resource languages,
+the training data are usually acquired from the Web. Depending on the data
+source and the extraction technique, there is a level of noise present in the
+data. In many cases, it is necessary to consider data cleaning before training
+any models.
+
+The basic data cleaning techniques are rule-based and include language
+identification, and filtering sentence pairs with odd characters or length
+ratios. Deduplication may be considered, but might be harmful when it removes
+short sentences which appear commonly in the given language. For example, if
+English sentences ``Thank you'' and ``Thank you xxx'' both appear in the data
+as translations of the Czech ``Děkuji'', they might get equal probabilities
+when deduplication is used. Without deduplication, the frequency of the correct
+translation would be much higher in the training data.
+
+An advanced data cleaning technique is dual conditional cross-entropy filtering
+\citep{junczys-dowmunt-2018-dual}. Using two translation models trained on
+clean data in opposite directions, each sentence pair is scored according to
+the cross entropies assigned by the translation models to the sentence
+pair. When the cross entropies differ, or when both cross entropy scores are
+high, the score is low. When the cross entropies are similar and are low, the
+score is high. After scoring, low-scoring sentence pairs are removed from the
+data using an empirically set threshold.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Data Augmentation.} The size of the training data is a key factor to
+model performance. In rare cases of high-resource languages, there is enough
+parallel data available to train a decent translation model. But even for these
+languages, data augmentation methods, namely \emph{backtranslation} are used
+to create bigger data and therefore to improve the model performance.
+
+Backtranslation is a simple technique for incorporating target-side monolingual
+data in a \gls{nmt} model \citep{sennrich-etal-2016-improving}. For a given
+translation direction, we first translate the monolingual data from the target
+language to the source language using a previously trained model. Then, we mix
+the synthetic source-language data along with the authentic target-language
+data into our training corpus. When the parallel-to-monolingual data size ratio
+not balanced, one can consider oversampling the smaller part of the corpus to
+mitigate this. Recently, \citet{caswell-etal-2019-tagged} showed that labeling
+the synthetic data with a special token improves the translation quality. As
+pointed out by \citet{marie-etal-2020-tagged}, this helps because the model is
+less prone to overfitting to this type of data.
+
+\emph{Knowledge distillation} \citep{kim-rush-2016-sequence} is another data
+augmentation technique. Unlike backtranslation, knowledge distillation is used
+mainly for improving the model efficiency, both in terms of memory and speed.
+Also unlike backtranslation, we use target-language synthetic data. In the
+simplest setting, we use a well-trained and large \emph{teacher} model to
+translate its own training data. Then, we train a smaller (and therefore faster
+and smaller) \emph{student} model on the outputs of the teacher model. This
+technique shows that for a small sacrifice of the translation quality, we can
+get interesting improvements in terms of speed, which is useful for deploying
+the models in a limited environment, such as a mobile device.
+
+\paragraph{Parameter Initialization.}
+
+\paragraph{Batching.}
+
+\paragraph{Optimization.}
+
+\paragraph{Early Stopping.}
+
+
+\paragraph{Hardware.}
 
 
 

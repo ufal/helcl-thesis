@@ -30,23 +30,27 @@ quantization, shortlisting \citep{jean2015using} and a simpler recurrent unit
 design to bring the throughput of the translation model up to 3,600 words per
 second on a CPU, for a modest drop in the BLEU score. Following this
 submission, \citet{bogoychev-etal-2020-edinburghs} reported further
-improvements with attention head pruning. The work has been a part of the
-Bergamot research project, which aims to bring offline translation models into
-a browser (\JH{cite}).
+improvements with attention head pruning \citep{voita-etal-2019-analyzing}. The
+work has been a part of the Bergamot research project, which aims to bring
+offline translation models into a browser (\JH{cite}).
 
 % vedle toho tu jsou neautoregresivní modely který se na to snaží jít jinak
 
-An alternative approach to model optimization is using a different (and faster)
-model and its decoding algorithm.
-
-
-
-\Gls{nat} is a recent subtask of \gls{nmt} in which the decoding process cannot
-access the previously decoded outputs, imposing conditional independence on the
-output token probability distributions. This assumption allows parallelization
-of the decoding which can significantly reduce the latency of the translation
+\Gls{nar} models present an alternative approach to model optimization, using a
+different architecture and decoding algorithm which has lower time complexity.
+In \gls{nmt}, a non-autoregressive decoding algorithm does not access the
+previously decoded outputs, imposing conditional independence on the output
+token probability distributions. This assumption allows parallelization of the
+decoding which can significantly reduce the latency of the translation
 system. On the other hand, it also presents a challenge to the language model,
 which usually leads to poorer translation quality.
+
+The research presented in this thesis is focused on the usefulness of \gls{nar}
+models for translation (\glsentryshort{nat}\glsunset{nat}) in the quest for
+fast translation models. We first analyze the \gls{nat} models alone and assess
+the necessary techniques needed to match the quality of \gls{ar} models.  Then,
+we adapt the optimizations successfully used in \gls{ar} models for \gls{nar}
+models and evaluate the additional speed gains.
 
 This chapter begins with an overview of the non-autoregressive methods (Section
 \ref{sec:nat-methods}). In Section \ref{sec:nat-ctc}, we introduce
