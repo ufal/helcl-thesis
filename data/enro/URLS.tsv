@@ -1,0 +1,4 @@
+europarl	http://statmt.org/europarl/v7/ro-en.tgz
+setimes	https://opus.nlpl.eu/download.php?f=SETIMES/v2/moses/en-ro.txt.zip
+dev	http://data.statmt.org/wmt16/translation-task/dev-romanian-updated.tgz
+test	http://data.statmt.org/wmt16/translation-task/test.tgz
