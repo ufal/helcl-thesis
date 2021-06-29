@@ -1,0 +1,8 @@
+dev	http://data.statmt.org/wmt20/translation-task/dev.tgz
+europarl	http://www.statmt.org/europarl/v10/training/europarl-v10.de-en.tsv.gz
+paracrawl	https://s3.amazonaws.com/web-language-models/paracrawl/release5.1/en-de.txt.gz
+commoncrawl	http://statmt.org/wmt13/training-parallel-commoncrawl.tgz
+wikititles	http://data.statmt.org/wikititles/v2/wikititles-v2.de-en.tsv.gz
+news-commentary	http://data.statmt.org/news-commentary/v15/training/news-commentary-v15.de-en.tsv.gz
+rapid	http://data.statmt.org/wmt20/translation-task/rapid/RAPID_2019.de-en.xlf.gz
+wikimatrix	http://data.statmt.org/wmt20/translation-task/WikiMatrix/WikiMatrix.v1.de-en.langid.tsv.gz
