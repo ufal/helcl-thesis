@@ -736,12 +736,13 @@ dataset $J_{\theta}$:
   \begin{split}
   J_{\theta} &= - \sum_{(x, y) \in D} \sum_{i = 1}^{T_y} \log p(y_i | x, y_{<i}, \theta) \\
   &= - \sum_{(x, y) \in D} \log p(y | x, \theta)
-  \end{split}
+  \end{split} \label{eq:loss}
 \end{equation}
 %
 where $y_{<i}$ denote the target prefix and $T_{y}$ is the length of the target
 sentence $y$. The probability of a sentence can be reformulated using the chain
 rule.
+\JH{rovnice J hvězdička = argmin J over thetas}
 
 % Since the probability distributions are conditioned on the previously decoded
 % tokens, the likelihood of the target sentence is reformulated using the chain
@@ -844,28 +845,62 @@ technique shows that for a small sacrifice of the translation quality, we can
 get interesting improvements in terms of speed, which is useful for deploying
 the models in a limited environment, such as a mobile device.
 
-\paragraph{Parameter Initialization.}
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Batching.} In Equation \ref{eq:loss}, the loss function
+$\mathcal{J_\theta}$ is defined as a sum of sequence-level losses over dataset
+$D$. We use gradient descent to find parameters $\theta$ which minimize the
+loss value. However, the exact computation of the gradient is inefficient
+because it requires one pass through the whole dataset. Therefore, we estimate
+the gradient on a small sample of the training data, called a \emph{mini
+  batch}, or simply a batch. This method is called \emph{stochastic gradient
+  descent}.
 
-\paragraph{Batching.}
+The size of a mini batch is an important parameter and its value can have a
+large impact on the training convergence. Bigger batches provide better
+gradient estimates, but require more memory, which is an issue when using a
+GPU.
 
+\JH{shuffling goes here}
+
+\JH{optimizer delay perhaps also here}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Optimization.}
 
-\paragraph{Early Stopping.}
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Parameter Initialization.}
+
+\JH{random initialization vs pretraining / transfer learning}
 
 
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Early Stopping.} To avoid overfitting, the model should be regularly
+tested on a validation dataset over the course of the training. The validation
+data should not overlap with the training or test data. Once the model stops
+improving on a chosen validation metric, the training process is
+interrupted. This method is reffered to as \emph{early stopping}. Usually, the
+validation metric is either the cross-entropy loss, or the target evaluation
+metric, such as BLEU. An alternative early stopping method is to save the
+parameters of the best performing model on validation.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Hardware.}
 
 
 
+
+% ------------------------------------------------------------------------------
 \section{Autoregressive Decoding}
 \label{sec:training-vs-inference}
+% ------------------------------------------------------------------------------
 
 The models we described in the sections above are \emph{autoregressive} -- the
 output tokens are predicted left-to-right, while every decision is conditioned
 on the previously generated outputs. With this property, there comes an
 important distinction in behavior between training and decoding. Whereas during
 training, the ground-truth data are used to simulate the previous decisions,
-during decoding, the ground truth is unknown and therefore the model need to
+during decoding, the ground truth is unknown and therefore the model needs to
 rely solely on its own decisions. This constitutes a theoretical problem,
 called \emph{exposure bias} -- the model is never exposed to its own errors
 during training.
@@ -882,7 +917,7 @@ recurrence operation which requires accumulation of information in a hidden
 state, the network can be trained on a whole ground-truth sentence in one step.
 The only requirement is to prevent the decoder self-attention from attending to
 the future positions. However, during training, the model is still conditioned
-on its own decisions.
+on its own decisions. \JH{tohle neni pravda}
 
 
 
