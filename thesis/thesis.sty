@@ -74,6 +74,11 @@
 %% load up the quotchap package
 \RequirePackage{quotchap}
 \renewcommand*{\sectfont}{\rmfamily\bf\selectfont}
+\renewcommand*{\chapnumfont}{%
+  \usefont{T1}{\@defaultcnfont}{b}{n}\fontsize{100}{130}\selectfont%
+  \color{chaptergrey}
+}
+
 
 % TITLE PAGE
 \def\dept#1{\gdef\@dept{#1}}

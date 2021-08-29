@@ -6,7 +6,6 @@
 \documentclass[12pt,notitlepage,a4paper,openright]{report}
 \pagestyle{plain}
 
-%\usepackage{filecontents}
 %\begin{filecontents*}{\jobname.xmpdata}
 %  \Author{Jindřich Helcl}
 %  \Title{Non-Autoregressive Neural Machine Translation}
@@ -14,6 +13,15 @@
 %  \Subject{TODO}
 %  \Publisher{Charles University}
 %\end{filecontents*}
+
+% fix pdfx
+\usepackage{etoolbox}
+\makeatletter
+\@ifl@t@r\fmtversion{2021-06-01}%
+ {\AddToHook{package/after/xmpincl}
+   {\patchcmd\mcs@xmpincl@patchFile{\if\par}{\ifx\par}{}{\fail}}}{}
+\makeatother
+
 
 \usepackage[usenames,dvipsnames,svgnames,table,rgb]{xcolor}
 \usepackage[a-2u]{pdfx}
@@ -77,7 +85,6 @@
 
 % Czech babel conflicts with cline, hacky fix (http://tex.stackexchange.com/questions/111999/slovak-and-czech-babel-gives-problems-with-cmidrule-and-cline):
 % - basically disables hyphenation in tables, but it's not used anyway so it doesn't matter
-\usepackage{etoolbox}
 \preto\tabular{\shorthandoff{-}}
 %
 %
@@ -86,8 +93,6 @@ da-ta-sets
 da-ta-set
 } % -- custom hyphenation
 
-%\setmainfont[Ligatures=Common]{TeX Gyre Pagella}
-%\setmainfont[Ligatures=Common]{GFS Bodoni}
 \setmainfont[Ligatures=Common]{Linux Libertine}
 \setsansfont[Scale=MatchLowercase]{DejaVu Sans}
 \setmonofont[Scale=MatchLowercase]{DejaVu Sans Mono}
@@ -151,7 +156,7 @@ da-ta-set
 
 \def\fulldate{}
 \author{Jindřich Helcl}
-\date{2019}
+\date{2021}
 \dept{Institute of Formal and Applied Linguistics}
 \supervisor{prof. RNDr. Jan Hajič, Dr.}
 \studyprogram{Computer Science}
@@ -189,7 +194,7 @@ I understand that my work relates to the rights and obligations
   pursuant to Section~60 paragraph~1 of the Copyright Act.
 
 \vspace{2cm}
-\noindent Prague, March 21, 2019 \hspace{\fill}\theauthor\\ % doplňte patřičné datum, jméno a příjmení
+\noindent Prague, \JH{datum}, 2021 \hspace{\fill}\theauthor\\ % doplňte patřičné datum, jméno a příjmení
 
 %%%   Výtisk pak na tomto míste nezapomeňte PODEPSAT!
 %%%                                         *********
