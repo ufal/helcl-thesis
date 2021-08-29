@@ -37,10 +37,10 @@ namely \glspl{cnn}, \glspl{rnn}, or \glspl{san}. All of those can be adapted
 for text processing, and we will describe the latter two in more detail in
 Sections \ref{sec:encdec:rnn} and \ref{sec:encdec:transformer}, respectively.
 
-In \acrshort{nlp} tasks like sentence classification or language modeling,
-there is only a single sequence on the input. In \acrshort{mt}, we have a
-source sentence on the input, and a target sentence on the output. To reflect
-this property, most of the \gls{nmt} architectures have two components: an
+In \glsxtrshort{nlp} tasks like sentence classification or language modeling,
+there is only a single sequence on the input. In \gls{mt}, we have a source
+sentence on the input, and a target sentence on the output. To reflect this
+property, most of the \gls{nmt} architectures have two components: an
 \emph{encoder} and a \emph{decoder}. The encoder processes the input sentence
 and creates a hidden representation. The decoder then accesses this hidden
 representation and generates (or scores) the output sentence. When both
@@ -67,9 +67,9 @@ considerations for training a model are presented in Section
 
 
 
-\Gls{mt} is evaluated by automatic metrics such as \acrshort{bleu} and by human
-evaluation. This chapter concludes with a brief overview of the evaluation of
-\gls{nmt} systems (Section \ref{sec:evaluation}).
+\Gls{mt} is evaluated by automatic metrics such as \glsxtrshort{bleu} and by
+human evaluation. This chapter concludes with a brief overview of the
+evaluation of \gls{nmt} systems (Section \ref{sec:evaluation}).
 
 
 
@@ -248,15 +248,15 @@ this thesis, this approach did not yet outperform the subword state-of-the-art
 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{\acrshort{bpe}.}  \Acrlong{bpe} (\acrshort{bpe};
-\citealp{sennrich2016neural}) is an approach which tackles the open vocabulary
-problem by splitting words to subword units.  The idea is to devise a
-vocabulary of a predefined size, such that nearly every word can be composed
-using the units from the vocabulary. An additional requirement is for the
-vocabulary to contain as many frequent words as possible, so only rare words
-need to be split to more subwords.
+\paragraph{\glsxtrshort{bpe}.}  \Glsxtrlong{bpe} \glsunset{bpe}
+(\glsxtrshort{bpe}; \citealp{sennrich2016neural}) is an approach which tackles
+the open vocabulary problem by splitting words to subword units.  The idea is
+to devise a vocabulary of a predefined size, such that nearly every word can be
+composed using the units from the vocabulary. An additional requirement is for
+the vocabulary to contain as many frequent words as possible, so only rare
+words need to be split to more subwords.
 
-The \acrshort{bpe} algorithm %(Algorithm ~\ref{alg:learn-bpe})
+The \gls{bpe} algorithm %(Algorithm ~\ref{alg:learn-bpe})
 proceeds as follows. First, the vocabulary is initialized with all characters
 as symbols. Second, all tokens in the data are segmented using the symbols in
 the vocabulary (in the first step, the tokens are split to characters).  Third,
@@ -292,8 +292,10 @@ tokens.
 The early \gls{nmt} models based on \glspl{rnn} use the final encoder state as
 the intermediate representation \citep{sutskever2014sequence}:
 %
-\begin{align} h_j & = & \mathrm{RNN}_{\text{enc}}(x_j, h_{j-1}), \quad j \in
-\{0, 1, \ldots, T_x \} \\ s_0 & = & h_{T_x}
+\begin{align}
+  h_j &= \mathrm{RNN}_{\text{enc}}(x_j, h_{j-1}), \quad j \in
+          \{0, 1, \ldots, T_x \} \\
+  s_0 &= h_{T_x}
 \end{align}
 %
 where $\mathbf{x}$ is the input sentence and $h_0$ is the initial hidden state,
@@ -360,12 +362,13 @@ most prevailing types of \gls{rnn} architectures in \gls{nmt} are \gls{lstm}
 networks and \gls{gru} networks.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{\acrshort{lstm}.} \acrlong{lstm} networks \citep{hochreiter1997long}
-introduce gating mechanisms and a concept of \emph{information highway}, which
-ensures that only linear operations are applied on the states in the recurrent
-chain. A gating mechanism is an operation which computes a number between 0 and
-1, which we refer to as \emph{gate value}.  The output of the operation is the
-input multiplied by the gate value.
+\paragraph{\glsxtrshort{lstm}.} \glsxtrlong{lstm} networks
+\citep{hochreiter1997long} introduce gating mechanisms and a concept of
+\emph{information highway}, which ensures that only linear operations are
+applied on the states in the recurrent chain. A gating mechanism is an
+operation which computes a number between 0 and 1, which we refer to as
+\emph{gate value}.  The output of the operation is the input multiplied by the
+gate value.
 
 Given a current time step $t$, input $x_t \in \mathbb{R}^m$, and previous hidden
 states $h_{t-1}, C_{t-1} \in \mathbb{R}^n$, \gls{lstm} networks proceed as
@@ -409,8 +412,8 @@ constitutes the information highway that allows propagating the gradients over
 long distances in the sequence.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{\acrshort{gru}.} \acrlong{gru} networks \citep{cho2014gru} are an
-alternative to \glspl{lstm}. Instead of four sets of parameter matrices,
+\paragraph{\glsxtrshort{gru}.} \glsxtrlong{gru} networks \citep{cho2014gru} are
+an alternative to \glspl{lstm}. Instead of four sets of parameter matrices,
 \glspl{gru} need only three, while maintaining the theoretical strength. Unlike
 \glspl{lstm}, \glspl{gru} use only a single hidden state in the recurrence
 relations.
@@ -556,7 +559,7 @@ the overview of the model components.
     are interconnected with residual connections and layer normalization is
     applied on the output of each layer. The decoder stack uses three
     sub-layers, where the additional cross-attention layer attends to the
-    encoder output. We use the original image from
+    encoder output. We show the original image from
     \citet{vaswani2017attention}.}
   \label{fig:transformer}
 \end{figure}

@@ -3,6 +3,8 @@
 \label{chap:experiments}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\JH{based on UEDIN submissions}
+
 In this chapter, we describe the performed experiments. \JH{co dodat?}
 
 \section{Autoregressive Baseline Models}
@@ -40,7 +42,7 @@ in Table \ref{tab:ende-data-sizes}.
 We trained the first models on the clean parallel data alone, for comparison
 purposes and for the sake of completeness.
 
-
+\JH{The following is not true / old:}
 We train our autoregressive models on a mix of the clean data and the
 backtranslations. We use tagged-backtranslation and we oversample the clean
 dataset to form roughly 25\% of the mix. We select the top 100 million sentence
@@ -49,6 +51,7 @@ score. \JH{tento odstavec rozvest aspon na stranku a kus}. We also try using
 the top 150 million. \JH{napsat jinak:} As the size of the clean data is 3.6
 million sentence pairs, we oversample the dataset by a factor of 10 for the 100M
 backtranslation version or 14 for the 150M backtranslation version.
+
 
 
 %\input{end-end.tex}

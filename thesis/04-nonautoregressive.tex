@@ -100,10 +100,10 @@ explicit estimation of the target sentence length, leaving out the technical
 \end{equation}
 
 \paragraph{Target Length Estimation.} As mentioned in the above paragraph, in a
-standard NMT model such as the Transformer or an \acrshort{rnn}-based model with
-attention, the length of the output sentence is modeled implicitly by using the
-special end-of-sentence (\texttt{</s>}) token. \JH{Not sure if this fits the
-  narrative.}
+standard NMT model such as the Transformer or an \glsxtrshort{rnn}-based model
+with attention, the length of the output sentence is modeled implicitly by
+using the special end-of-sentence (\texttt{</s>}) token. \JH{Not sure if this
+  fits the narrative.}
 
 When using Equation \ref{eq:output-distribution} to model probability
 distribution over the set of all possible sentences, the probabilities assigned
@@ -412,7 +412,7 @@ translation model (in order to battle incomplete translation problem).
   Neural Machine Translation with Connectionist Temporal Classification'',
   joint work with Jindřich Libovický, published at EMNLP 2018.}
 
-In this section, we describe our approach to \acrlong{nat}.
+In this section, we describe our approach to \glsxtrlong{nat}.
 
 The idea behind our approach is that we do not explicitly estimate the target
 sequence length. Instead, we fix the decoder length on an upper limit of the
@@ -426,7 +426,7 @@ corresponding output distribution is unknown, we treat it as a latent variable,
 and we use the loss function which marginalizes this latent variable out. In
 other words, our loss function is the sum of losses given any possible
 alignment. This loss, used mostly in speech recognition domain
-\citep{graves2006connectionist}, is known as the \acrfull{ctc}. We describe
+\citep{graves2006connectionist}, is known as the \glsxtrfull{ctc}. We describe
 this function in more detail in Section \ref{subsec:ctc}.
 
 The \gls{ctc} loss is differentiable with respect to the model parameters,

@@ -1,0 +1,30 @@
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Non-autoregressive NMT with Connectionist Temporal Classification}
+\label{chap:nar-nmt-ctc}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+% -----------------------------------------------------------------------------
+\section{Connectionist Temporal Classification}
+\label{sec:ctc}
+% -----------------------------------------------------------------------------
+
+\Gls{ctc} \citep{graves2006connectionist} is a method for training neural
+networks on sequential data. Originally applied to the phonetic labelling task,
+but later successfully adapted in related areas, including \gls{asr} or
+handwriting recognition \citep{liwicki2007novel, eyben2009speech,
+  graves2014towards}.
+
+The main strength of \gls{ctc} becomes evident in tasks where the input and
+output labels are weakly or not at all aligned, for example in situations where
+the observed input sequence is considerably longer than the target output
+sequence -- hence the application to \gls{asr}, where the number of extracted
+features per second is much higher than the number of words uttered per second.
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "thesis"
+%%% End:
