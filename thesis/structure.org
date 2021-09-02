@@ -94,6 +94,18 @@
   - zalo¾eno na èlánku end to end ...
   - detailed version of that paper, includes description of the CTC algorithm
 
+** Connectionist Temporal Classification
+   - introduction
+   - use in ASR
+   - algorithm
+
+** CTC loss in NMT
+   - basically section 3 from the paper
+
+** Experiments
+   - sections 4 and 5 from the paper
+
+
 * CTC with n-gram LMs
   - zalo¾eno na èlánku
 

@@ -20,7 +20,62 @@ The main strength of \gls{ctc} becomes evident in tasks where the input and
 output labels are weakly or not at all aligned, for example in situations where
 the observed input sequence is considerably longer than the target output
 sequence -- hence the application to \gls{asr}, where the number of extracted
-features per second is much higher than the number of words uttered per second.
+features per second is higher than the number of phonemes uttered per second.
+\JH{Confirm this.}
+
+Training neural networks with \gls{ctc} is independent on the actual neural
+network architecture. The \gls{ctc} loss function can be applied on any network
+with sequential outputs. Thus, this method is applicable to both \glspl{rnn}
+and the Transformer model.
+
+Models trained with the \gls{ctc} assume that the alignment between the input
+(e.g. a group of frames in an audio signal) and the output (e.g. a phoneme)
+states is unknown. A variable number of frames in a row can encode a single
+phoneme. Similarly, in translation, multiple words in the source language may
+correspond to a single or more words in the target language.
+
+The idea behind \gls{ctc} is to allow some states to produce no output. This is
+realized by introducing a special blank token in the target vocabulary.
+Optionally, identical outputs produced by multiple consecutive states may be
+merged and considered a single output. Because of these properties, there are
+groups of equivalent output sequences, which all represent the same target, as
+illustrated in Figure~\ref{fig:ctc-equivalent-sequences}.
+
+\begin{figure}
+  \centering
+  \begin{minipage}{\textwidth}
+    \begin{equation*}
+        \text{a cat sat on a mat} =
+        \begin{cases}
+          & \text{a <blank> cat sat on a <blank> mat} \\
+          & \text{a a cat cat sat on a mat} \\
+          & \text{a <blank> cat cat sat on a mat} \\
+        \end{cases}
+    \end{equation*}
+  \end{minipage}
+  \caption{A group of output sequences of equal length which all represent the
+    same target in CTC.} %
+  \label{fig:ctc-equivalent-sequences}
+\end{figure}
+
+In the standard sequence-to-sequence architectures, the value of the loss
+function is defined as the sum of the cross entropies of each output state with
+respect to the target sequence (see Equation \ref{eq:loss}). In \gls{ctc}, the
+loss is defined as the sum of cross-entropy losses of all of the output
+sequences equivalent to the given target sequence:
+%
+\begin{equation}
+  J_{\theta}^{\text{CTC}} = - \sum_{(x, y) \in D} \sum_{y' \sim y}  \log p(y' | x, \theta)
+  \label{eq:ctc-loss}
+\end{equation}
+%
+where $\sim$ denotes the equivalence relation.
+\JH{$J_{\theta}$ should perhaps be $J(\theta)$}
+
+\JH{continue here...}
+
+The training of the network with \gls{ctc} is done
+by minimizing the \gls{ctc} loss function, which is defined as follows.
 
 
 
