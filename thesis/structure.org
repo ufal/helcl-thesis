@@ -95,9 +95,14 @@
   - detailed version of that paper, includes description of the CTC algorithm
 
 ** Connectionist Temporal Classification
-   - introduction
-   - use in ASR
-   - algorithm
+   - it's for training neural nets on sequences
+   - it's good when there is no evident src/tgt alignment
+   - it does not matter which architecture you use
+   - models assume alignment is unknown
+   - some states don't produce output -> multiple correct hypos
+   - loss = sum over individual hypo losses
+   - number of hypotheses grows exponentially with (max-length - src-length).
+
 
 ** CTC loss in NMT
    - basically section 3 from the paper

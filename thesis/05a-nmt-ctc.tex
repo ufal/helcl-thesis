@@ -69,10 +69,33 @@ sequences equivalent to the given target sequence:
   \label{eq:ctc-loss}
 \end{equation}
 %
-where $\sim$ denotes the equivalence relation.
-\JH{$J_{\theta}$ should perhaps be $J(\theta)$}
+where $\sim$ denotes the equivalence relation.  \JH{$J_{\theta}$ should perhaps
+  be $J(\theta)$. Also, consider the $\sim$ sign.}
 
-\JH{continue here...}
+The inner summation in Equation \ref{eq:ctc-loss} is computed over all possible
+sequences equivalent to the label sequence. For technical purposes, the label
+sequences are limited to a fixed length, which greatly reduces the number of
+acceptable hypotheses. However, the number of equivalent hypotheses of a given
+length grows exponentially with the sequence length, because in \gls{ctc}, the
+fixed length is always set to be longer than the label sequence.
+
+The summation summation over the large set of equivalent sequences can be
+implemented using dynamic programming. \JH{Description of the algorithm.}  The
+\gls{ctc} loss computation is illustrated in Figure
+\ref{fig:ctc-dynamic-programming}.
+
+\begin{figure}
+  \centering
+
+  \includegraphics[width=12cm]{img/ctc_schema.png}
+
+  \caption{An illustration of the algorihm for the CTC loss computation. Each
+    node denotes producing either a token from the label sequence, or the blank
+    token. Each path from one of the two top-left nodes to one of the two
+    bottom-right nodes corresponds to one of the equivalent sequences.  }
+  \label{fig:ctc-dynamic-programming}
+\end{figure}
+
 
 The training of the network with \gls{ctc} is done
 by minimizing the \gls{ctc} loss function, which is defined as follows.
