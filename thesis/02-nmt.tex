@@ -733,11 +733,11 @@ target words.
 
 Given model parameters $\theta$, the word-level cross-entropy is summed across
 the sentence pairs in the data $D$ to obtain the negative log likelihood of the
-dataset $J_{\theta}$:
+dataset $J(\theta)$:
 %
 \begin{equation}
   \begin{split}
-  J_{\theta} &= - \sum_{(x, y) \in D} \sum_{i = 1}^{T_y} \log p(y_i | x, y_{<i}, \theta) \\
+  J(\theta) &= - \sum_{(x, y) \in D} \sum_{i = 1}^{T_y} \log p(y_i | x, y_{<i}, \theta) \\
   &= - \sum_{(x, y) \in D} \log p(y | x, \theta)
   \end{split} \label{eq:loss}
 \end{equation}
@@ -850,13 +850,15 @@ the models in a limited environment, such as a mobile device.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Batching.} In Equation \ref{eq:loss}, the loss function
-$\mathcal{J_\theta}$ is defined as a sum of sequence-level losses over dataset
+$J(\theta)$ is defined as a sum of sequence-level losses over dataset
 $D$. We use gradient descent to find parameters $\theta$ which minimize the
 loss value. However, the exact computation of the gradient is inefficient
 because it requires one pass through the whole dataset. Therefore, we estimate
 the gradient on a small sample of the training data, called a \emph{mini
-  batch}, or simply a batch. This method is called \emph{stochastic gradient
-  descent}.
+  batch}, or simply a batch. This method is called
+\emph{\gls{sgd}}.\footnote{Some sources use the term \emph{mini-batch gradient
+    descent}, to distinguish from methods that perform the update for each
+  example.}
 
 The size of a mini batch is an important parameter and its value can have a
 large impact on the training convergence. Bigger batches provide better
@@ -869,12 +871,46 @@ GPU.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Optimization.}
+Because the gradients are estimated, heuristics can be used to improve the
+convergence. There are different sets of heuristics commonly used together,
+called \emph{optimizers}. In a standard \gls{sgd}, the update rule for every
+mini-batch $b = (x_i, y_i)_{i=0}^{n}$ follows:
+%
+\begin{equation}
+  \theta \gets \theta - \alpha  \cdot \nabla_{\theta}  J(\theta)
+\end{equation}
+%
+where $\nabla_{\theta} J$ is the gradient of the loss function, and
+$\alpha$ is the \emph{learning rate}. The learning rate is a hyper-parameter
+that controls the size of the update steps.
 
+\JH{Adam optimizer, LR decay, trasformer (noah) LR scheme}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Parameter Initialization.}
+Most commonly, the model parameters are initialized randomly. Uniform or normal
+distributions are both a common choice. A more involved initialization approach
+is to take into account the size of incoming and outgoing connections in the
+network to specify the bounds (for uniform distribution) or the standard
+deviation (for normal distribution) \citep{glorot2010understanding}.
+Model ensembling can be achieved by training a number of models with the same
+configuration, but all initialized randomly with different random seeds.
 
-\JH{random initialization vs pretraining / transfer learning}
+Another technique which uses parameter initialization is transfer learning
+\citep{zoph-etal-2016-transfer}. In this scenario, we have two similar tasks,
+such as machine translation between different language pairs, where the primary
+task is considerably more difficult than the auxiliary task (for example due to
+different amounts of training data available). Transfer learning assumes that
+models for both tasks share some amount of common knowledge. First, a
+\emph{parent} model is trained on the auxiliary task (e.g. \gls{mt} between a
+high-resource language pair). Then, the \emph{child} model is initialized with
+the trained parameters of the parent model. Finally, the child model is further
+trained on the primary task (e.g. a low-resource \gls{mt}).
+
+The idea of transfer learning is one of the main concepts in applications of
+pre-trained language models such as BERT \citep{devlin-etal-2019-bert}, or
+multilingual pre-trained models applied to \gls{mt}, such as mBART
+\citep{liu-etal-2020-multilingual}.
 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -944,8 +980,13 @@ two decades of using BLEU, it has been criticized for being prone to errors due
 to outliers or being too inaccurate when the score itself is low.
 \citep{callison-burch-etal-2006-evaluating,bojar-etal-2010-tackling,reiter2018structured,mathur-etal-2020-tangled}
 
-\JH{evaluation of decoding speed -- latency, throughput}
-
+Besides the translation quality, the models can also be evaluated in terms of
+efficiency. The decoding speed is usually measured in two dimensions:
+\emph{latency} and \emph{throughput}. Latency is the time to decode a single
+sentence in online mode (i.e. with batch size of 1). Throughput is the maximum
+number of sentences the model can translate in a unit of time (with any batch
+size). In the \gls{wmt} efficiency shared task, model size and RAM usage is
+also reported.
 
 
 %%% Local Variables:
