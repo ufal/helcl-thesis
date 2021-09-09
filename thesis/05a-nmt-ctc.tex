@@ -80,14 +80,17 @@ length grows exponentially with the sequence length, because in \gls{ctc}, the
 fixed length is always set to be longer than the label sequence.
 
 The summation summation over the large set of equivalent sequences can be
-implemented using dynamic programming. \JH{Description of the algorithm.}  The
-\gls{ctc} loss computation is illustrated in Figure
-\ref{fig:ctc-dynamic-programming}.
+implemented using dynamic programming. When both the length of the output and
+the length of the target sequences are known, there is a constant number of the
+blank tokens to be generated. The process of computing the loss of the whole
+output sequence is divided into computing the partial losses with respect to
+the possible label prefixes. The \gls{ctc} loss computation is illustrated in
+Figure \ref{fig:ctc-dynamic-programming}. Each node in the graph represents
 
 \begin{figure}
   \centering
 
-  \includegraphics[width=12cm]{img/ctc_schema.png}
+  \includegraphics[width=13cm]{img/ctc_schema.png}
 
   \caption{An illustration of the algorihm for the CTC loss computation. Each
     node denotes producing either a token from the label sequence, or the blank
