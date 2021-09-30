@@ -100,8 +100,20 @@
    - it does not matter which architecture you use
    - models assume alignment is unknown
    - some states don't produce output -> multiple correct hypos
-   - loss = sum over individual hypo losses
+   - loss = sum over equivalent hypo losses
    - number of hypotheses grows exponentially with (max-length - src-length).
+   - use dynamic programming to sum
+   - description in figure
+   - the value of the loss is the sum of all the paths, nodes store sum of
+     prefixes
+
+
+** Model Architecture
+  - ctc can be applied on any arch -> use the one which everyone uses
+
+
+
+
 
 
 ** CTC loss in NMT
