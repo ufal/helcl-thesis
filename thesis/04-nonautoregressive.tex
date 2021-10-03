@@ -47,10 +47,10 @@ which usually leads to poorer translation quality.
 
 The research presented in this thesis is focused on the usefulness of \gls{nar}
 models for translation (\glsentryshort{nat}\glsunset{nat}) in the quest for
-fast translation models. We first analyze the \gls{nat} models alone and assess
-the necessary techniques needed to match the quality of \gls{ar} models.  Then,
-we adapt the optimizations successfully used in \gls{ar} models for \gls{nar}
-models and evaluate the additional speed gains.
+faster translation models. We first analyze the \gls{nat} models alone and
+assess the necessary techniques needed to match the quality of \gls{ar} models.
+Then, we adapt the optimizations successfully used in \gls{ar} models for
+\gls{nar} models and evaluate the additional speed gains.
 
 This chapter begins with an overview of the non-autoregressive methods (Section
 \ref{sec:nat-methods}). In Section \ref{sec:nat-ctc}, we introduce
@@ -60,14 +60,16 @@ non-autoregressive \gls{nmt} with \gls{ctc}. \JH{rewrite following commented:}
 % possible future efforts in Section \ref{sec:nat-future}.
 
 
+% ------------------------------------------------------------------------------
 \section{Related Work}
 \label{sec:nat-methods}
+% ------------------------------------------------------------------------------
 
-This section lays grounds for understanding the key concepts in
-non-autoregressive \gls{nmt}. We first describe the principles that most of the
-related literature has in common. Then, we provide a survey of notable
-approaches to \gls{nat}.
+This section presents the key concepts in non-autoregressive \gls{nmt}. We
+first describe the principles that most of the related literature has in
+common. Then, we provide a survey of notable approaches to \gls{nat}.
 
+% ------------------------------------------------------------------------------
 \paragraph{Conditional Independence.} The defining feature of a
 non-autoregressive model is the conditional independence of the output
 distributions across time steps. Recall Equation \ref{eq:output-distribution}
@@ -78,7 +80,7 @@ which defines the output distribution for autoregressive models:
   \tag{\ref{eq:output-distribution}}
 \end{equation}
 %
-Unlike Equation \ref{eq:output-distribution}, \Gls{nat} models do not condition
+Unlike Equation \ref{eq:output-distribution}, \Ac{nat} models do not condition
 the output token probabilities on the previously decoded outputs $y_{<t}$.  The
 probability of an output sentence $y$ given an input sequence $x$ can then be
 modeled as:
@@ -87,99 +89,171 @@ modeled as:
   p(y|x) = \prod_{t=1}^{T_y}p(y_t|x,\theta).
   \label{eq:nat-output-distribution}
 \end{equation}
-%
-Note that without any constraints, $p(y|x)$ might not be a probability
-distribution. In the equations above, $y_{T_y}$ must represent the
-end-of-sentence (\texttt{</s>}) token, with none of the preceding tokens
-$y_t, t < T_y$ being \texttt{</s>}, too. This requirement can be expressed as an
-explicit estimation of the target sentence length, leaving out the technical
-\texttt{</s>} symbol from the mathematical model:
+
+Although technically possible, making the outputs in \acs{rnn}-based models
+conditionally independent does not reduce the decoding time because in
+\acsp{rnn}, each state depends on the value of the preceding state. However, in
+the Transformer model, the hidden states in one layer depend only on the states
+from the previous layer. This allows for parallelization on the layer level.
+
+Since the outputs are conditionally independent, the Transformer decoder cannot
+work with the previously decoded outputs. In the following paragraphs, we
+discuss the necessary alterations to the Transformer architecture.  First, the
+decoder needs to know the sentence length. Second, we need to supply the
+decoder inputs. Third, the causal mask in the decoder self-attention is now
+unnecessary.
+
+% ------------------------------------------------------------------------------
+\paragraph{Target Length Estimation.} In a standard NMT model such as the
+Transformer or an \glsxtrshort{rnn}-based model with attention, the length of
+the output sentence is modeled implicitly by using the special end-of-sentence
+(\eos{}) token. Equations \ref{eq:output-distribution} and
+\ref{eq:nat-output-distribution} work with the sentence length implicitly,
+assuming that the last token $y_{T_y}$ is the \eos{} token and that \eos{} does not
+appear among the previous tokens $y_{<T_y}$.
+
+The probability distribution in Equation \ref{eq:nat-output-distribution} can
+be factorized to express the estimation of the target sentence length
+explicitly, leaving out the \eos{} symbol from the mathematical model:
 \begin{equation}
   p(y|x) = p_L(T_y|x, \theta) \cdot \prod_{t=1}^{T_y}p(y_t|x,\theta).
   \label{eq:explicit-length}
 \end{equation}
 
-\paragraph{Target Length Estimation.} As mentioned in the above paragraph, in a
-standard NMT model such as the Transformer or an \glsxtrshort{rnn}-based model
-with attention, the length of the output sentence is modeled implicitly by
-using the special end-of-sentence (\texttt{</s>}) token. \JH{Not sure if this
-  fits the narrative.}
 
-When using Equation \ref{eq:output-distribution} to model probability
-distribution over the set of all possible sentences, the probabilities assigned
-to longer sentences are considerably lower than the probabilities of sentences
-which are short. This follows from the multiplication of probabilities, which
-are numbers between zero and one. \JH{další věc je že je ten search space
-  exponenciálně roste -- This follows from the fact that the search space
-  (i.e. the number of all possible sentences of length $T_y$) grows
-  exponentially with $T_y$.}  \JH{odkazat spis na argmax nez na output
-  distribution.} To diminish the negative influence of this property,
-\citet{wu2016google} introduce length normalization to the beam search algorithm
-(\JH{odkazat na eq. v intro do MT}). The normalization acts as a prior imposed
-on the target sentence length distribution.
+% When using Equation \ref{eq:output-distribution} to model probability
+% distribution over the set of all possible sentences, the probabilities assigned
+% to longer sentences are considerably lower than the probabilities of sentences
+% which are short. This follows from the multiplication of probabilities, which
+% are numbers between zero and one. \JH{další věc je že je ten search space
+%   exponenciálně roste -- This follows from the fact that the search space
+%   (i.e. the number of all possible sentences of length $T_y$) grows
+%   exponentially with $T_y$.}  \JH{odkazat spis na argmax nez na output
+%   distribution.} To diminish the negative influence of this property,
+% \citet{wu2016google} introduce length normalization to the beam search algorithm
+% (\JH{odkazat na eq. v intro do MT}). The normalization acts as a prior imposed
+% on the target sentence length distribution.
 
-It is, however, possible to estimate the target length explicitly.
-\JH{...}
+% It is, however, possible to estimate the target length explicitly.
+% \JH{...}
 
+\JH{mention these:}
 \citep{ghazvininejad2019mask} \citep{mansimov2019generalized}
 
+% ------------------------------------------------------------------------------
+\paragraph{Multimodality Problem.} In one of the first attempts to apply a
+non-autoregressive model to \gls{nmt}, \citet{gu2017nonautoregressive} describe
+the \emph{multimodality problem} which arise when the outputs are conditionally
+independent.
+
+When estimating the probability of a word on a given position, there may be
+multiple words which get a high probability. These words are the so called
+\emph{modes} of the distribution. In autoregressive models, once a word gets
+selected, other modes are ignored in the following time steps. However, a
+non-autoregressive model does not base the decisions on the preceding ones, so
+when multiple positions have multiple modes, the model has no way of knowing
+which modes have been selected on other positions.
+
+% This issue is illustrated in Figure \ref{fig:multimodality-problem}.
+% \begin{figure}
+%   \centering
+%   \begin{minipage}{\textwidth}
+%     source: thank you
+
+%     \begin{center}
+%     \begin{tabular}{cccc}
+%       \toprule
+%       $y_1$ & $p(y_1|x)$ & $y_2$ & $p(y_2|x)$ \\
+%       \midrule
+%       vielen & 0.4 & dank & 0.4 \\
+%       danke  & 0.3 & schön & 0.3 \\
+%       \vdots & & \vdots & & \\
+%       \bottomrule
+%     \end{tabular}
+%     \end{center}
+
+%   \end{minipage}
+%   \caption{Illustration of the multimodality problem.}
+%   \label{fig:multimodality-problem}
+% \end{figure}
+
+A well-known example of the multimodality problem is the translation of the
+sentence ``thank you'' into German, which has two equally likely translations:
+``vielen dank'' and ``danke schön.'' In this case, the pair of German tokens
+``danke'' and ``vielen'' create the two modes on the first position, and the
+tokens ``dank'' and ``schön'' are modes on the second position. If an
+autoregressive model chooses to generate ``danke'' on the first position, the
+token ``dank'' on the second position will no longer be likely. However, when a
+non-autoregressive model assigns high probabilities to the correct
+translations, it also has to assign high probabilities to the other (incorrect)
+two combinations, ``danke dank'' and ``vielen schön''.
 
 % ------------------------------------------------------------------------------
-
-\paragraph{Non-Autoregressive Neural Machine Translation
-  \citep{gu2017nonautoregressive}.} The first to propose non-autoregressive
-models applied to \gls{nmt}.
-
-Work with Equation \ref{eq:explicit-length} which brings the conditional
-independence and the explicit length estimation. Describe the
-\emph{multimodality problem}, which comes from poor capturing of multimodal
-distributions of the translations.
+\paragraph{\Ac{nat} with Fertility Model.} Non-autoregressive Transformer
+decoder does not receive the previously decoded tokens on the input. A solution
+proposed by \citet{gu2017nonautoregressive} is to use a simple fertility model,
+which also serves as the explicit target length estimator.
 
 Compared to the autoregressive Transformer model, the model has the following
 modifications. First, the inputs to the decoder are made up of the sequence of
 encoder inputs, either uniformly stretched to the predicted target sentence
-length, or copyied using a fertility model. Second, the decoder self-attention
+length, or copied using a fertility model. Second, the decoder self-attention
 does not use the causal mask since all states can now attend to all other states
 in both directions. Third, \emph{positional attention} is added to every decoder
 layer where the positional encoding is used as queries and keys, and the decoder
 states as values.
 
-The multimodal problem is addressed by introducing a latent variable $z$ sampled
-from a prior distribution, and modeling the probability conditionally on $z$:
-\begin{equation}
-  p(Y|X) = p_L(T_Y|X, \theta) \cdot \prod_{t=1}^{T_Y}p(y_t|X, z, \theta).
-\end{equation}
-\JH{Sjednotit maly a velky X a Y.}
+In \citet{gu2017nonautoregressive}, the multimodal problem is addressed by
+introducing a latent fertility variables $f_1, \ldots, f_{T_x}$ sampled from a
+prior distribution. Each $f_i \in \mathbb{N}_0$ denotes the number of times to
+copy $x_i$ to the decoder input. The output probability is then conditioned on
+the value of the latent variable.
+% \begin{equation}
+%   p(y|x) = p_L(T_y|x, \theta) \cdot \prod_{t=1}^{T_y}p(y_t|x, z, \theta).
+% \end{equation}
 
-The explicit length estimation model is replaced with fertility model,
-fertilities modeled with the latent variables.
-
-\textbf{Decoding} -- marginalizing over all possible fertilities is intractable,
-there are three methods to consider: Argmax decoding, average decoding, or
-\gls{npd}.
-
-\textbf{Training} -- Done with translation loss and fertility loss:
+The training is done by combining two loss functions -- translation loss and
+fertility loss:
 \begin{align}
-  \mathcal{L}(\theta)  & = \log p(Y|X, \theta) \\
-                       & = log \sum_{F \in \mathcal{F}} p(F| X, \theta ) p(Y | X, F, \theta) \\
+  \mathcal{L}(\theta)  & = \log p(y|x, \theta) \\
+                       & = log \sum_{F \in \mathcal{F}} p(F| x, \theta ) p(y | x, F, \theta) \\
                        & \geq \mathbb{E}_{\bar{F} \sim q}
                          \left(
-                         \sum_{t=1}^{T_Y} \log p(y_t | X, \bar{F}, \theta)
-                         + \sum_{t=1}^{T_X} \log p(f_t | X, \theta)
+                         \sum_{t=1}^{T_y} \log p(y_t | x, \bar{F}, \theta)
+                         + \sum_{t=1}^{T_x} \log p(f_t | x, \theta)
                          \right)
                          + \mathcal{H}(q)
 \end{align}
-\JH{what is $\mathcal{H}(q)$?}
-
+%
+where \JH{... describe the equation, or comment it out. Also, what is $\mathcal{H}$?}
+%
 The fertility model depends on an external module and is not trained end to
-end. The authors fine-tune the trained model using reinforcement learning.
+end. The authors fine-tune the trained model using reinforcement learning
+\citep{williams1992simple}.
+
+During decoding, the marginalizing over all possible fertility values is intractable. Therefore, the authors experiment with three approximation methods -- argmax and average decoding, and \ac{npd}.
 
 % ------------------------------------------------------------------------------
+\paragraph{Knowledge Distillation.} To tackle the multimodality problem from
+another angle, \citet{gu2017nonautoregressive} propose to use sequence-level
+knowledge distillation to create artificial training data
+\citep{kim-rush-2016-sequence}. The main idea is that outputs of a teacher
+model will have a simpler structure than natural language, limiting the number
+of the distribution modes.
 
-\paragraph{Iterative refinement \citep{lee2018deterministic}.} One of the first
-papers on \gls{nat}. Introduce $L$ discrete sequential latent variables
-interpreted as stages of refinement, which are marginalized out.
-\begin{align*}
+\JH{according to ..., KD is the main thing to do}
+
+% ------------------------------------------------------------------------------
+\paragraph{Iterative Refinement.} Another attempt to introduce latent variables
+in a non-autoregressive model was proposed by \citet{lee2018deterministic}.
+Instead of modelling fertility, the authors introduce $L$ discrete sequential latent
+variables interpreted as stages of refinement.
+%
+\JH{following is not fluent text:}
+% \paragraph{Iterative refinement \citep{lee2018deterministic}.} One of the first
+% papers on \gls{nat}. Introduce $L$ discrete sequential latent variables
+% interpreted as stages of refinement, which are marginalized out.
+ \begin{align*}
   p(Y|X) & = \sum_{Y^L}
            \left( \prod_{t=1}^{T_Y} p(y_t|Y^L, X) \right) p(Y^L|X) \\
   p(Y^L|X) & = \sum_{Y^{L-1}}

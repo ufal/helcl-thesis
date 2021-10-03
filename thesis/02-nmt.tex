@@ -151,19 +151,6 @@ be unseen words in the data. The following section lists methods that solve
 this problem.
 
 
-% výstup
-% Once the input text is converted into real-valued numeric data and the neural
-% network computation is executed, we need to interpret the results
-
-% \JH{přidat text o output distributions:}
-% %
-% \begin{equation}
-%   p(y|x) = \prod_{t=1}^{T_y}p(y_t|y_{<t},x,\theta)
-%   \label{eq:output-distribution}
-% \end{equation}
-% %
-% where $T_y \in \mathbb{R}$ is the length of the target sentence, $y_{<t}$ are
-% the previously decoded words, and $\theta$ is a set of the model parameters.
 
 \subsection{Open Vocabulary Problem}
 
@@ -668,6 +655,24 @@ combination, which ties all states in the sub-layer stack into a shared vector
 space.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Output Projection.}
+\JH{write output projection here}
+% výstup
+
+%Once the input text is converted into real-valued numeric data and the neural
+%network computation is executed, we need to interpret the results
+
+%
+\begin{equation}
+  p(y|x) = \prod_{t=1}^{T_y}p(y_t|y_{<t},x,\theta)
+  \label{eq:output-distribution}
+\end{equation}
+%
+where $T_y \in \mathbb{R}$ is the length of the target sentence, $y_{<t}$ are
+the previously decoded words, and $\theta$ is a set of the model parameters.
+
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Model Hyperparameters.} The parameters that control the model size
 are the model dimension $d$, the number of attention heads $h$, the dimension
 of the feed-forward hidden layer $d_f$, and the number of Transformer layers in
@@ -924,11 +929,34 @@ metric, such as BLEU. An alternative early stopping method is to save the
 parameters of the best performing model on validation.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{Hardware.}
-\JH{fill this: for training, GPUs are usually used, sometimes TPUs. Sometimes,
-  multiple GPUs can be used, and then there is a choice between synchronous and
-  asynchronous training}
+\paragraph{Hardware.} Since the advent of deep learning methods for \ac{nmt},
+the neural network architectures began to grow. However, this breakthrough
+could not have happened if there was not the hardware to allow it. Graphics
+cards (GPUs) are now the most widely used hardware for training neural
+networks, including \ac{nmt} models, thanks to the support for heavily
+parallelized matrix multiplication opertations.
 
+Nowadays, GPUs are the default option for training, along with \acp{tpu}. The
+decoding, however, can take place on many different devices, depending on the
+use for the actual translation model. For example, back-translation and
+knowledge distillation where we translate large amounts of data usually runs on
+a GPU, whereas the translation of a single sentence with your mobile app runs
+either on a cloud (where it can use both CPUs or GPUs), or locally on your
+device's CPU.
+
+There is also the option of training (and/or decoding) the models on multiple
+GPUs, which greatly speeds up the process. Perhaps most common scenario is
+\emph{synchronous training.} At the beginning the model is copied across all
+the available devices, the gradients are computed for a batch of data on each
+device, then summed and the update is performed on all copies. On the other
+hand, in \emph{asynchronous training}, the process does not wait for the
+computation to finish on all devices, but rather perform the updates as the
+gradients are computed. Synchronous training has the advantage of being
+deterministic, whereas asynchronous training can converge faster. \JH{confirm
+  this or rewrite}
+
+The delayed optimizer update, discussed in the batching paragraph above
+\JH{confirm this}, serves as a simulation of training on multiple devices.
 
 % ------------------------------------------------------------------------------
 \section{Autoregressive Decoding}

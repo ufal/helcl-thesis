@@ -84,11 +84,34 @@
   - survey of methods for non-autoregressive NMT.
   - nechat na zaèátku stùj co stùj i pøes forward odkazy
 
-** Related work
+* NAT
+   - efficiency of MT is important
+   - local MT models have advantages
+   - optimizations speed up the models
+   - NAR models are an alternative
+   - we analyze NAT models with the optimization techniques
+   - structure of the chapter is as follows
 
-*** Fully NAT
+** Related work (to be renamed)
+   - the key concepts are:
+   - Conditional independence
+     - a defining feature of NAT models (+equations)
+     - RNNs can't do that, transformer can
+     - even transformer need to be changed
+   - Target length estimation
+     - eq 3.1 work with length implicitly using a special token
+     - we can factorize 3.1 to get the target lenght estimation
+     - ?
+   - Multimodality problem
+     - popisuje to gu
+     - more words with high prob - more modes
+     - vielen dank danke dank example
+   - Fertility model
+     - NAR transformer decoder does not have outputs on input
+     - gu copies encoder words to decoder using a fertility model
 
-*** Iterative NAT
+
+
 
 * NAR NMT with CTC
   - zalo¾eno na èlánku end to end ...
@@ -107,11 +130,17 @@
    - the value of the loss is the sum of all the paths, nodes store sum of
      prefixes
 
-
 ** Model Architecture
-  - ctc can be applied on any arch -> use the one which everyone uses
+   - ctc can be applied on any arch -> use the one which everyone uses
+   - NAT models need to know the length beforehand
+   - set the length to k-times source
+   - expand by state splitting (see figure)
+   - we experiment with state splitting in two different places
 
-
+** Baseline Experiments
+   Section about the original CTC experiments plus their analysis. This is
+   without knowledge distillation and on different datasets than the recent
+   experiments. Also, Romanian (and Czech?) is included.
 
 
 

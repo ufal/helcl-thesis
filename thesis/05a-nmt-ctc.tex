@@ -133,8 +133,6 @@ by minimizing the \gls{ctc} loss function, which is defined as follows.
 \label{sec:ctc:arch}
 % -----------------------------------------------------------------------------
 
-\JH{based on the paper, incl. the equation}
-
 As said in the previous chapter, training models with \gls{ctc} does not impose
 any requirements on the model architecture. In our experiments, we aim for a
 reasonable comparison between our proposed approach and the state-of-the-art
@@ -183,8 +181,21 @@ for $b=0 \ldots k-1$ and $c=1 \ldots T_x$ where
 $W_{\text{spl}} \in \mathbb{R}^{d \times kd}$ and
 $b_{\text{spl}} \in \mathbb{R}^{kd}$ are the trainable projection parameters.
 
+We experiment with two placement options of the state splitting layer. First,
+we try placing the state splitting at the end of the Transformer layer
+stack. In this scenario, there are 12 Transformer encoder layers, followed by
+the state splitting layer, whose outputs are used in the output
+projection. Second, we place the state splitting layer in the middle of the
+Transformer layer stack, mimicking the 6-layer encoder-decoder architecture of
+the autoregressive Transformer model. In the second variant, cross-attention
+can be included in the second half of the layers, which attends to the states
+right after state splitting.
 
-\JH{otázka je, kam ten splitting dát - na začátek či doprostřed modelu}
+
+\section{Baseline Experiments}
+
+\JH{Section with experiments from the 2018 paper. Should show that it works,
+  but it's still far from perfect.}
 
 
 %%% Local Variables:
