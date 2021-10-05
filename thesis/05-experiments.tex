@@ -3,60 +3,151 @@
 \label{chap:experiments}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\JH{based on UEDIN submissions}
+In this chapter, we present further experiments with \ac{nat} models trained
+with \ac{ctc}. We focus on fair comparison with other non-autoregressive
+approaches as well as state-of-the-art optimized autoregressive methods.
 
-In this chapter, we describe the performed experiments. \JH{co dodat?}
+We performed experiments on English-German and English-Czech translation \JH{do
+  the en-cs experiments!}. As stated in previous sections, knowledge
+distillation \citep{kim-rush-2016-sequence} is a crucial element that brings
+the performance of non-autoregressive methods closer to that of autoregressive
+methods. We use strong autoregressive teachers as both our baseline models, and
+as the source of the artificial target side data for training of the distilled
+models.
 
-\section{Autoregressive Baseline Models}
+\section{Autoregressive Teacher Models}
 \label{sec:exp:autoregressive}
 
-\paragraph{English -- German.} For our English-to-German models, we take
-dataset created and published by \citet{germann2020university}. The dataset
-consists of three parts. First, there is clean parallel data from the Europarl
-corpus \citep{koehn2005europarl}, the Tilde MODEL -- RAPID corpus
-\citep{rozis-skadins-2017-tilde}, and News Commentary corpus from OPUS
-\citep{tiedemann2012opus}. Second, the dataset contains crawled parallel data
-from the Web, which are considered noisy. These sources include Paracrawl
-\citep{espla-etal-2019-paracrawl}, Common
-Crawl\footnote{\url{http://commoncrawl.org/}}, and WikiMatrix
-\citep{schwenk2019wikimatrix}. Third, the dataset contains backtranslated
-sentences of originally monolingual News Crawl datasets from years 2008 to
-2017, in both translation directions. The details of the data sizes are given
-in Table \ref{tab:ende-data-sizes}.
+In this section, we describe the experimental settings for training the
+autoregressive teacher models, which we used for knowledge distillation of data
+for training our non-autoregressive student models.
+
+\subsection{English -- German.}
+
+\paperdisclaim{This section is based on ``The University of Edinburgh's
+  English-German and English-Hausa Submissions to the WMT21 News Translation
+  Task'', joint work with Pinzen Chen, Ulrich Germann, Laurie Burchell, Nikolay
+  Bogoychev, Antonio Valerio Miceli Barone, Jonas Waldendorf, Alexandra Birch,
+  and Kenneth Heafield, published at WMT 2021.}
+
+\noindent
+In our English-German experiments, we use autoregressive models from our
+submission to the WMT~21 News Translation shared task \JH{add bib when ready}.
+
+\paragraph{Data Cleaning.} For our English-German models, we prepare the
+training dataset consisting of the following parts. First, we used clean
+parallel data from the Europarl corpus \citep{koehn2005europarl}, the Tilde
+MODEL -- RAPID corpus \citep{rozis-skadins-2017-tilde}, and News Commentary
+corpus from OPUS \citep{tiedemann2012opus}. Next, we included sources of
+crawled parallel data from the web, which are considered noisy. These include
+Paracrawl \citep{espla-etal-2019-paracrawl}, Common
+Crawl\footnote{\url{https://commoncrawl.org/}}, and WikiMatrix
+\citep{schwenk2019wikimatrix}, and the Wikipedia Parallel Titles
+Corpus\footnote{\url{https://linguatools.org/tools/corpora/wikipedia-parallel-titles-corpora/}}. Finally,
+we used backtranslation \citep{sennrich-etal-2016-improving} of monolingual
+data obtained from News Crawl. We trained our own models for generating the
+backtranslations, trained on cleaned parallel data, as described below.
+
+On the gathered data (both clean and noisy), we applied filtering techniques to
+improve the overall quality of the parallel data. First, we applied a
+deterministic rule-based filtering%
+\footnote{\url{https://github.com/browsermt/students/blob/master/train-student/clean/clean-corpus.sh}}
+and deduplication. We removed all sentence pairs containing non-printing
+characters, empty sentences, and sentences longer than 120 words; we also
+removed all sentence pairs with length ratio of less than 0.6 (0.4 for
+Wikititles), sentences in which over 40\% of characters did not constitute
+tokens, and sentences in which more than 50\% was non-alphabetic characters. We
+ran language identification using fastText
+\citep{joulin-etal-2017-bag,joulin2016fasttext} and removed all sentence pairs
+classified as not English-German.
+
+The data sizes before and after the rule-based filtering are shown in Table
+\ref{tab:ende-data-sizes}. Note that the vast majority of the training corpus
+consists of data from noisy sources.
 
 \begin{table}
   \centering
-  \begin{tabular}{cc}
+  \begin{tabular}{lrrr}
     \toprule
-    haha & beta \\
+    Data source & \multicolumn{2}{l}{Raw size} & \multicolumn{1}{l}{Size after cleaning} \\
     \midrule
-    bravo & delta \\
+    Europarl & 1.83 & \multirow{3}{*}{3.86} & \multirow{3}{*}{3.1} \\
+    RAPID & 1.63 & &\\
+    News Commentary & 0.40 & & \\
+    \midrule
+    Paracrawl & 82.64 &  \multirow{4}{*}{91.98} & \multirow{4}{*}{84.6} \\
+    WikiMatrix & 5.47 & & \\
+    Common Crawl & 2.40 & & \\
+    Wikititles & 1.47 & & \\
+    \midrule
+    \multicolumn{1}{r}{total} & & 95.84 & 87.7 \\
     \bottomrule
   \end{tabular}
 
-  \caption{The sizes of the individual data sources in the EN-DE training
-    data.}%
+  \caption{The sizes of the individual raw corpora before and after rule-based
+    cleaning, in millions of sentence pairs.}%
   \label{tab:ende-data-sizes}
 \end{table}
 
-We trained the first models on the clean parallel data alone, for comparison
-purposes and for the sake of completeness.
+To further clean the data, we applied dual cross-entropy filtering, as proposed
+by \citet{junczys-dowmunt-2018-dual}. Using two translation models trained on
+the same data in opposite directions, each sentence pair $(x, y)$ in the data
+is scored according to the following formula:
+%
+\begin{equation}
+  s = |H_A(y|x) - H_B(x|y)| + \frac{1}{2} (H_A(y|x) + H_B{x|y})
+\end{equation}
+where $H_A$ and $H_B$ are the cross-entropies of the two models, normalized
+over words:
+%
+\begin{equation}
+  H_A(y|x) = - \frac{1}{T_y} \log p(y|x)
+\end{equation}
+and similarly for $H_B(x|y)$.
 
-\JH{The following is not true / old:}
-We train our autoregressive models on a mix of the clean data and the
-backtranslations. We use tagged-backtranslation and we oversample the clean
-dataset to form roughly 25\% of the mix. We select the top 100 million sentence
-pairs from the backtranslated data according to Moore-Lewis language modeling
-score. \JH{tento odstavec rozvest aspon na stranku a kus}. We also try using
-the top 150 million. \JH{napsat jinak:} As the size of the clean data is 3.6
-million sentence pairs, we oversample the dataset by a factor of 10 for the 100M
-backtranslation version or 14 for the 150M backtranslation version.
+We trained two Transformer base models for dual cross-entropy filtering using
+the clean part of the data after the rule-based cleaning step.  \JH{Add more
+  details on these models, perhaps include the hyperparameters somewhere in an
+  appendix, plus add the dev scores}
+
+We score the crawled part of the parallel data using the trained models, and we
+sort the sentence pairs according to the score. To estimate how many of the
+sentence pairs in the crawled we can consider clean, we train translation
+models in both directions on different amounts of the scored data. We used
+25\%, 50\%, 75\%, and 100\% of the crawled data, taking the highest-scoring
+sentence pairs for training. Based on the score on the development data
+\JH{which?}, we select the 75\% highest-scoring sentence pairs from the crawled
+data. \JH{rephrase this a bit + add details about the models} The develoment
+scores achieved by the trained models are shown in Table
+\ref{tab:dual-cross-entropy-selection}.
+
+\begin{table}
+  \centering
+  \begin{tabular}{lrrrr}
+    \toprule
+    & 25\% & 50\% & 75\% & 100\% \\
+    \midrule
+    En $\rightarrow$ De &  & 43.68 & 43.40 & 42.70 \\
+    De $\rightarrow$ En & 41.47 & 41.64 & 42.15 & 42.02 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Development scores of the Transformer models trained on different
+    amounts of scored crawled parallel data in both directions.}%
+  \label{tab:dual-cross-entropy-selection}
+\end{table}
 
 
 
-%\input{end-end.tex}
+% \JH{The following is not true / old:}
+% We train our autoregressive models on a mix of the clean data and the
+% backtranslations. We use tagged-backtranslation and we oversample the clean
+% dataset to form roughly 25\% of the mix. We select the top 100 million sentence
+% pairs from the backtranslated data according to Moore-Lewis language modeling
+% score. \JH{tento odstavec rozvest aspon na stranku a kus}. We also try using
+% the top 150 million. \JH{napsat jinak:} As the size of the clean data is 3.6
+% million sentence pairs, we oversample the dataset by a factor of 10 for the 100M
+% backtranslation version or 14 for the 150M backtranslation version.
 
-%\input{improving.tex}
 
 %%% Local Variables:
 %%% mode: latex

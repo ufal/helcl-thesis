@@ -241,78 +241,110 @@ knowledge distillation to create artificial training data
 model will have a simpler structure than natural language, limiting the number
 of the distribution modes.
 
-\JH{according to ..., KD is the main thing to do}
+According to an ablation study published by \citet{gu-kong-2021-fully}, using
+knowledge distillation is a crucial element in training non-autoregressive
+translation models, regardless the actual method used.
 
 % ------------------------------------------------------------------------------
 \paragraph{Iterative Refinement.} Another attempt to introduce latent variables
 in a non-autoregressive model was proposed by \citet{lee2018deterministic}.
 Instead of modelling fertility, the authors introduce $L$ discrete sequential latent
-variables interpreted as stages of refinement.
+variables interpreted as stages of refinement:
 %
-\JH{following is not fluent text:}
-% \paragraph{Iterative refinement \citep{lee2018deterministic}.} One of the first
-% papers on \gls{nat}. Introduce $L$ discrete sequential latent variables
-% interpreted as stages of refinement, which are marginalized out.
- \begin{align*}
-  p(Y|X) & = \sum_{Y^L}
-           \left( \prod_{t=1}^{T_Y} p(y_t|Y^L, X) \right) p(Y^L|X) \\
-  p(Y^L|X) & = \sum_{Y^{L-1}}
-             \left( \prod_{t=1}^{T_Y} p(y_t^L | Y^{L-1}, X) \right)
-             p(Y^{L-1}|X) \\
-  \vdots \nonumber \\
-  p(Y^0|X) & = \prod_{t=1}^{T_Y} p(y_t^0|X)
-\end{align*}
-Each summation in the equations above is computed over the whole space of
-possible sequences, and thus, it is intractable for the probablility $p(Y|X)$ to
-be caluculated exactly. To overcome this problem, the authors approximate the
-sums with only the element corresponding to the sequence with the largest
-probability, $\hat{y}_t = \argmax_{y_t}p(y_t|X)$.\footnote{Note that in
-  non-autoregressive model where the probability does not depend on previously
-  decoded outputs $y_{<t}$, getting the most probable tokens will also yield the
-  most probable sequence.}  Putting it together with the equations above and
-moving to logarithmic domain, we get:
 \begin{align}
-  \log p(Y|X) \geq
-    & \sum_{t=1}^{T_Y} \log p(y_t| \hat{Y}^L, X) + \\
-    & + \sum_{t=1}^{T_Y} \log p(\hat{y}_t^{L}| \hat{Y}^{L-1}, X) + \ldots \\
-    & + \sum_{t=1}^{T_Y} \log p(\hat{y}_t^0 | X) \label{eq:refinement-lowerbound}
-% = & \sum_{l=0}^{L} \sum_{t=1}^{T_Y} \log p(\hat{y}_t^{l+1} | \hat{Y}^l, X)
+  \begin{split}
+    p(y|x) & = \sum_{y^L}
+      \left( \prod_{t=1}^{T_y} p(y_t|y^L, x) \right) p(y^L|x) \\
+    p(y^L|x) & = \sum_{y^{L-1}}
+      \left( \prod_{t=1}^{T_y} p(y_t^L | y^{L-1}, x) \right)
+      p(y^{L-1}|x) \\
+    \vdots \\
+    p(y^0|x) & = \prod_{t=1}^{T_y} p(y_t^0|x)
+  \end{split}
+\end{align}
+%
+Each summation in the equations above is computed over the whole space of
+possible sequences, and thus, it is intractable for the probablility $p(y|x)$
+to be caluculated exactly. To overcome this problem, the authors approximate
+the sums with only the element corresponding to the sequence with the largest
+probability, $\hat{y}_t = \argmax_{y_t}p(y_t|x)$.\footnote{Note that in
+  non-autoregressive model where the probability does not depend on previously
+  decoded outputs $y_{<t}$, getting the most probable tokens will also yield
+  the most probable sequence.}  Putting it together with the equations above
+and moving to the logarithmic domain, we get:
+\begin{align}
+  \begin{split}
+    \log p(y|x) \geq
+    & \sum_{t=1}^{T_y} \log p(y_t| \hat{y}^L, x) + \\
+    & + \sum_{t=1}^{T_y} \log p(\hat{y}_t^{L}| \hat{y}^{L-1}, x) + \ldots \\
+    & + \sum_{t=1}^{T_y} \log p(\hat{y}_t^0 | x). \label{eq:refinement-lowerbound}
+    % = & \sum_{l=0}^{L} \sum_{t=1}^{T_Y} \log p(\hat{y}_t^{l+1} | \hat{Y}^l, X)
+  \end{split}
 \end{align}
 %where $Y^0 = X$ and $\hat{y}_t^{L+1} = y_t$.
 
 The initial sequence $\hat{y}_t^0$ is set to $x_{t'}$ where
-$t' = (T_X / T_Y) \cdot t$, i.e. the source sentence is either squished or
-stretched by copying or omitting some words in order to fit the target sentence
-length.
+$t' = (T_x / T_y) \cdot t$, i.e. the source sentence is either squished or
+stretched by copying or omitting some of the source words in order to fit the
+target sentence length. During training, the length of the reference sentence
+is known. During decoding, the authors use a separate model $p(T_y|x)$ for
+target length prediction. All probability distributions in the above equations
+are modeled with neural networks with shared parameters. In this way, the
+number of intermediate refinement steps remains flexible during the decoding.
 
-All probability distributions in the above equations are modeled with neural
-networks with shared parameters. In this way, the number of intermediate
-refinement steps remains flexible during decoding.
-
-\textbf{Training} -- the latent variable model loss is trained by minimizing the
-negative log-likelihood of the target sequence $Y^*$ in each of the refinement
-steps:
+The latent variable model is trained by minimizing the log-likelihood of the
+eference sentence $y^*$ in each of the refinement steps:
 \begin{equation}
   \mathcal{L}_{\text{LVM}}(\theta) = - \sum_{l=1}^{L+1} \left(
-    \sum_{t=1}^{T_Y} \log p(y_t^* | \hat{Y}^{l-1}, X, \theta)
+    \sum_{t=1}^{T_{y^*}} \log p(y_t^* | \hat{y}^{l-1}, x, \theta)
   \right) \label{eq:refinement-lvm-loss}
 \end{equation}
 
-
-\textbf{Denoising perspective} -- The authors introduce an additional denoising
-autoencoder loss to the model:
+In their iterative approach, \citet{lee-etal-2018-deterministic} also discuss
+the training of the refinement process from a denoising perspective. Formally,
+they introduce an additional denoising autoencoder loss to the model:
+%
 \begin{equation}
-  \mathcal{L}-{\text{DAE}}(\theta) = - \sum_{t=1}^{T_Y} \log p(y_t^* | \bar{Y}, X, \theta)
+  \mathcal{L}_{\text{DAE}}(\theta) = - \sum_{t=1}^{T_y} \log p(y_t^* | \bar{y}, x, \theta)
 \end{equation}
-where $\bar{Y}$ is a corrupted version of a reference translation $Y^*$. The
-corruption operations are applied with probability $\beta$ on the tokens --
-either a token is replaced with a random word from the vocabulary, or a token is
-replaced (copied) with its neighbor, or the neighbors are swapped.
+where $\bar{y}$ is a corrupted version of the reference translation $y^*$. The
+corruption process is performed on each token with a probability $\beta$. Each
+corrupted token is either replaced with a random word from the vocabulary,
+copied to its neighbor, or swapped with the neighbor.
 
 During training, the two loss functions are stochastically mixed using a
 hyper-parameter $\alpha$, sampled from a Bernoulli distribution.
 
-They also use knowledge distillation.
+
+% ------------------------------------------------------------------------------
+\paragraph{Aligned Cross Entropy for \gls{nat}} One problem with using
+cross-entropy objective for training \gls{nat} models is that it heavily
+penalizes misaligned target words. If a correct word is generated at an
+incorrect position in the target sentence, the loss is the same as if the model
+generates a completely unrelated word. In autoregressive models, this problem
+is avoided with teacher forcing -- the model is provided with the preceding
+words from the reference sentence. Without teacher forcing, the alignment
+between the predicted distributions and the positions in the reference sentence
+is too rigid. One way to address this problem is to consider the alignment as a
+latent variable. \JH{add example of misaligned sentence.}
+
+Aligned cross entropy (AXE; \citealp{ghazvininejad2020aligned}) is an objective
+function that takes this problem into account. It uses a dynamic programming
+algorithm to find the alignment with the minimum cross-entropy loss. \JH{add an
+  example of the best alignment}
+
+\JH{skip prediction, skip target in the algorithm}
+
+Formally, ... \JH{doplnit}
+
+In our experiments, we use the \ac{ctc} loss, which is similar to this
+approach. Instead of considering the alignment that yields the minimum
+cross-entropy loss, the \ac{ctc} algorithm computes the sum of all the possible
+alignments. Unlike \ac{axe}, we only consider skipping the predictions, while
+not allowing to skip the target positions. We present the \ac{ctc}-based method
+in detail in Chapter \ref{chap:nar-nmt-ctc}.
+
+
 
 % ------------------------------------------------------------------------------
 
@@ -343,8 +375,8 @@ $t + \hat{k}$.
 \JH{add semiautroegressive paper from emnlp 2018}
 
 \begin{itemize}
-\item iNat \citep{lee2018deterministic} -- iterative refinement
-\item Blockwise \citep{stern2018blockwise}
+%\item iNat \citep{lee2018deterministic} -- iterative refinement
+%\item Blockwise \citep{stern2018blockwise}
 \item InsT \citep{stern2019insertion} -- insertion transformer
 \item CMLM \citep{ghazvininejad2019mask} -- conditional masked language models
 \item LevT \citep{gu2019levenshtein} -- Levenshtein transformer
@@ -425,24 +457,6 @@ rescoring. p-DVQ and s-DVQ as well as improved semhash are comparable, semhash
 seems faster. Latency in the order of 100 ms, 7-8 ms per sentence with batch
 size of 64.
 
-
-% ------------------------------------------------------------------------------
-\paragraph{Aligned Cross Entropy for \gls{nat}} The problem with using
-cross-entropy objective for training \gls{nat} models is that it heavily
-penalizes misaligned target words. If a correct word is generated at an
-incorrect position in the target sentence, the loss is the same as if the model
-generates a completely unrelated word. In autoregressive models, this problem
-is avoided with teacher forcing -- the model is provided with the preceding
-words from the reference sentence. Without teacher forcing, the alignment
-between the predicted distributions and the reference sentence needs to be
-considered as latent.
-
-Aligned cross entropy (AXE; \citealp{ghazvininejad2020aligned}) is an objective
-function that takes this consideration into account. It uses a dynamic
-programming algorithm to find the alignment with the minimum cross-entropy
-loss.
-
-Formally, ... \JH{doplnit}
 
 
 % ------------------------------------------------------------------------------
