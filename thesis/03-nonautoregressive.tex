@@ -3,8 +3,8 @@
 \label{chap:nat}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The efficiency of \gls{mt} models is often crucial in real-world applications.
-Most commercial \gls{nmt} models are available through a cloud-based service,
+The efficiency of \ac{mt} models is often crucial in real-world applications.
+Most commercial \ac{nmt} models are available through a cloud-based service,
 such as Microsoft Translator\footnote{\url{https://microsoft.com/translator}}
 or Google Translate\footnote{\url{https://translate.google.com}}. Scaling
 cloud-based solutions for large user bases is simple but costly. But even with
@@ -14,7 +14,7 @@ optimizations which decrease the model latency and improve the user experience.
 % lokální modely maj tu výhodu, že to běží u mně, takže to jde pouyžít offline
 % a taky se nemusím bát o svoje soukromý data. ale jsou pomalý.
 
-Locally-deployed \gls{nmt} models provide a number of advantages over
+Locally-deployed \ac{nmt} models provide a number of advantages over
 cloud-based solutions. First, the service does not rely on internet
 connection. Second, the data are not being sent to a 3rd party server, and
 therefore it is suitable for translating private or confidential data.
@@ -24,7 +24,7 @@ cards. Otherwise, the time for translating a single sentence can easily reach
 more than a second on a standard CPU.
 
 Higher decoding speeds can be achieved by model optimization. In their 2019
-submission to the \gls{wngt} shared task on efficiency,
+submission to the \ac{wngt} shared task on efficiency,
 \citet{kim-etal-2019-research} successfully employed knowledge distillation,
 quantization, shortlisting \citep{jean2015using} and a simpler recurrent unit
 design to bring the throughput of the translation model up to 3,600 words per
@@ -36,26 +36,26 @@ offline translation models into a browser (\JH{cite}).
 
 % vedle toho tu jsou neautoregresivní modely který se na to snaží jít jinak
 
-\Gls{nar} models present an alternative approach to model optimization, using a
+\Ac{nar} models present an alternative approach to model optimization, using a
 different architecture and decoding algorithm which has lower time complexity.
-In \gls{nmt}, a non-autoregressive decoding algorithm does not access the
+In \ac{nmt}, a non-autoregressive decoding algorithm does not access the
 previously decoded outputs, imposing conditional independence on the output
 token probability distributions. This assumption allows parallelization of the
 decoding which can significantly reduce the latency of the translation
 system. On the other hand, it also presents a challenge to the language model,
 which usually leads to poorer translation quality.
 
-The research presented in this thesis is focused on the usefulness of \gls{nar}
-models for translation (\glsentryshort{nat}\glsunset{nat}) in the quest for
-faster translation models. We first analyze the \gls{nat} models alone and
-assess the necessary techniques needed to match the quality of \gls{ar} models.
-Then, we adapt the optimizations successfully used in \gls{ar} models for
-\gls{nar} models and evaluate the additional speed gains.
+The research presented in this thesis is focused on the usefulness of \ac{nar}
+models for translation (\acs{nat}\glsunset{nat}) in the quest for faster
+translation models. We first analyze the \ac{nat} models alone and assess the
+necessary techniques needed to match the quality of \ac{ar} models.  Then, we
+adapt the optimizations successfully used in \ac{ar} models for \ac{nar} models
+and evaluate the additional speed gains.
 
 This chapter begins with an overview of the non-autoregressive methods (Section
 \ref{sec:nat-methods}). In Section \ref{sec:nat-ctc}, we introduce
-non-autoregressive \gls{nmt} with \gls{ctc}. \JH{rewrite following commented:}
-% We present our experiments with \gls{ctc} in Section
+non-autoregressive \ac{nmt} with \ac{ctc}. \JH{rewrite following commented:}
+% We present our experiments with \ac{ctc} in Section
 % \ref{sec:ctc-experiments}. We summarize our contributions and outline the
 % possible future efforts in Section \ref{sec:nat-future}.
 
@@ -65,9 +65,9 @@ non-autoregressive \gls{nmt} with \gls{ctc}. \JH{rewrite following commented:}
 \label{sec:nat-methods}
 % ------------------------------------------------------------------------------
 
-This section presents the key concepts in non-autoregressive \gls{nmt}. We
-first describe the principles that most of the related literature has in
-common. Then, we provide a survey of notable approaches to \gls{nat}.
+This section presents the key concepts in non-autoregressive \ac{nmt}. We first
+describe the principles that most of the related literature has in
+common. Then, we provide a survey of notable approaches to \ac{nat}.
 
 % ------------------------------------------------------------------------------
 \paragraph{Conditional Independence.} The defining feature of a
@@ -105,12 +105,12 @@ unnecessary.
 
 % ------------------------------------------------------------------------------
 \paragraph{Target Length Estimation.} In a standard NMT model such as the
-Transformer or an \glsxtrshort{rnn}-based model with attention, the length of
-the output sentence is modeled implicitly by using the special end-of-sentence
+Transformer or an \acs{rnn}-based model with attention, the length of the
+output sentence is modeled implicitly by using the special end-of-sentence
 (\eos{}) token. Equations \ref{eq:output-distribution} and
 \ref{eq:nat-output-distribution} work with the sentence length implicitly,
-assuming that the last token $y_{T_y}$ is the \eos{} token and that \eos{} does not
-appear among the previous tokens $y_{<T_y}$.
+assuming that the last token $y_{T_y}$ is the \eos{} token and that \eos{} does
+not appear among the previous tokens $y_{<T_y}$.
 
 The probability distribution in Equation \ref{eq:nat-output-distribution} can
 be factorized to express the estimation of the target sentence length
@@ -142,7 +142,7 @@ explicitly, leaving out the \eos{} symbol from the mathematical model:
 
 % ------------------------------------------------------------------------------
 \paragraph{Multimodality Problem.} In one of the first attempts to apply a
-non-autoregressive model to \gls{nmt}, \citet{gu2017nonautoregressive} describe
+non-autoregressive model to \ac{nmt}, \citet{gu2017nonautoregressive} describe
 the \emph{multimodality problem} which arise when the outputs are conditionally
 independent.
 
@@ -166,7 +166,7 @@ which modes have been selected on other positions.
 %       $y_1$ & $p(y_1|x)$ & $y_2$ & $p(y_2|x)$ \\
 %       \midrule
 %       vielen & 0.4 & dank & 0.4 \\
-%       danke  & 0.3 & schön & 0.3 \\
+%       danke  & 0.3 & schĂśn & 0.3 \\
 %       \vdots & & \vdots & & \\
 %       \bottomrule
 %     \end{tabular}
@@ -179,14 +179,14 @@ which modes have been selected on other positions.
 
 A well-known example of the multimodality problem is the translation of the
 sentence ``thank you'' into German, which has two equally likely translations:
-``vielen dank'' and ``danke schön.'' In this case, the pair of German tokens
+``vielen dank'' and ``danke schĂśn.'' In this case, the pair of German tokens
 ``danke'' and ``vielen'' create the two modes on the first position, and the
-tokens ``dank'' and ``schön'' are modes on the second position. If an
+tokens ``dank'' and ``schĂśn'' are modes on the second position. If an
 autoregressive model chooses to generate ``danke'' on the first position, the
 token ``dank'' on the second position will no longer be likely. However, when a
 non-autoregressive model assigns high probabilities to the correct
 translations, it also has to assign high probabilities to the other (incorrect)
-two combinations, ``danke dank'' and ``vielen schön''.
+two combinations, ``danke dank'' and ``vielen schĂśn''.
 
 % ------------------------------------------------------------------------------
 \paragraph{\Ac{nat} with Fertility Model.} Non-autoregressive Transformer
@@ -198,10 +198,10 @@ Compared to the autoregressive Transformer model, the model has the following
 modifications. First, the inputs to the decoder are made up of the sequence of
 encoder inputs, either uniformly stretched to the predicted target sentence
 length, or copied using a fertility model. Second, the decoder self-attention
-does not use the causal mask since all states can now attend to all other states
-in both directions. Third, \emph{positional attention} is added to every decoder
-layer where the positional encoding is used as queries and keys, and the decoder
-states as values.
+does not use the causal mask since all states can now attend to all other
+states in both directions. Third, \emph{positional attention} is added to every
+decoder layer where the positional encoding is used as queries and keys, and
+the decoder states as values.
 
 In \citet{gu2017nonautoregressive}, the multimodal problem is addressed by
 introducing a latent fertility variables $f_1, \ldots, f_{T_x}$ sampled from a
@@ -231,7 +231,9 @@ The fertility model depends on an external module and is not trained end to
 end. The authors fine-tune the trained model using reinforcement learning
 \citep{williams1992simple}.
 
-During decoding, the marginalizing over all possible fertility values is intractable. Therefore, the authors experiment with three approximation methods -- argmax and average decoding, and \ac{npd}.
+During decoding, the marginalizing over all possible fertility values is
+intractable. Therefore, the authors experiment with three approximation methods
+-- argmax and average decoding, and \ac{npd}.
 
 % ------------------------------------------------------------------------------
 \paragraph{Knowledge Distillation.} To tackle the multimodality problem from
@@ -248,8 +250,8 @@ translation models, regardless the actual method used.
 % ------------------------------------------------------------------------------
 \paragraph{Iterative Refinement.} Another attempt to introduce latent variables
 in a non-autoregressive model was proposed by \citet{lee2018deterministic}.
-Instead of modelling fertility, the authors introduce $L$ discrete sequential latent
-variables interpreted as stages of refinement:
+Instead of modelling fertility, the authors introduce $L$ discrete sequential
+latent variables interpreted as stages of refinement:
 %
 \begin{align}
   \begin{split}
@@ -317,8 +319,8 @@ hyper-parameter $\alpha$, sampled from a Bernoulli distribution.
 
 
 % ------------------------------------------------------------------------------
-\paragraph{Aligned Cross Entropy for \gls{nat}} One problem with using
-cross-entropy objective for training \gls{nat} models is that it heavily
+\paragraph{Aligned Cross Entropy for \ac{nat}} One problem with using
+cross-entropy objective for training \ac{nat} models is that it heavily
 penalizes misaligned target words. If a correct word is generated at an
 incorrect position in the target sentence, the loss is the same as if the model
 generates a completely unrelated word. In autoregressive models, this problem
@@ -344,6 +346,36 @@ alignments. Unlike \ac{axe}, we only consider skipping the predictions, while
 not allowing to skip the target positions. We present the \ac{ctc}-based method
 in detail in Chapter \ref{chap:nar-nmt-ctc}.
 
+% ------------------------------------------------------------------------------
+\paragraph{Iterative Decoding from Masked Language Models.} Recently,
+pre-trained \acp{mlm} such as BERT \citep{devlin-etal-2019-bert} have attracted
+attention from the translation research
+community. \citet{ghazvininejad-etal-2019-mask} introduce \acp{cmlm}, an
+extension to \acp{xlm} for multilingual applications, including \ac{mt}
+\citep{conneau-lample-2019-cross}.
+
+Unlike conventional language models that estimate the probability of a word
+given the preceding words, \acp{mlm} are trained to predict words on masked
+positions inside a sequence. Instead of working with a monolingual sequence,
+\acp{xlm} extend this idea to a pair of sequences in two (or more) languages.
+To facilitate for alignment modeling and language identification, \acp{xlm}
+architectures include a language embedding and reset the positional encodings
+for each sentence. See Figure \ref{fig:mlm-xlm-example} for an illustration of
+differences between \acp{mlm} and \acp{xlm}.
+
+\begin{figure}
+  \centering
+
+  \includegraphics[width=.95\textwidth]{img/mlm-xlm.png}
+
+  \caption{A comparison of masked language model and translation
+    (cross-lingual) language model architectures. We use the image of
+    \citet{conneau-lample-2019-cross}.}%
+  \label{fig:mlm-xlm-example}
+\end{figure}
+
+
+
 
 
 % ------------------------------------------------------------------------------
@@ -351,7 +383,7 @@ in detail in Chapter \ref{chap:nar-nmt-ctc}.
 \paragraph{Blockwise Parallel Decoding for Deep Autoregressive Models.}
 \citet{stern2018blockwise} propose a semi-autoregressive approach where chunks
 of the target sentence are generated in parallel.
-
+%
 They start with a greedy decoding from an autoregressive model, $p_1$, and
 introduce additional ``look-ahead'' models $p_2, \ldots p_k$. In time step $t$,
 each model $p_i$ predicts the $(t + i)$-th word in the target sequence given the
@@ -378,7 +410,7 @@ $t + \hat{k}$.
 %\item iNat \citep{lee2018deterministic} -- iterative refinement
 %\item Blockwise \citep{stern2018blockwise}
 \item InsT \citep{stern2019insertion} -- insertion transformer
-\item CMLM \citep{ghazvininejad2019mask} -- conditional masked language models
+%\item CMLM \citep{ghazvininejad2019mask} -- conditional masked language models
 \item LevT \citep{gu2019levenshtein} -- Levenshtein transformer
 \item KERMIT \citep{chan2019kermit} -- Kermit (arxiv)
 \item LaNMT \citep{shu2020latent} -- latent-variable NAR NMT with deterministic inference using a delta posterior
@@ -460,7 +492,7 @@ size of 64.
 
 
 % ------------------------------------------------------------------------------
-\paragraph{\Gls{nat} with auxiliary regularization}
+\paragraph{\Ac{nat} with auxiliary regularization}
 \citet{wang2019nonautoregressive} use regularization terms to penalize
 similarity of hidden states corresponding to dissimilar words(which battles
 repeated translations), and to express a reconstruction loss using an external
@@ -500,7 +532,7 @@ translation model (in order to battle incomplete translation problem).
   Neural Machine Translation with Connectionist Temporal Classification'',
   joint work with Jindřich Libovický, published at EMNLP 2018.}
 
-In this section, we describe our approach to \glsxtrlong{nat}.
+In this section, we describe our approach to \acl{nat}.
 
 The idea behind our approach is that we do not explicitly estimate the target
 sequence length. Instead, we fix the decoder length on an upper limit of the
@@ -514,35 +546,35 @@ corresponding output distribution is unknown, we treat it as a latent variable,
 and we use the loss function which marginalizes this latent variable out. In
 other words, our loss function is the sum of losses given any possible
 alignment. This loss, used mostly in speech recognition domain
-\citep{graves2006connectionist}, is known as the \glsxtrfull{ctc}. We describe
+\citep{graves2006connectionist}, is known as the \acf{ctc}. We describe
 this function in more detail in Section \ref{subsec:ctc}.
 
-The \gls{ctc} loss is differentiable with respect to the model parameters,
-which means we can back-propagate the gradients returned by the \gls{ctc}
+The \ac{ctc} loss is differentiable with respect to the model parameters,
+which means we can back-propagate the gradients returned by the \ac{ctc}
 computation. Thus, unlike the originally proposed architectures of
 \citet{gu2017nonautoregressive}, our model can be trained end to end.
 
 
-\subsection{Connectionist Temporal Classification}
-\label{subsec:ctc}
+% \subsection{Connectionist Temporal Classification}
+% \label{subsec:ctc}
 
 
 
 
 
 
-\section{Improving Fluency using N-gram Language Models}
-\label{sec:nat-lm}
+% \section{Improving Fluency using N-gram Language Models}
+% \label{sec:nat-lm}
 
-\paperdisclaim{This section is based on paper \emph{``Improving Fluency of
-  Non-Autoregressive Neural Machine Translation''}, joint work with Zdeněk
-  Kasner and Jindřich Libovický, published online at \texttt{arXiv.org}.}
-
-
+% \paperdisclaim{This section is based on paper \emph{``Improving Fluency of
+%   Non-Autoregressive Neural Machine Translation''}, joint work with Zdeněk
+%   Kasner and Jindřich Libovický, published online at \texttt{arXiv.org}.}
 
 
-\section{Non-Autoregressive Model Optimizations}
-\label{sec:nat-opt}
+
+
+% \section{Non-Autoregressive Model Optimizations}
+% \label{sec:nat-opt}
 
 
 
