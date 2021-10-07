@@ -73,8 +73,8 @@
 
 
 * NAR NMT
-  Tohle je to hlavní téma tý disertace.
-  Úvod sekce obsahuje popis hlavních konceptù a problémù:
+  Tohle je to hlavnÃ­ tÃ©ma tÃ½ disertace.
+  Ãšvod sekce obsahuje popis hlavnÃ­ch konceptÃ¹ a problÃ©mÃ¹:
   - neautoregresivita
   - length estimation
   - multimodality problem
@@ -82,7 +82,7 @@
   - knowledge distillation
 
   - survey of methods for non-autoregressive NMT.
-  - nechat na zaèátku stùj co stùj i pøes forward odkazy
+  - nechat na zaÃ¨Ã¡tku stÃ¹j co stÃ¹j i pÃ¸es forward odkazy
 
 * NAT
    - efficiency of MT is important
@@ -114,7 +114,7 @@
 
 
 * NAR NMT with CTC
-  - zalo¾eno na èlánku end to end ...
+  - zaloÂ¾eno na Ã¨lÃ¡nku end to end ...
   - detailed version of that paper, includes description of the CTC algorithm
 
 ** Connectionist Temporal Classification
@@ -152,8 +152,8 @@
    - sections 4 and 5 from the paper
 
 
-* CTC with n-gram LMs
-  - zalo¾eno na èlánku
+* Experiments (to be renamed)... (possibly make three chapters according to the three papers)
+  This chapter describes the experiments I am doing now.
+  Fair comparison.
 
-* CTC optimizations
-  - zalo¾eno na current work + èlánku
+  ** Autoregressive Teacher Models

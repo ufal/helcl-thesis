@@ -821,7 +821,20 @@ the cross entropies assigned by the translation models to the sentence
 pair. When the cross entropies differ, or when both cross entropy scores are
 high, the score is low. When the cross entropies are similar and are low, the
 score is high. After scoring, low-scoring sentence pairs are removed from the
-data using an empirically set threshold.
+data using an empirically set threshold. Formally, each sentence pair $(x,y)$
+is scored with the opposite models $A$ and $B$ according to the following
+formula:
+%
+\begin{equation}
+  s = |H_A(y|x) - H_B(x|y)| + \frac{1}{2} (H_A(y|x) + H_B{x|y})
+\end{equation}
+where $H_A$ and $H_B$ are the cross-entropies of the two models, normalized
+over words:
+%
+\begin{equation}
+  H_A(y|x) = - \frac{1}{T_y} \log p(y|x)
+\end{equation}
+and similarly for $H_B(x|y)$.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Data Augmentation.} The size of the training data is a key factor to
@@ -873,6 +886,8 @@ GPU.
 \JH{shuffling goes here}
 
 \JH{optimizer delay perhaps also here}
+
+\JH{we could mention Martin Popel's block-BT}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Optimization.}

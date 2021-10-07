@@ -15,8 +15,10 @@ methods. We use strong autoregressive teachers as both our baseline models, and
 as the source of the artificial target side data for training of the distilled
 models.
 
+% ------------------------------------------------------------------------------
 \section{Autoregressive Teacher Models}
 \label{sec:exp:autoregressive}
+% ------------------------------------------------------------------------------
 
 In this section, we describe the experimental settings for training the
 autoregressive teacher models, which we used for knowledge distillation of data
@@ -32,8 +34,10 @@ for training our non-autoregressive student models.
 
 \noindent
 In our English-German experiments, we use autoregressive models from our
-submission to the WMT~21 News Translation shared task \JH{add bib when ready}.
+submission to the \ac{wmt} 2021 News Translation shared task \JH{add bib when
+  ready}.
 
+% ------------------------------------------------------------------------------
 \paragraph{Data Cleaning.} For our English-German models, we prepare the
 training dataset consisting of the following parts. First, we used clean
 parallel data from the Europarl corpus \citep{koehn2005europarl}, the Tilde
@@ -90,20 +94,8 @@ consists of data from noisy sources.
 \end{table}
 
 To further clean the data, we applied dual cross-entropy filtering, as proposed
-by \citet{junczys-dowmunt-2018-dual}. Using two translation models trained on
-the same data in opposite directions, each sentence pair $(x, y)$ in the data
-is scored according to the following formula:
-%
-\begin{equation}
-  s = |H_A(y|x) - H_B(x|y)| + \frac{1}{2} (H_A(y|x) + H_B{x|y})
-\end{equation}
-where $H_A$ and $H_B$ are the cross-entropies of the two models, normalized
-over words:
-%
-\begin{equation}
-  H_A(y|x) = - \frac{1}{T_y} \log p(y|x)
-\end{equation}
-and similarly for $H_B(x|y)$.
+by \citet{junczys-dowmunt-2018-dual} and described in the data cleaning
+paragraph in Section \ref{sec:training:methodology}.
 
 We trained two Transformer base models for dual cross-entropy filtering using
 the clean part of the data after the rule-based cleaning step.  \JH{Add more
@@ -115,12 +107,12 @@ sort the sentence pairs according to the score. To estimate how many of the
 sentence pairs in the crawled we can consider clean, we train translation
 models in both directions on different amounts of the scored data. We used
 25\%, 50\%, 75\%, and 100\% of the crawled data, taking the highest-scoring
-sentence pairs for training. Based on the score on the development data
-\JH{which?}, we select the 75\% highest-scoring sentence pairs from the crawled
-data. \JH{rephrase this a bit + add details about the models} The develoment
-scores achieved by the trained models are shown in Table
-\ref{tab:dual-cross-entropy-selection}. \JH{Add the data sizes after this
-  cleaning step.}
+sentence pairs for training. Based on the score on the development data (the
+\ac{wmt} 2019 test set, \citealp{barrault-etal-2019-findings}), we select the
+75\% highest-scoring sentence pairs from the crawled data. \JH{rephrase this a
+  bit + add details about the models} The develoment scores achieved by the
+trained models are shown in Table \ref{tab:dual-cross-entropy-selection}.
+% \JH{Add the data sizes after this cleaning step.}
 
 \begin{table}
   \centering
@@ -148,17 +140,30 @@ scores achieved by the trained models are shown in Table
 % million sentence pairs, we oversample the dataset by a factor of 10 for the 100M
 % backtranslation version or 14 for the 150M backtranslation version.
 
+% ------------------------------------------------------------------------------
 \paragraph{Backtranslation.} We train four translation models on the filtered
 parallel dataset for creating backtranslations
 \citep{sennrich-etal-2016-improving}. We use identical Transformer big
 hyper-parameter settings but we use different random seeds for parameter
-initialization. \JH{Say more about the models.}
+initialization. We use the same hyperparameter settings as for the teacher
+models. The parameter values are shown in Table \ref{tab:trafo-big-hparams}
+% The Transformer big models have a 6-layer encoder and a 6-layer decoder, with
+% 16 attention heads in the self-attention and cross-attention, with the model
+% dimension of 1,024, and the feed-forward hidden layer dimension of 4,096. We
+% use a shared SentencePiece vocabulary of 32,000 tokens.  \JH{Make a table out
+% of this.}
+We ensemble the four models to translate the monolingual data. \JH{Say more
+  about decoding -- beam search, normalization, etc.} \JH{Somewhere we need to
+  say that we are using Marian to train all the models in this chapter.}
 
 As the source of the monolingual data, we use the News Crawl datasets from
 years 2018, 2019, and 2020, as released by the \acs{wmt} organizers
-\citep{bojar-etal-2018-findings,barrault-etal-2019-findings,barrault-etal-2020-findings}. Table
-\ref{tab:mono-data-sizes} shows the sizes of the monolingual data before and
-after applying the rule-based filtering described in the paragraphs above.
+\citep{bojar-etal-2018-findings,barrault-etal-2019-findings,
+  barrault-etal-2020-findings}. In total, we gathered 91 million English
+sentences for backtranslation into German and 146 million German sentences for
+backtranslation in the other direction. Table \ref{tab:mono-data-sizes} shows
+the sizes of the monolingual data before and after applying the rule-based
+filtering described in the paragraphs above.
 
 \begin{table}
   \centering
@@ -183,8 +188,68 @@ after applying the rule-based filtering described in the paragraphs above.
   \label{tab:mono-data-sizes}
 \end{table}
 
-\JH{Paragraph about Tagged backtranslation. Refer to explanation in chapter
-  2. \citep{caswell-etal-2019-tagged}}
+We follow the approach of \citet{caswell-etal-2019-tagged} and we tag the
+backtranslated sentences with a special token on a first position, as explained
+in Section \ref{sec:training:methodology}.
+
+% ------------------------------------------------------------------------------
+\paragraph{Teacher Model Training.}  We train the teacher models on shuffled
+concatenation of the authentic parallel and tagged backtranslated data. As with
+the models for backtranslation, we train four models with different seeds for
+random initialization in each direction. We show the hyper-parameter values in
+Table \ref{tab:trafo-big-params}.
+
+After the training on mixed parallel and backtranslated data converged, we
+continued the training of the models on parallel data only.
+\JH{Early stopping.}
+
+\JH{Add a table with scores of the teacher models.}
+
+\begin{table}
+  \centering
+  \begin{tabular}{llr}
+    \toprule
+    Parameter & Marian config variable & Value \\
+    \midrule
+    No. of encoder layers & \texttt{enc-depth} & 6 \\
+    No. of decoder layers & \texttt{dec-depth} & 6 \\
+    Model dimension &  \texttt{dim-emb} & 1,024 \\
+    Attention heads & \texttt{transformer-heads} & 16 \\
+%              & transformer-postprocess & dan \\
+%              & transformer-postprocess-emb & d\\
+    Vocabulary size & & 32,000 \\
+    \midrule
+    Optimizer method & \texttt{optimizer} & adam \\
+    $\beta_1$ & \multirow{3}{*}{\texttt{optimizer-params}} & 0.9 \\
+    $\beta_2$ & & 0.998 \\
+    $\epsilon$ & & 10$^{-9}$ \\
+    No. of batches per update & \texttt{optimizer-delay} & 2 \\
+    Fit batch to available memory & \texttt{mini-batch-fit} & true\\
+    \bottomrule
+  \end{tabular}
+
+  \caption{The hyper-parameters of the teacher models. The same values were
+    used for training the models for backtranslation.}%
+  \label{tab:trafo-big-hparams}
+\end{table}
+
+% ------------------------------------------------------------------------------
+\paragraph{Knowledge Distillation.} The teacher models are used to create
+artificial targets for the student models \citep{kim-rush-2016-sequence}. For
+each translation direction, we translate the source side of the parallel data
+and the authentic monolingual data (in the source language) using ensembled
+teacher models. We do not create wholly synthetic datasets by
+forward-translating backtranslated data.
+
+
+
+% ------------------------------------------------------------------------------
+\JH{Here should be a subsection about a different language pair. If it isn't,
+  throw away the subsection heading above.}
+% ------------------------------------------------------------------------------
+\section{Student Models}
+\label{sec:students}
+% ------------------------------------------------------------------------------
 
 
 %%% Local Variables:
