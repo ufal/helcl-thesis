@@ -3,6 +3,11 @@
 \label{chap:nar-nmt-ctc}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\paperdisclaim{This chapter is based on paper ``End-to-End Non-Autoregressive
+  Neural Machine Translation with Connectionist Temporal Classification'',
+  joint work with Jindřich Libovický, published at EMNLP 2018.}
+
+\noindent
 In this chapter, we lay grounds for the \ac{nar} approaches studied in this
 thesis. We describe our experiments with an architecture based on the \ac{ctc}
 loss \citep{libovicky-helcl-2018-end}. \JH{ok to self-cite when sections will
@@ -262,9 +267,9 @@ settings for training models in both directions in both language pairs.
     Model dimension & 512 \\
     Attention heads & 16 \\
     Dropout probability & 0.1 \\
-    Feed-forward hidden size & 4096 \\
+    Feed-forward hidden size & 4,096 \\
     State splitting factor & 3 \\
-    State splitting projection size & 1536 \\
+    State splitting projection size & 1,536 \\
     Vocabulary size & 32,000 \\
     \midrule
     Optimizer method & adam \\
@@ -296,38 +301,103 @@ outputs.
     \midrule
     \citet{gu2017nonautoregressive} & & & & \\
     Autoregressive baseline & 31.35 & 31.03 & 22.71 & 26.39 \\
+    \addlinespace
     NAT + FT & 27.29 & 29.06 & 17.69 & 21.47 \\
     NAT + FT + NPD (100 s) & 29.79 & 31.44 & 19.17 & 23.20 \\
     \midrule
     \citet{lee-etal-2018-deterministic} & & & & \\
     Autoregressive baseline & 31.93 & 31.55  & 23.77 & 28.15 \\
+    \addlinespace
     1 iteration & 24.45 & 25.73 & 13.91 & 16.77 \\
     10 iterations & 29.32 & 30.19 & 21.61 & 25.48 \\
     \midrule
     \citet{libovicky-helcl-2018-end} & & & & \\
     Autoregressive baseline & 21.19 & 29.64 & 22.94 & 28.58 \\
+    \addlinespace
     Deep encoder & 17.33 & 22.85 & 12.21 & 12.53 \\
-    + weight averaging & & & & \\
-    + beam search & & & & \\
-    Encoder-decoder  & & & & \\
-    + weight averaging & 19.54 & 24.67 & 16.56 & 18.64 \\
-    + beam search & & & & \\
-    Encoder-decoder with pos. encoding  & & & & \\
-    + weight averaging & & & & \\
-    + beam search & 19.93 & 24.71 & 17.68 & 19.80 \\
+    \quad + weight averaging & 18.47 & 24.68 & 14.65 & 16.72 \\
+    \quad + beam search & 18.70 & 25.28 & 15.19 & 17.58 \\
+    \addlinespace
+    Encoder-decoder  & 18.51 & 22.37 & 13.29 & 17.98 \\
+    \quad + weight averaging & 19.54 & 24.67 & 16.56 & 18.64 \\
+    \quad + beam search & 19.81 & 25.21 & 17.09 & 18.80  \\
+    \addlinespace
+    Encoder-decoder with pos. encoding & 18.13 & 22.75 & 12.51 & 11.35 \\
+    \quad + weight averaging & 19.31 & 24.21 & 17.37 & 18.07 \\
+    \quad + beam search & 19.93 & 24.71 & 17.68 & 19.80 \\
     \bottomrule
   \end{tabular}
 
   \caption{Automatic evaluation of our \acs{ctc}-based approach, compared to
-    the two of the first non-autoregressive methods.}%
+    the two of the first non-autoregressive methods, along with autoregressive
+    greedy-decoding baseline scores. }%
   \label{tab:end-to-end:bleu}
 \end{table}
 
+The first model of \citet{gu2017nonautoregressive} represents the \ac{nat}
+model with fine-tuning, which minimizes the KL divergence between the output
+distributions of the teacher and student models. In the second row, \ac{npd}
+with 100 samples is used. \JH{This should be described in Related work.} Using
+\ac{npd} can slow down the decoding, because an additional scoring step by an
+autoregressive model is needed. In theory, if enough parallelism is available,
+this doubles the latency.
+
+The approach of \citet{lee-etal-2018-deterministic} is iterative. We show the
+performance of this method with 1 iteration and with 10 iterations. Note that
+using more iterations slows down the decoding speed of the iterative model.
+
+When compared to the single-pass models, the performance of the English--German
+\acs{ctc}-based models is similar. However, the performance of the
+English--Romanian models is poor. This is likely because of issues with
+Romanian diacritics in the data, as suggested also by the poorer performance of
+our autoregressive baseline. Also, the enhanced techniques (\ac{npd} and
+iterative refiniment) outperform our method in all scenarios, but at a
+computational cost.
+
+\JH{Add a table with latencies on a GPU without minibatching.}
+
+\paragraph{Analysis.}
+
+\begin{figure}
+  \centering
+  \resizebox{10cm}{7cm}{%
+    \input{img/decoding_speed.tex}
+  }
+
+  \caption{Decoding speed \JH{todo: caption, rerender the image with better
+      colors and scale}.}%
+  \label{fig:end-to-end:speed}
+\end{figure}
 
 
 
-\paragraph{Limitations.} \JH{List all the limitations here: namely, no
-  knowledge distillation}
+\begin{table}
+  \centering
+  \begin{tabular}{lcccc}
+    \toprule
+    & \multicolumn{2}{c}{En $\rightarrow$ De} & \multicolumn{2}{c}{De $\rightarrow$ En} \\
+    & ~AR~ & NAR & ~AR~ & NAR \\
+    \midrule
+    Correct        & 65 & 23 & 67 & 13 \\
+    Comprehensible & 93 & 71 & 92 & 51 \\
+    \midrule
+    Too short      & 1 & 16 & 0 & 36 \\
+    Missing verb   & 4 & 35 & 0 & 8 \\
+    Corrupt. named entity   & 1 & 27 & 8 & 21 \\
+    Corrupt. other words & 1 & 20 & 0 & 46 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{An error analysis. \JH{todo}}%
+  \label{tab:end-to-end:error-analysis}
+
+\end{table}
+
+
+\paragraph{Limitations.} The proposed approaches and the experimental
+evaluation have their limitations. \JH{List all the limitations here: namely,
+  no knowledge distillation, the autoregressive baselines are not comparable,
+  etc.}
 
 %%% Local Variables:
 %%% mode: latex

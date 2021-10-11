@@ -73,8 +73,8 @@
 
 
 * NAR NMT
-  Tohle je to hlavní téma tý disertace.
-  Úvod sekce obsahuje popis hlavních konceptù a problémù:
+  Main topic of the theis
+  Introdcution contains the description of main concepts and problems:
   - neautoregresivita
   - length estimation
   - multimodality problem
@@ -82,7 +82,7 @@
   - knowledge distillation
 
   - survey of methods for non-autoregressive NMT.
-  - nechat na zaèátku stùj co stùj i pøes forward odkazy
+  - leave at the beginning, despite forward references
 
 * NAT
    - efficiency of MT is important
