@@ -46,8 +46,7 @@ and creates a hidden representation. The decoder then accesses this hidden
 representation and generates (or scores) the output sentence. When both
 components of the model are trained end to end, this framework is sometimes
 referred to as \emph{sequence-to-sequence learning}. \JH{We explore the
-  encoder-decoder architectures more closely in Sections \ref{sec:encdec},
-  \ref{sec:attention}, and \ref{sec:deep-arch}.}
+  encoder-decoder architectures more closely in Sections ...}
 
 
 %Section about training: batching, optimization, multiple GPUs, ...
@@ -165,15 +164,15 @@ the validation and/or test data.
 
 % Open vocabulary problem
 The problem of rare and unseen words is also referred to as the \emph{open
-vocabulary} problem. Although some work in this direction exist
-\citep{jean2015using}, in neural networks for \gls{nlp}, it is difficult to use
-very large vocabularies. The main reason is that the embedding layer and the
-output projection layer would become too large for the computation to be
+  vocabulary} problem. Although some work in this direction exist
+\citep{jean-etal-2015-using}, in neural networks for \gls{nlp}, it is difficult
+to use very large vocabularies. The main reason is that the embedding layer and
+the output projection layer would become too large for the computation to be
 efficient.
 
 % Most common solution
 The most common solution of the open vocabulary problem is to use smaller units
-than words \citep{sennrich2016neural}. These \emph{subword} units can be
+than words \citep{sennrich-etal-2016-neural}. These \emph{subword} units can be
 constructed in a smart way, such that frequent words are left intact, whereas
 rare words are composed of more common strings of letters. Below, we describe
 two of the methods for subword segmentation. It is worth to mention that
@@ -235,15 +234,15 @@ this thesis, this approach did not yet outperform the subword state-of-the-art
 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{\glsxtrshort{bpe}.}  \Glsxtrlong{bpe} \glsunset{bpe}
-(\glsxtrshort{bpe}; \citealp{sennrich2016neural}) is an approach which tackles
-the open vocabulary problem by splitting words to subword units.  The idea is
-to devise a vocabulary of a predefined size, such that nearly every word can be
-composed using the units from the vocabulary. An additional requirement is for
-the vocabulary to contain as many frequent words as possible, so only rare
-words need to be split to more subwords.
+\paragraph{\acs{bpe}.}  \acl{bpe} \glsunset{bpe} (\acs{bpe};
+\citealp{sennrich-etal-2016-neural}) is an approach which tackles the open
+vocabulary problem by splitting words to subword units.  The idea is to devise
+a vocabulary of a predefined size, such that nearly every word can be composed
+using the units from the vocabulary. An additional requirement is for the
+vocabulary to contain as many frequent words as possible, so only rare words
+need to be split to more subwords.
 
-The \gls{bpe} algorithm %(Algorithm ~\ref{alg:learn-bpe})
+The \ac{bpe} algorithm %(Algorithm ~\ref{alg:learn-bpe})
 proceeds as follows. First, the vocabulary is initialized with all characters
 as symbols. Second, all tokens in the data are segmented using the symbols in
 the vocabulary (in the first step, the tokens are split to characters).  Third,
@@ -254,6 +253,11 @@ the algorithm iterates the segmentation, counting and merging, until a
 predefined number of merges is done. In practice, instead of working with the
 training corpus, the algorithm runs on the frequency list of tokens, without
 loss of generality.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Wordpiece.}  \JH{describe this because we use this in the
+  preliminary CTC experiments}
+
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{SentencePiece.}  \JH{copied from JNLE:} Sentencepiece
@@ -443,7 +447,7 @@ separately and then concatenate the states from the corresponding positions:
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Attention Mechanism.} Another important concept introduced as a part
 of \gls{rnn}-based \gls{nmt} models is the \emph{attention mechanism}
-\citep{bahdanau2014neural,luong2015effective}.
+\citep{bahdanau2014neural,luong-etal-2015-effective}.
 
 The problem with the encoder-decoder framework as described in the previous
 section is that there is an information bottleneck between the encoder and the
@@ -1016,7 +1020,7 @@ automatic translation quality metrics grew larger, as the models often need to
 be validated several times during training.
 
 Perhaps the best-known automatic \gls{mt} metric is BLEU
-\citep{papineni2002bleu}.  Despite a long term effort led by the organizers of
+\citep{papineni-etal-2002-bleu}.  Despite a long term effort led by the organizers of
 the WMT Metrics shared task to create an automatic evaluation metric that would
 be better correlated with scores assigned by humans, BLEU continues to be the
 most widely used metric in the contemporary literature. However, over the nearly

@@ -40,9 +40,9 @@ submission to the \ac{wmt} 2021 News Translation shared task \JH{add bib when
 % ------------------------------------------------------------------------------
 \paragraph{Data Cleaning.} For our English-German models, we prepare the
 training dataset consisting of the following parts. First, we used clean
-parallel data from the Europarl corpus \citep{koehn2005europarl}, the Tilde
+parallel data from the Europarl corpus \citep{koehn-2005-europarl}, the Tilde
 MODEL -- RAPID corpus \citep{rozis-skadins-2017-tilde}, and News Commentary
-corpus from OPUS \citep{tiedemann2012opus}. Next, we included sources of
+corpus from OPUS \citep{tiedemann-2012-parallel}. Next, we included sources of
 crawled parallel data from the web, which are considered noisy. These include
 Paracrawl \citep{espla-etal-2019-paracrawl}, Common
 Crawl\footnote{\url{https://commoncrawl.org/}}, and WikiMatrix
@@ -55,7 +55,7 @@ backtranslations, trained on cleaned parallel data, as described below.
 On the gathered data (both clean and noisy), we applied filtering techniques to
 improve the overall quality of the parallel data. First, we applied a
 deterministic rule-based filtering%
-\footnote{\url{https://github.com/browsermt/students/blob/master/train-student/clean/clean-corpus.sh}}
+\footnote{\url{https://github.com/browsermt/students/blob/master/train-student/clean/}}
 and deduplication. We removed all sentence pairs containing non-printing
 characters, empty sentences, and sentences longer than 120 words; we also
 removed all sentence pairs with length ratio of less than 0.6 (0.4 for
@@ -197,7 +197,7 @@ in Section \ref{sec:training:methodology}.
 concatenation of the authentic parallel and tagged backtranslated data. As with
 the models for backtranslation, we train four models with different seeds for
 random initialization in each direction. We show the hyper-parameter values in
-Table \ref{tab:trafo-big-params}.
+Table \ref{tab:trafo-big-hparams}.
 
 After the training on mixed parallel and backtranslated data converged, we
 continued the training of the models on parallel data only.

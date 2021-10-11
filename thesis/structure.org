@@ -114,7 +114,7 @@
 
 
 * NAR NMT with CTC
-  - zalo¾eno na èlánku end to end ...
+  - based on the end to end paper
   - detailed version of that paper, includes description of the CTC algorithm
 
 ** Connectionist Temporal Classification
@@ -137,10 +137,20 @@
    - expand by state splitting (see figure)
    - we experiment with state splitting in two different places
 
-** Baseline Experiments
+** Baseline (preliminary) Experiments
    Section about the original CTC experiments plus their analysis. This is
    without knowledge distillation and on different datasets than the recent
    experiments. Also, Romanian (and Czech?) is included.
+
+   - we translate en-de and en-ro in both directions
+   - data
+     - we use wmt data (EP, nc, cc for ende, EP and setimes for enro)
+     - data is normalized, tokenized, truecased
+   - experiments
+     - we use neural monkey toolkit
+     - we show the experimental settings in table ...
+   -
+
 
 
 

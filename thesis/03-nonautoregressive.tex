@@ -75,10 +75,10 @@ non-autoregressive model is the conditional independence of the output
 distributions across time steps. Recall Equation \ref{eq:output-distribution}
 which defines the output distribution for autoregressive models:
 %
-\begin{equation}
+\begin{equation*}
   p(y|x) = \prod_{t=1}^{T_y}p(y_t|y_{<t},x,\theta).
   \tag{\ref{eq:output-distribution}}
-\end{equation}
+\end{equation*}
 %
 Unlike Equation \ref{eq:output-distribution}, \Ac{nat} models do not condition
 the output token probabilities on the previously decoded outputs $y_{<t}$.  The
@@ -141,7 +141,7 @@ explicitly, leaving out the \eos{} symbol from the mathematical model:
 \citep{ghazvininejad2019mask} \citep{mansimov2019generalized}
 
 % ------------------------------------------------------------------------------
-\paragraph{Multimodality Problem.} In one of the first attempts to apply a
+\paragraph{Multimodality Problem.} In one of the first applications of a
 non-autoregressive model to \ac{nmt}, \citet{gu2017nonautoregressive} describe
 the \emph{multimodality problem} which arise when the outputs are conditionally
 independent.
@@ -166,7 +166,7 @@ which modes have been selected on other positions.
 %       $y_1$ & $p(y_1|x)$ & $y_2$ & $p(y_2|x)$ \\
 %       \midrule
 %       vielen & 0.4 & dank & 0.4 \\
-%       danke  & 0.3 & schĂśn & 0.3 \\
+%       danke  & 0.3 & schön & 0.3 \\
 %       \vdots & & \vdots & & \\
 %       \bottomrule
 %     \end{tabular}
@@ -179,14 +179,14 @@ which modes have been selected on other positions.
 
 A well-known example of the multimodality problem is the translation of the
 sentence ``thank you'' into German, which has two equally likely translations:
-``vielen dank'' and ``danke schĂśn.'' In this case, the pair of German tokens
+``vielen dank'' and ``danke schön.'' In this case, the pair of German tokens
 ``danke'' and ``vielen'' create the two modes on the first position, and the
-tokens ``dank'' and ``schĂśn'' are modes on the second position. If an
+tokens ``dank'' and ``schön'' are modes on the second position. If an
 autoregressive model chooses to generate ``danke'' on the first position, the
 token ``dank'' on the second position will no longer be likely. However, when a
 non-autoregressive model assigns high probabilities to the correct
 translations, it also has to assign high probabilities to the other (incorrect)
-two combinations, ``danke dank'' and ``vielen schĂśn''.
+two combinations, ``danke dank'' and ``vielen schön''.
 
 % ------------------------------------------------------------------------------
 \paragraph{\Ac{nat} with Fertility Model.} Non-autoregressive Transformer
@@ -249,9 +249,10 @@ translation models, regardless the actual method used.
 
 % ------------------------------------------------------------------------------
 \paragraph{Iterative Refinement.} Another attempt to introduce latent variables
-in a non-autoregressive model was proposed by \citet{lee2018deterministic}.
-Instead of modelling fertility, the authors introduce $L$ discrete sequential
-latent variables interpreted as stages of refinement:
+in a non-autoregressive model was proposed by
+\citet{lee-etal-2018-deterministic}.  Instead of modelling fertility, the
+authors introduce $L$ discrete sequential latent variables interpreted as
+stages of refinement:
 %
 \begin{align}
   \begin{split}
@@ -512,14 +513,12 @@ translation model (in order to battle incomplete translation problem).
 
 \begin{itemize}
 \item vanilla \citep{gu2017nonautoregressive}
-\item CTC (to jsme my)
 \item NAT-REG \citep{wang2019nonautoregressive} -- NAR NMT with auxiliary regularization
 \item bag-of-ngrams \citep{shao2020minimizing} -- Minimizing the bag-of-ngrams diff for NAR NMT
 \item Hint-NAT \citep{li2019hint} -- hint-based training for NAR MT
 \item DCRF \citep{sun2019fast} -- fast structured decoding for sequence models
 \item Flowseq \citep{ma2019flowseq} -- NAR conditional sequence generator with generative flow
 \item ReorderNAT \citep{ran2019guiding} -- guiding NAR NMT decoding with reordering information
-\item AXE \citep{ghazvininejad2020aligned} -- aligned xent for NAR MT
 \item EM+ODD \citep{sun2020em} -- an em approach to NAR conditional seq generation
 \item GLAT \citep{qian2020glancing} -- glancing transformer for NAR NMT
 \item Imputer \citep{saharia2020nonautoregressive} -- imputer (again)
@@ -547,7 +546,7 @@ and we use the loss function which marginalizes this latent variable out. In
 other words, our loss function is the sum of losses given any possible
 alignment. This loss, used mostly in speech recognition domain
 \citep{graves2006connectionist}, is known as the \acf{ctc}. We describe
-this function in more detail in Section \ref{subsec:ctc}.
+this function in more detail in Section \JH{...}.
 
 The \ac{ctc} loss is differentiable with respect to the model parameters,
 which means we can back-propagate the gradients returned by the \ac{ctc}
