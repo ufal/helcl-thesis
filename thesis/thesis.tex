@@ -58,6 +58,7 @@
 \usepackage{multicol}
 \usepackage{tikz}
 \usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
 \usepackage{gnuplot-lua-tikz}
 \usetikzlibrary{shapes.geometric}
 \usepackage{epstopdf}
@@ -86,6 +87,7 @@
 % Czech babel conflicts with cline, hacky fix (http://tex.stackexchange.com/questions/111999/slovak-and-czech-babel-gives-problems-with-cmidrule-and-cline):
 % - basically disables hyphenation in tables, but it's not used anyway so it doesn't matter
 \preto\tabular{\shorthandoff{-}}
+\preto\tikzpicture{\shorthandoff{-}}
 %
 %
 \hyphenation{%

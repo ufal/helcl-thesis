@@ -3,18 +3,10 @@
 \label{chap:nmt}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Summary: Jak se procesuje text neuronkama, jak vypadají základní architektury
-% pro překlad - RNNs, Transformer, jak se to trénuje, jak se generuje a jak se
-% to vyhodnocuje
-
-% zpracování: slovník, segmentace, batche
-% RNN
-% Trafo
-
-\Gls{nmt} is the current state-of-the-art approach to \gls{mt}. As the name
-suggests, the underlying machine learning concept in \gls{nmt} systems are
+\Ac{nmt} is the current state-of-the-art approach to \ac{mt}. As the name
+suggests, the underlying machine learning concept in \ac{nmt} systems are
 neural networks. The specific types, or \emph{architectures}, of neural
-networks used in an \gls{nmt} system vary across history, applications, or
+networks used in an \ac{nmt} system vary across history, applications, or
 domains, but all share a few common traits.
 
 Neural networks are a mathematical model that works with real numbers: The
@@ -33,25 +25,24 @@ representations are usually trained along with the whole network, end to end.
 Textual data are sequential and the lengths of the sequences are
 variable. Using feed-forward neural networks is therefore not
 suitable. Sequences can be processed by a number of network architectures,
-namely \glspl{cnn}, \glspl{rnn}, or \glspl{san}. All of those can be adapted
-for text processing, and we will describe the latter two in more detail in
-Sections \ref{sec:encdec:rnn} and \ref{sec:encdec:transformer}, respectively.
+namely \acp{cnn}, \acp{rnn}, or \acp{san}. All of those can be adapted for text
+processing, and we will describe the latter two in more detail in Sections
+\ref{sec:encdec:rnn} and \ref{sec:encdec:transformer}, respectively.
 
-In \glsxtrshort{nlp} tasks like sentence classification or language modeling,
-there is only a single sequence on the input. In \gls{mt}, we have a source
-sentence on the input, and a target sentence on the output. To reflect this
-property, most of the \gls{nmt} architectures have two components: an
-\emph{encoder} and a \emph{decoder}. The encoder processes the input sentence
-and creates a hidden representation. The decoder then accesses this hidden
-representation and generates (or scores) the output sentence. When both
-components of the model are trained end to end, this framework is sometimes
-referred to as \emph{sequence-to-sequence learning}. \JH{We explore the
-  encoder-decoder architectures more closely in Sections ...}
-
+In \acs{nlp} tasks like sentence classification or language modeling, there is
+only a single sequence on the input. In \ac{mt}, we have a source sentence on
+the input, and a target sentence on the output. To reflect this property, most
+of the \ac{nmt} architectures have two components: an \emph{encoder} and a
+\emph{decoder}. The encoder processes the input sentence and creates a hidden
+representation. The decoder then accesses this hidden representation and
+generates (or scores) the output sentence. When both components of the model
+are trained end to end, this framework is sometimes referred to as
+\emph{sequence-to-sequence learning}. \JH{We explore the encoder-decoder
+  architectures more closely in Sections ...}
 
 %Section about training: batching, optimization, multiple GPUs, ...
-A \gls{nmt} architecture is usually trained with \emph{teacher forcing} -- for
-a given source sentence and its translation, the neural network is trained to
+A \ac{nmt} architecture is usually trained with \emph{teacher forcing} -- for a
+given source sentence and its translation, the neural network is trained to
 maximize the likelihood of $i$-th target word on $i$-th position, conditioned
 on the $i-1$ previous words of the reference sentence. During decoding, when
 this information is not available, the model is conditioned on previously
@@ -62,33 +53,14 @@ considerations for training a model are presented in Section
 % alternative paragraph for Training section overview. Focus on batching and
 % optimization instead of teacher forcing.
 
-
-
-
-
-\Gls{mt} is evaluated by automatic metrics such as \glsxtrshort{bleu} and by
-human evaluation. This chapter concludes with a brief overview of the
-evaluation of \gls{nmt} systems (Section \ref{sec:evaluation}).
-
-
-
-% \JH{přepsat aby to odpovídalo} This chapter provides theoretical details
-% about \gls{nmt} systems in general, as well as particular features of the
-% systems that are relevant to experiments described in this thesis later
-% on. The contents of this chapter are structured as follows. Section
-% \ref{sec:text-processing} analyzes the approaches to processing (sequential)
-% textual data by neural networks. Further on, Sections \ref{sec:rnn} and
-% \ref{sec:encdec:transformer} describe two of the most popular neural network
-% architectures used for \gls{nmt}, \glspl{rnn} and the Transformer model.  In
-% Section \ref{sec:training-vs-inference}, we explain the different modes of
-% operation of \gls{nmt} models for training and inference. This chapter
-% concludes with the overview of the \gls{nmt} evaluation methods (Section
-% \ref{sec:evaluation}).
+\Ac{mt} is evaluated by automatic metrics such as \acs{bleu} and by human
+evaluation. This chapter concludes with a brief overview of the evaluation of
+\ac{nmt} systems (Section \ref{sec:evaluation}).
 
 % ------------------------------------------------------------------------------
-
 \section{Processing Text with Neural Networks}
 \label{sec:text-processing}
+% ------------------------------------------------------------------------------
 
 % Text are not numbers, NNs work with numbers
 There are a number of problems that arise when we want to use neural networks
@@ -124,10 +96,10 @@ with similar roles in language are closer together in the assigned vector
 space. \citet{mikolov2013distributed} train these word embeddings using the
 \emph{skip-gram} and \emph{continuous bag of words} objectives and find that
 the resulting embeddings have interesting properties. For example, arithmetic
-operations on embeddings can express word analogy.  In some \gls{nlp} tasks,
+operations on embeddings can express word analogy.  In some \ac{nlp} tasks,
 pre-trained embeddings can be used to greatly improve the model performance on
-the end task. In contemporary \gls{nmt} research, the most prevalent approach
-is to train the word embeddings end-to-end along with the translation model.
+the end task. In contemporary \ac{nmt} research, the most prevalent approach is
+to train the word embeddings end-to-end along with the translation model.
 
 % Word embedding layer is inserted to help.
 We provide the model with the distributed representation of words using an
@@ -141,15 +113,13 @@ multiplication $E x$.
 % \end{equation}
 % %
 The embedding dimension is usually much lower than the size of the vocabulary
-(in \gls{nmt}, the embedding dimension in state-of-the-art models is around
+(in \ac{nmt}, the embedding dimension in state-of-the-art models is around
 1,024).
 
 % There are out-of-vocabulary tokens
 A major drawback of having a fixed-size vocabulary is the fact that there will
 be unseen words in the data. The following section lists methods that solve
 this problem.
-
-
 
 \subsection{Open Vocabulary Problem}
 
@@ -159,13 +129,13 @@ A well known characteristic of language is that it follows the Zipf's law
 a huge amount of unique words or words occurring with low frequency. Such words
 constitute a substantial part of the data and cannot be ignored.  Another issue
 is that our training datasets do not contain all words that can occur in the
-language. These \gls{oov} words usually also make up significant portions of
-the validation and/or test data.
+language. These \ac{oov} words usually also make up significant portions of the
+validation and test data.
 
 % Open vocabulary problem
 The problem of rare and unseen words is also referred to as the \emph{open
   vocabulary} problem. Although some work in this direction exist
-\citep{jean-etal-2015-using}, in neural networks for \gls{nlp}, it is difficult
+\citep{jean-etal-2015-using}, in neural networks for \ac{nlp}, it is difficult
 to use very large vocabularies. The main reason is that the embedding layer and
 the output projection layer would become too large for the computation to be
 efficient.
@@ -175,113 +145,81 @@ The most common solution of the open vocabulary problem is to use smaller units
 than words \citep{sennrich-etal-2016-neural}. These \emph{subword} units can be
 constructed in a smart way, such that frequent words are left intact, whereas
 rare words are composed of more common strings of letters. Below, we describe
-two of the methods for subword segmentation. It is worth to mention that
+three of the methods for subword segmentation. It is worth mentioning that the
 research on character-level methods is still ongoing, but as of the writing of
 this thesis, this approach did not yet outperform the subword state-of-the-art
 \citep{chung-etal-2016-character,lee-etal-2017-fully,gao-etal-2020-character}.
-%
-%
-%\begin{algorithm} %\centering
-%
-%\begin{algorithmic}
-%
-%\Function{InitializeVocab}{}
-%
-%\State $V \gets \emptyset$ %\ForAll{$x \in $\text{ training data tokens}}
-%\State $w \gets $ \text{ characters in} $x$ \text{plus special end-of-word
-%symbol} $\cdot$
-%
-%%\If{$w \in V$} %\State $V[w] \gets V[w] + 1$ %%\Else %%\State $V[w] \gets 0$
-%%\EndIf %\EndFor %\State \Return{$V$} %\EndFunction
-%
-%\\
-%
-%\Function{GetCounts}{$V$}
-%
-%\State $P \gets \emptyset$
-%
-%\ForAll{$(w, c) \in V$} %\For{$i = 1 \ldots |w|$}
-%
-%\State $P[w_i, w_{i+1}] \gets P[w_i, w_{i+1}] + c$
-%
-%\EndFor %\EndFor
-%
-%
-%\State \Return{$P$} %\EndFunction
-%
-%\\
-%
-%\Function{MergeVocab}{$V, s_1, s_2$}
-%
-%\State \Return{$V$} %\EndFunction
-%
-%\\
-%
-%\State $V \gets $ \Call{InitializeVocab}{}
-%
-%\For{$i = 1 \ldots M$} %\State $P \gets $ \Call{GetCounts}{$V$} %\State $(s_1,
-%s_2) \gets \argmax_{(s_i, s_{i+1} \in P)} P[s_i, s_{i+1}]$ %\State $V \gets $
-%\Call{MergeVocab}{$V, s_1, s_2$}
-%
-%\EndFor
-%
-%
-%\end{algorithmic}
-%
-%\caption{Learning BPE merges.}
-%\label{alg:learn-bpe}
-%\end{algorithm}
-
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{\acs{bpe}.}  \acl{bpe} \glsunset{bpe} (\acs{bpe};
+\paragraph{\acs{bpe}.}  \Acl{bpe} \glsunset{bpe} (\acs{bpe};
 \citealp{sennrich-etal-2016-neural}) is an approach which tackles the open
 vocabulary problem by splitting words to subword units.  The idea is to devise
-a vocabulary of a predefined size, such that nearly every word can be composed
-using the units from the vocabulary. An additional requirement is for the
-vocabulary to contain as many frequent words as possible, so only rare words
-need to be split to more subwords.
+a vocabulary of a predefined size, such that any word can be composed using the
+units from the vocabulary (with the exception of words containing unknown
+characters). An additional requirement is for the vocabulary to contain whole
+words which are frequent in the data, so only rare words are split into more
+subwords. The \ac{bpe} method works with a vocabulary of merges, which needs to
+be created by the \ac{bpe} training algorithm before it can be applied on the
+data.
 
-The \ac{bpe} algorithm %(Algorithm ~\ref{alg:learn-bpe})
-proceeds as follows. First, the vocabulary is initialized with all characters
-as symbols. Second, all tokens in the data are segmented using the symbols in
-the vocabulary (in the first step, the tokens are split to characters).  Third,
-the algorithm computes the counts of pairs of consecutive symbols in the
-training data, and selects the most frequent pair. Next, the most frequent pair
-of symbols is merged into a new symbol which is added to the vocabulary. Then
-the algorithm iterates the segmentation, counting and merging, until a
-predefined number of merges is done. In practice, instead of working with the
-training corpus, the algorithm runs on the frequency list of tokens, without
-loss of generality.
+The \ac{bpe} training algorithm proceeds in iterations as follows. In the
+beginning, all tokens in the data are split into characters, and the vocabulary
+is initialized with the list of the characters. To allow for later
+reconstruction of the original text, a special end-of-word character is
+appended to each word.  Each iteration of the algorithm has three steps. First,
+the algorithm computes the counts of pairs of consecutive symbols (bigrams) in
+the data (respecting the word boundaries), and selects the most frequent
+pair. Second, the selected bigram is merged and added to the vocabulary. Third,
+the new vocabulary is used to segment the data again. These three steps are
+repeated until a predefined number of merges is performed.  Note that in
+practice, the algorithm can be implemented to work only with the frequency list
+of tokens, and not with the whole training corpus, without loss of generality.
+
+Once the \ac{bpe} merge list is created, it can be applied on the data by first
+splitting the words in the data to characters, and then applying the learned
+merges on the split words. Reconstruction of the original text can be done by
+removing the spaces and then replacing the end-of-word characters with new
+spaces.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{Wordpiece.}  \JH{describe this because we use this in the
-  preliminary CTC experiments}
+\paragraph{Wordpiece.} The wordpiece algorithm
+\citep{schuster-nakajima-2012-japanese,wu2016google} shares the ideas of the
+\ac{bpe} algorithm -- whole words are split into sequences of characters, which
+are then merged according to a list of merges. Unlike the \ac{bpe}
+segmentation, the wordpiece learning algorithm does not take the most frequent
+bigram, but instead the pair with the biggest pointwise mutual
+information. \JH{They say they take the pair that maximizes the likelihood of
+  the data, but then we would need to talk about language models first, and I
+  guess it's the same thing.}
 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{SentencePiece.}  \JH{copied from JNLE:} Sentencepiece
-\citep{kudo2018sentencepiece} is a toolkit that implements BPE and a unigram
-language model for subword segmentation \citep{kudo-2018-subword}. It supports a
-number of features, such as sampling and regularization by introducing noise on
-the source side. As opposed to BPEs and wordpieces, Sentencepiece does not
-require prior tokenization of the input text, and unlike other methods its
-pre-tokenization allows to fully reconstruct the original string.
+\paragraph{SentencePiece.} More recently,
+\citet{kudo-richardson-2018-sentencepiece} implemented Sentencepiece, a toolkit
+for subword segmentation using either \ac{bpe}, or a unigram language model
+\citep{kudo-2018-subword}. It supports a number of features, such as sampling
+and regularization by introducing noise on the source side. As opposed to BPEs
+and wordpieces, Sentencepiece does not require prior tokenization of the input
+text, and unlike other methods its pre-tokenization allows to fully reconstruct
+the original string. The Marian toolkit
+\citep{junczys-dowmunt-etal-2018-marian} used in our experiments described in
+Chapter \ref{chap:experiments} has a built-in support for Sentencepiece
+tokenization and segmentation.
 
 % ------------------------------------------------------------------------------
 \section{Encoder-Decoder Framework}
 \label{sec:encdec}
 % ------------------------------------------------------------------------------
 
-The contemporary \gls{nmt} models share a common framework where each model is
+The contemporary \ac{nmt} models share a common framework where each model is
 composed of two parts -- an \emph{encoder}, and a \emph{decoder}. The encoder
 reads in the input sentence and processes it in order to generate an
 intermediate hidden representation.  The decoder then uses this intermediate
 hidden representation to produce the probability distributions over the output
 tokens.
 
-The early \gls{nmt} models based on \glspl{rnn} use the final encoder state as
-the intermediate representation \citep{sutskever2014sequence}:
+The early \ac{nmt} models based on \acp{rnn} use the final encoder state as the
+intermediate representation \citep{sutskever2014sequence}:
 %
 \begin{align}
   h_j &= \mathrm{RNN}_{\text{enc}}(x_j, h_{j-1}), \quad j \in
@@ -295,7 +233,7 @@ Note that the input words are represented as their embeddings.
 \citet{sutskever2014sequence} do not use subword segmentation and instead
 reserve a special OOV token for unseen words.
 
-The decoder is initialized with the state $s_0$ and runs the second \gls{rnn}:
+The decoder is initialized with the state $s_0$ and runs the second \ac{rnn}:
 \begin{equation} s_i = \mathrm{RNN}_{\text{dec}}(y_{i-1}, s_{i-1})
 \end{equation}
 %
@@ -309,10 +247,10 @@ the actual neural network structure and the concept is still used as a main
 approach for designing sequence-to-sequence models.
 
 In this section, we introduce the two most notable encoder-decoder
-architectures. The first is based on \glspl{rnn} and became the first neural
-architecture to outperform statistical \gls{mt} models. The second
-architecture, called \emph{Transformer}, is based on self-attentive networks
-and is the best-performing architecture for many \gls{nlp} tasks today.
+architectures. The first is based on \acp{rnn} and became the first neural
+architecture to outperform statistical \ac{mt} models. The second architecture,
+called \emph{Transformer}, is based on self-attentive networks and is the
+best-performing architecture for many \ac{nlp} tasks today.
 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -320,11 +258,11 @@ and is the best-performing architecture for many \gls{nlp} tasks today.
 \label{sec:encdec:rnn}
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-The invention of \glspl{rnn} \citep{elman1990finding} allowed processing of
-sequential data by neural networks. \Glspl{rnn} process the sequence one item at
+The invention of \acp{rnn} \citep{elman1990finding} allowed processing of
+sequential data by neural networks. \Acp{rnn} process the sequence one item at
 a time, chaining consecutive steps with recurrence connections.
 
-In the early stages of the \gls{rnn} development, a single hidden layer of the
+In the early stages of the \ac{rnn} development, a single hidden layer of the
 network was altered to take into account the output of itself from the previous
 time step:
 
@@ -336,34 +274,33 @@ time step:
 \begin{equation} h_t = \tanh ( W x_t + U h_{t-1} + b_h ) \label{eq:vanilla-rnn}
 \end{equation}
 
-\noindent where $W \in \mathbb{R}^{m \times n}$, $U \in \mathbb{R}^{n \times
-n}$, $b_h \in \mathbb{R}^{n}$ are trainable parameters, $x_t \in \mathbb{R}^{m}$
-is the \gls{rnn} input, and $h_{t-1} \in \mathbb{R}^{n}$ is the previous hidden
-state.
+\noindent where $W \in \mathbb{R}^{m \times n}$,
+$U \in \mathbb{R}^{n \times n}$, $b_h \in \mathbb{R}^{n}$ are trainable
+parameters, $x_t \in \mathbb{R}^{m}$ is the \ac{rnn} input, and
+$h_{t-1} \in \mathbb{R}^{n}$ is the previous hidden state.
 
-This version of \glspl{rnn} however suffers from the \emph{vanishing gradient
-problem}. During backpropagation, the gradients are multiplied with the
+This version of \acp{rnn} however suffers from the \emph{vanishing gradient
+  problem}. During backpropagation, the gradients are multiplied with the
 derivative of the hyperbolic tangent, which is always less or equal to one. In
 long sequences, the learning signal over distant parts of the sequence has
 therefore almost no effect on the training. Due to this fact, the network
 manifests poor performance in handling long-range dependencies.
 
-There has been several approaches to combat the vanishing gradient problem.  The
-most prevailing types of \gls{rnn} architectures in \gls{nmt} are \gls{lstm}
-networks and \gls{gru} networks.
+There has been several approaches to combat the vanishing gradient problem.
+The most prevailing types of \ac{rnn} architectures in \ac{nmt} are \ac{lstm}
+networks and \ac{gru} networks.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{\glsxtrshort{lstm}.} \glsxtrlong{lstm} networks
-\citep{hochreiter1997long} introduce gating mechanisms and a concept of
-\emph{information highway}, which ensures that only linear operations are
-applied on the states in the recurrent chain. A gating mechanism is an
-operation which computes a number between 0 and 1, which we refer to as
-\emph{gate value}.  The output of the operation is the input multiplied by the
-gate value.
+\paragraph{\acs{lstm}.} \acl{lstm} networks \citep{hochreiter1997long}
+introduce gating mechanisms and a concept of \emph{information highway}, which
+ensures that only linear operations are applied on the states in the recurrent
+chain. A gating mechanism is an operation which computes a number between 0 and
+1, which we refer to as \emph{gate value}.  The output of the operation is the
+input multiplied by the gate value.
 
-Given a current time step $t$, input $x_t \in \mathbb{R}^m$, and previous hidden
-states $h_{t-1}, C_{t-1} \in \mathbb{R}^n$, \gls{lstm} networks proceed as
-follows:
+Given a current time step $t$, input $x_t \in \mathbb{R}^m$, and previous
+hidden states $h_{t-1}, C_{t-1} \in \mathbb{R}^n$, \ac{lstm} networks proceed
+as follows:
 %
 \begin{align}
   f_t &= \sigma\left(W_f x_t + U_f h_{t-1} + b_f\right) \label{eq:lstm-forget-gate} \\
@@ -381,7 +318,7 @@ element-wise multiplication. The states $h_t$ and $C_t$ are also called public
 and private hidden states respectively. The intermediate value $\tilde{C}_t$ is
 called the candidate state.
 
-The three gates in the \gls{lstm} network are called \emph{forget gate},
+The three gates in the \ac{lstm} network are called \emph{forget gate},
 \emph{input gate}, and \emph{output gate}. The forget gate (Eq.
 \ref{eq:lstm-forget-gate}) controls how much of the information from the
 previous private hidden state $C_{t-1}$ to the current private state (Eq.
@@ -403,14 +340,13 @@ constitutes the information highway that allows propagating the gradients over
 long distances in the sequence.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{\glsxtrshort{gru}.} \glsxtrlong{gru} networks \citep{cho2014gru} are
-an alternative to \glspl{lstm}. Instead of four sets of parameter matrices,
-\glspl{gru} need only three, while maintaining the theoretical strength. Unlike
-\glspl{lstm}, \glspl{gru} use only a single hidden state in the recurrence
-relations.
+\paragraph{\acs{gru}.} \acl{gru} networks \citep{cho2014gru} are an alternative
+to \acp{lstm}. Instead of four sets of parameter matrices, \acp{gru} need only
+three, while maintaining the theoretical strength. Unlike \acp{lstm}, \acp{gru}
+use only a single hidden state in the recurrence relations.
 
-Given the time step $t$, input $x_t \in \mathbb{R}^m$, and previous hidden state
-$h_{t-1}$, one \gls{gru} step is defined as follows:
+Given the time step $t$, input $x_t \in \mathbb{R}^m$, and previous hidden
+state $h_{t-1}$, one \ac{gru} step is defined as follows:
 %
 \begin{align}
   r_t &= \sigma\left(W_r x_t + U_r h_{t-1} + b_r\right) \label{eq:gru-reset-gate} \\
@@ -423,19 +359,19 @@ where $W, W_z, W_r \in \mathbb{R}^{m\times n}$,
 $U, U_z, U_r \in \mathbb{R}^{n \times n}$, and $b, b_z, b_r \in \mathbb{R}^n$
 are trainable parameters.
 
-The two gates in \gls{gru} networks are called \emph{reset gate} and
-\emph{update gate}.  The reset gate (Eq. \ref{eq:gru-reset-gate}) determines how
-much of the information from the previous state is preserved and is applied in
-the recurrence relation for computing the candidate
+The two gates in \ac{gru} networks are called \emph{reset gate} and
+\emph{update gate}.  The reset gate (Eq. \ref{eq:gru-reset-gate}) determines
+how much of the information from the previous state is preserved and is applied
+in the recurrence relation for computing the candidate
 (Eq. \ref{eq:gru-candidate}). The update gate (Eq.  \ref{eq:gru-update-gate})
 controls the merging of the previous state with the candidate state in Equation
 \ref{eq:gru-hidden-state}. Note that the information highway concept is
 expressed by this equation.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{Bidirectional RNNs.} There is a bidirectional variant of \glspl{rnn}
-which can be applied to any of the flavors of \glspl{rnn} discussed above. When
-the whole input sequence is known, we can apply a \gls{rnn} in both directions
+\paragraph{Bidirectional RNNs.} There is a bidirectional variant of \acp{rnn}
+which can be applied to any of the flavors of \acp{rnn} discussed above. When
+the whole input sequence is known, we can apply a \ac{rnn} in both directions
 separately and then concatenate the states from the corresponding positions:
 %
 \begin{align}
@@ -446,7 +382,7 @@ separately and then concatenate the states from the corresponding positions:
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Attention Mechanism.} Another important concept introduced as a part
-of \gls{rnn}-based \gls{nmt} models is the \emph{attention mechanism}
+of \ac{rnn}-based \ac{nmt} models is the \emph{attention mechanism}
 \citep{bahdanau2014neural,luong-etal-2015-effective}.
 
 The problem with the encoder-decoder framework as described in the previous
@@ -653,10 +589,9 @@ is the dimension of the hidden state.
 \paragraph{Residual Connections and Layer Normalization.} As a post-processing
 step, the output of each sub-layer is connected with the output of the previous
 sub-layer with residual connections. \JH{zkontrolovat jestli se to definovalo v
-  Deep Architectures, stejně jako Layer Norm.} Similarly to the
-\glsentryshort{rnn}-based deep architectures, layer normalization is used in
-combination, which ties all states in the sub-layer stack into a shared vector
-space.
+  Deep Architectures, stejně jako Layer Norm.} Similarly to the \acs{rnn}-based
+deep architectures, layer normalization is used in combination, which ties all
+states in the sub-layer stack into a shared vector space.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Output Projection.}
@@ -710,9 +645,9 @@ hyperparameter values for these two settings.
 \label{sec:training}
 % ------------------------------------------------------------------------------
 
-Training of \gls{nmt} models is usually done under \emph{supervised}
-conditions, using a dataset of parallel sentences. \JH{move the following to
-  the experimental section:} The size of the available data varies a lot with
+Training of \ac{nmt} models is usually done under \emph{supervised} conditions,
+using a dataset of parallel sentences. \JH{move the following to the
+  experimental section:} The size of the available data varies a lot with
 different language pairs. Although there is no formal definition, when there is
 less than a million sentence pairs available, the language pair is reffered to
 as being \emph{low-resource}. For many languages, even a million sentences is a
@@ -791,7 +726,7 @@ being explicitly trained to do so.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 %\paragraph{RNNs vs Transformer Training.} A significant difference in training
-%\glspl{rnn} and the Transformer model is
+%\acp{rnn} and the Transformer model is
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsection{Training Methodology}
@@ -799,7 +734,7 @@ being explicitly trained to do so.
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 In this section, we go through the common techniques for successful training of
-\gls{nmt} models. These include data cleaning and augmentation methods,
+\ac{nmt} models. These include data cleaning and augmentation methods,
 optimization settings, and hardware considerations.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -848,7 +783,7 @@ languages, data augmentation methods, namely \emph{backtranslation} are used
 to create bigger data and therefore to improve the model performance.
 
 Backtranslation is a simple technique for incorporating target-side monolingual
-data in a \gls{nmt} model \citep{sennrich-etal-2016-improving}. For a given
+data in a \ac{nmt} model \citep{sennrich-etal-2016-improving}. For a given
 translation direction, we first translate the monolingual data from the target
 language to the source language using a previously trained model. Then, we mix
 the synthetic source-language data along with the authentic target-language
@@ -871,16 +806,15 @@ get interesting improvements in terms of speed, which is useful for deploying
 the models in a limited environment, such as a mobile device.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{Batching.} In Equation \ref{eq:loss}, the loss function
-$J(\theta)$ is defined as a sum of sequence-level losses over dataset
-$D$. We use gradient descent to find parameters $\theta$ which minimize the
-loss value. However, the exact computation of the gradient is inefficient
-because it requires one pass through the whole dataset. Therefore, we estimate
-the gradient on a small sample of the training data, called a \emph{mini
-  batch}, or simply a batch. This method is called
-\emph{\gls{sgd}}.\footnote{Some sources use the term \emph{mini-batch gradient
-    descent}, to distinguish from methods that perform the update for each
-  example.}
+\paragraph{Batching.} In Equation \ref{eq:loss}, the loss function $J(\theta)$
+is defined as a sum of sequence-level losses over dataset $D$. We use gradient
+descent to find parameters $\theta$ which minimize the loss value. However, the
+exact computation of the gradient is inefficient because it requires one pass
+through the whole dataset. Therefore, we estimate the gradient on a small
+sample of the training data, called a \emph{mini batch}, or simply a
+batch. This method is called \emph{\ac{sgd}}.\footnote{Some sources use the
+  term \emph{mini-batch gradient descent}, to distinguish from methods that
+  perform the update for each example.}
 
 The size of a mini batch is an important parameter and its value can have a
 large impact on the training convergence. Bigger batches provide better
@@ -897,7 +831,7 @@ GPU.
 \paragraph{Optimization.}
 Because the gradients are estimated, heuristics can be used to improve the
 convergence. There are different sets of heuristics commonly used together,
-called \emph{optimizers}. In a standard \gls{sgd}, the update rule for every
+called \emph{optimizers}. In a standard \ac{sgd}, the update rule for every
 mini-batch $b = (x_i, y_i)_{i=0}^{n}$ follows:
 %
 \begin{equation}
@@ -926,14 +860,14 @@ such as machine translation between different language pairs, where the primary
 task is considerably more difficult than the auxiliary task (for example due to
 different amounts of training data available). Transfer learning assumes that
 models for both tasks share some amount of common knowledge. First, a
-\emph{parent} model is trained on the auxiliary task (e.g. \gls{mt} between a
+\emph{parent} model is trained on the auxiliary task (e.g. \ac{mt} between a
 high-resource language pair). Then, the \emph{child} model is initialized with
 the trained parameters of the parent model. Finally, the child model is further
-trained on the primary task (e.g. a low-resource \gls{mt}).
+trained on the primary task (e.g. a low-resource \ac{mt}).
 
 The idea of transfer learning is one of the main concepts in applications of
 pre-trained language models such as BERT \citep{devlin-etal-2019-bert}, or
-multilingual pre-trained models applied to \gls{mt}, such as mBART
+multilingual pre-trained models applied to \ac{mt}, such as mBART
 \citep{liu-etal-2020-multilingual}.
 
 
@@ -1012,20 +946,21 @@ on its own decisions. \JH{tohle neni pravda}
 \section{Evaluation}
 \label{sec:evaluation}
 
-The problem of \gls{mt} evaluation is almost as challenging as \gls{mt} itself.
-The most reliable method for assessing the quality of \gls{mt} systems remains
-human evaluation.  Since the adoption of statistical approach for \gls{mt}
+The problem of \ac{mt} evaluation is almost as challenging as \ac{mt} itself.
+The most reliable method for assessing the quality of \ac{mt} systems remains
+human evaluation.  Since the adoption of statistical approach for \ac{mt}
 \citep{brown-etal-1993-mathematics,koehn-etal-2003-statistical}, the demand for
 automatic translation quality metrics grew larger, as the models often need to
 be validated several times during training.
 
-Perhaps the best-known automatic \gls{mt} metric is BLEU
-\citep{papineni-etal-2002-bleu}.  Despite a long term effort led by the organizers of
-the WMT Metrics shared task to create an automatic evaluation metric that would
-be better correlated with scores assigned by humans, BLEU continues to be the
-most widely used metric in the contemporary literature. However, over the nearly
-two decades of using BLEU, it has been criticized for being prone to errors due
-to outliers or being too inaccurate when the score itself is low.
+Perhaps the best-known automatic \ac{mt} metric is BLEU
+\citep{papineni-etal-2002-bleu}.  Despite a long term effort led by the
+organizers of the WMT Metrics shared task to create an automatic evaluation
+metric that would be better correlated with scores assigned by humans, BLEU
+continues to be the most widely used metric in the contemporary
+literature. However, over the nearly two decades of using BLEU, it has been
+criticized for being prone to errors due to outliers or being too inaccurate
+when the score itself is low.
 \citep{callison-burch-etal-2006-evaluating,bojar-etal-2010-tackling,reiter2018structured,mathur-etal-2020-tangled}
 
 Besides the translation quality, the models can also be evaluated in terms of
@@ -1033,8 +968,8 @@ efficiency. The decoding speed is usually measured in two dimensions:
 \emph{latency} and \emph{throughput}. Latency is the time to decode a single
 sentence in online mode (i.e. with batch size of 1). Throughput is the maximum
 number of sentences the model can translate in a unit of time (with any batch
-size). In the \gls{wmt} efficiency shared task, model size and RAM usage is
-also reported.
+size). In the \ac{wmt} efficiency shared task, model size and RAM usage is also
+reported.
 
 
 %%% Local Variables:
