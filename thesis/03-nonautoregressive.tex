@@ -316,7 +316,7 @@ corrupted token is either replaced with a random word from the vocabulary,
 copied to its neighbor, or swapped with the neighbor.
 
 During training, the two loss functions are stochastically mixed using a
-hyper-parameter $\alpha$, sampled from a Bernoulli distribution.
+hyperparameter $\alpha$, sampled from a Bernoulli distribution.
 
 
 % ------------------------------------------------------------------------------
@@ -534,7 +534,7 @@ In this section, we describe our approach to \acl{nat}.
 
 The idea behind our approach is that we do not explicitly estimate the target
 sequence length. Instead, we fix the decoder length on an upper limit of the
-target length, given by a hyper-parameter. As the decoder input, we use the
+target length, given by a hyperparameter. As the decoder input, we use the
 encoder states, split and linearly projected to match the decoder state
 dimension and the target length.
 

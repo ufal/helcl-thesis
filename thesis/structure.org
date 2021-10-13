@@ -153,17 +153,14 @@
 
 
 
-
-
-** CTC loss in NMT
-   - basically section 3 from the paper
-
-** Experiments
-   - sections 4 and 5 from the paper
-
-
 * Experiments (to be renamed)... (possibly make three chapters according to the three papers)
   This chapter describes the experiments I am doing now.
   Fair comparison.
 
-  ** Autoregressive Teacher Models
+** Autoregressive Teacher Models
+   This section is based on the EN-DE models from UEDIN submission.
+
+** Student Models
+   This section is about the student models distilled from the teacher models
+
+   - we train models in five settings

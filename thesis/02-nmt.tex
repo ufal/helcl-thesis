@@ -14,20 +14,13 @@ inputs and the outputs to a neural network are real-valued vectors, the
 training objective is a differentiable function, and the space of the
 parameters needs to have a continuous gradient with respect to the loss
 function. Specific to neural networks is the computation of the gradient by the
-\emph{backpropagation} algorithm \JH{ocitovat}, and the large portfolio of
-optimization methods.
+\emph{backpropagation} algorithm, and the large portfolio of optimization
+methods.
 
 In Section \ref{sec:text-processing}, we explain how to adapt neural networks
 to the discrete nature of the textual data. Perhaps the most common way is to
 assign a real-valued vector to each word in the vocabulary. These
 representations are usually trained along with the whole network, end to end.
-
-Textual data are sequential and the lengths of the sequences are
-variable. Using feed-forward neural networks is therefore not
-suitable. Sequences can be processed by a number of network architectures,
-namely \acp{cnn}, \acp{rnn}, or \acp{san}. All of those can be adapted for text
-processing, and we will describe the latter two in more detail in Sections
-\ref{sec:encdec:rnn} and \ref{sec:encdec:transformer}, respectively.
 
 In \acs{nlp} tasks like sentence classification or language modeling, there is
 only a single sequence on the input. In \ac{mt}, we have a source sentence on
@@ -37,18 +30,32 @@ of the \ac{nmt} architectures have two components: an \emph{encoder} and a
 representation. The decoder then accesses this hidden representation and
 generates (or scores) the output sentence. When both components of the model
 are trained end to end, this framework is sometimes referred to as
-\emph{sequence-to-sequence learning}. \JH{We explore the encoder-decoder
-  architectures more closely in Sections ...}
+\emph{sequence-to-sequence learning}. We explore the encoder-decoder
+architectures more closely in Section \ref{sec:encdec}.
 
-%Section about training: batching, optimization, multiple GPUs, ...
-A \ac{nmt} architecture is usually trained with \emph{teacher forcing} -- for a
-given source sentence and its translation, the neural network is trained to
-maximize the likelihood of $i$-th target word on $i$-th position, conditioned
-on the $i-1$ previous words of the reference sentence. During decoding, when
-this information is not available, the model is conditioned on previously
-decoded outputs instead. More details on this phenomenon and other practical
-considerations for training a model are presented in Section
-\ref{sec:training}. \JH{maybe this is already decoding?}
+Textual data are sequential and the lengths of the sequences are
+variable. Using feed-forward neural networks is therefore not
+suitable. Sequences can be processed by a number of network architectures,
+namely \acp{cnn}, \acp{rnn}, or \acp{san}. All of those can be adapted for text
+processing, and we will describe the latter two in more detail in Sections
+\ref{sec:encdec:rnn} and \ref{sec:encdec:transformer}, respectively.
+
+% Section about training: batching, optimization, multiple GPUs, ...
+\ac{nmt} models are trained using large parallel corpora, by minimizing the
+negative log-likelihood of the data.  Section \ref{sec:training} formalizes the
+supervised training framework for translation models and summarizes the
+training methodology, such as data processing, model initialization, and
+optimization.
+
+% Section about decoding
+During training, sequence-to-sequence decoders usually run in the \emph{teacher
+  forcing} mode -- for a given source sentence and its translation, the neural
+network is trained to maximize the likelihood of $i$-th target word on $i$-th
+position, conditioned on the $i-1$ previous words of the reference
+sentence. During decoding, when this information is not available, the model is
+conditioned on previously decoded outputs instead. More details on this
+phenomenon and other practical considerations and techniques such as beam
+search or ensembling are presented in Section \ref{sec:decoding}.
 
 % alternative paragraph for Training section overview. Focus on batching and
 % optimization instead of teacher forcing.
@@ -90,16 +97,17 @@ We call this vector the \emph{one-hot representation} of $w$.
 Using one-hot representation help us convert discreet words to numbers, but it
 does not capture anything about the underlying linguistic structure.  For this
 purpose, \emph{learned distributed feature vectors}, or \emph{word embeddings}
-are used \citep{bengio2003neural} \JH{pridat vic citaček}. The idea is to
+are used \citep{bengio2003neural, collobert-weston-2007-fast}. The idea is to
 associate a real-valued vector with each word, so that representations of words
 with similar roles in language are closer together in the assigned vector
-space. \citet{mikolov2013distributed} train these word embeddings using the
-\emph{skip-gram} and \emph{continuous bag of words} objectives and find that
-the resulting embeddings have interesting properties. For example, arithmetic
-operations on embeddings can express word analogy.  In some \ac{nlp} tasks,
-pre-trained embeddings can be used to greatly improve the model performance on
-the end task. In contemporary \ac{nmt} research, the most prevalent approach is
-to train the word embeddings end-to-end along with the translation model.
+space. \citet{mikolov-etal-2013-distributed} train these word embeddings using
+the \emph{skip-gram} and \emph{continuous bag of words} objectives and find
+that the resulting embeddings have interesting properties. For example,
+arithmetic operations on embeddings can express word analogy.  In some \ac{nlp}
+tasks, pre-trained embeddings can be used to greatly improve the model
+performance on the end task. In contemporary \ac{nmt} research, the most
+prevalent approach is to train the word embeddings end-to-end along with the
+translation model.
 
 % Word embedding layer is inserted to help.
 We provide the model with the distributed representation of words using an
@@ -426,13 +434,13 @@ attention keys and values are equal -- the encoder hidden states $h_j$. The
 similarity metric is defined in Equation \ref{eq:attn-energies}.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{Deep RNNs.} Some NMT architectures based on RNNs use multiple
+\paragraph{Deep \acp{rnn}.} Some NMT architectures based on RNNs use multiple
 recurrent layers \citep{barone2017deep,wu2016google}. In deep RNNs, each layer
 is a recurrent network. The inputs of the second and each layer onwards are the
 outputs of the preceding layer. The output of the whole deep RNN is the output
 of the last layer.
 
-In bidirectional RNNs, there are a few settings to consider. \JH{tell me more}
+In deep \acp{rnn}, there are a few settings to consider. \JH{tell me more}
 
 \JH{first layer norm paragraph should give better motivation, last paragraph
   should provide some insight to the formulas.}  To improve the convergence
@@ -533,8 +541,8 @@ Self-attention sub-layers are used both in the encoder and the decoder. Because
 the decoder is autoregressive, the self-attention module needs to be
 constrained to attend only to the preceding states (so the model does not
 ``glance into the future''). This is implemented by applying a triangular mask
-on the attention query and key matrix, hence the name \emph{masked
-  self-attetnion}.
+(also \emph{causal mask}) on the attention query and key matrix, hence the name
+\emph{masked self-attetnion}.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Multi-Head Attention.} Instead of running a single self-attention
@@ -594,13 +602,30 @@ deep architectures, layer normalization is used in combination, which ties all
 states in the sub-layer stack into a shared vector space.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{Output Projection.}
-\JH{write output projection here}
-% výstup
+\paragraph{Output Projection.} The states from the last decoder layer are
+projected to the size of the vocabulary and interpreted as unnormalized
+probability distributions over the output tokens. When a probability
+distribution is needed (during training or beam search decoding), the scores
+are normalized using the softmax function:
+%
+\begin{equation}
+  p(y_t | y_{<t}, x, \theta) = \softmax( W^S s_t + b^S )
+\end{equation}
+%
+where $W^S \in \mathbb{R}^{d \times |\mathcal{V}|}$,
+$b \in \mathbb{R}^{|\mathcal{V}|}$ are the output projection parameters and
+$s_t$ is the $t$-th state in the last decoder layer, and $\theta$ is the set of
+the model parameters. Note that the probability of the $t$-th output token
+$y_t$ is conditioned on the preceding tokens $y_{<t}$ because of the causal
+mask in the decoder self-attention. In the Transformer model, it is possible to
+tie the values of the output projection matrix with the transposed embedding
+matrix. This reduces the number of model parameters and can have advantages
+over separate input and output projection matrices when using a shared
+source--target vocabulary.
 
-%Once the input text is converted into real-valued numeric data and the neural
-%network computation is executed, we need to interpret the results
-
+To compute the probability distribution of the whole target sentence $y$ given
+the input sentence $x$, the distributions from all time steps are multiplied
+together:
 %
 \begin{equation}
   p(y|x) = \prod_{t=1}^{T_y}p(y_t|y_{<t},x,\theta)
@@ -608,8 +633,7 @@ states in the sub-layer stack into a shared vector space.
 \end{equation}
 %
 where $T_y \in \mathbb{R}$ is the length of the target sentence, $y_{<t}$ are
-the previously decoded words, and $\theta$ is a set of the model parameters.
-
+the previously decoded words.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Model Hyperparameters.} The parameters that control the model size
@@ -821,9 +845,27 @@ large impact on the training convergence. Bigger batches provide better
 gradient estimates, but require more memory, which is an issue when using a
 GPU.
 
-\JH{shuffling goes here}
+Because the data gets split into batches which serves as a random sample of the
+data, a suitable data shuffling strategy should be considered. If we regard the
+dataset as a collection of sentences (as opposed to documents, for example),
+shuffling the sentences in the whole dataset before training is in most cases
+sufficient.
 
-\JH{optimizer delay perhaps also here}
+Another aspect of batching is how efficiently do we use the memory allocated
+for the batch with respect to the maximum sentence length. The batches are
+represented as matrices with examples on rows and the tokens on columns. When a
+sentence is shorter than the longest sentence in the batch, it is padded to the
+maximum length. If the overall amount of padding used in a batch is big, the
+optimization step takes longer. Therefore, we try to use batches of sentences
+with similar lengths. A possible implementation is to load a number of batches
+beforehand, sort the sentences by length and then re-batch the sorted list of
+sentences.
+
+In some cases, it is not necessary to perform the parameter update after each
+batch. For example, large models tend to fit in a GPU memory only with a small
+batch size. In such cases, we might choose to aggregate the gradients over
+multiple batches to simulate a bigger batch size. A similar strategy can be
+applied when the training uses multiple GPUs.
 
 \JH{we could mention Martin Popel's block-BT}
 
@@ -839,7 +881,7 @@ mini-batch $b = (x_i, y_i)_{i=0}^{n}$ follows:
 \end{equation}
 %
 where $\nabla_{\theta} J$ is the gradient of the loss function, and
-$\alpha$ is the \emph{learning rate}. The learning rate is a hyper-parameter
+$\alpha$ is the \emph{learning rate}. The learning rate is a hyperparameter
 that controls the size of the update steps.
 
 \JH{Adam optimizer, LR decay, trasformer (noah) LR scheme}
@@ -913,7 +955,7 @@ The delayed optimizer update, discussed in the batching paragraph above
 
 % ------------------------------------------------------------------------------
 \section{Autoregressive Decoding}
-\label{sec:training-vs-inference}
+\label{sec:decoding}
 % ------------------------------------------------------------------------------
 
 The models we described in the sections above are \emph{autoregressive} -- the

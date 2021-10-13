@@ -35,7 +35,10 @@ for training our non-autoregressive student models.
 \noindent
 In our English-German experiments, we use autoregressive models from our
 submission to the \ac{wmt} 2021 News Translation shared task \JH{add bib when
-  ready}.
+  ready}. We use these models both as a strong autoregressive baseline, and as
+teacher models for generating distilled data for the non-autoregressive student
+models, described in the next section.  The models were trained on cleaned
+parallel data augmented with backtranslated monolingual data.
 
 % ------------------------------------------------------------------------------
 \paragraph{Data Cleaning.} For our English-German models, we prepare the
@@ -144,7 +147,7 @@ trained models are shown in Table \ref{tab:dual-cross-entropy-selection}.
 \paragraph{Backtranslation.} We train four translation models on the filtered
 parallel dataset for creating backtranslations
 \citep{sennrich-etal-2016-improving}. We use identical Transformer big
-hyper-parameter settings but we use different random seeds for parameter
+hyperparameter settings but we use different random seeds for parameter
 initialization. We use the same hyperparameter settings as for the teacher
 models. The parameter values are shown in Table \ref{tab:trafo-big-hparams}
 % The Transformer big models have a 6-layer encoder and a 6-layer decoder, with
@@ -196,7 +199,7 @@ in Section \ref{sec:training:methodology}.
 \paragraph{Teacher Model Training.}  We train the teacher models on shuffled
 concatenation of the authentic parallel and tagged backtranslated data. As with
 the models for backtranslation, we train four models with different seeds for
-random initialization in each direction. We show the hyper-parameter values in
+random initialization in each direction. We show the hyperparameter values in
 Table \ref{tab:trafo-big-hparams}.
 
 After the training on mixed parallel and backtranslated data converged, we
@@ -214,6 +217,7 @@ continued the training of the models on parallel data only.
     No. of encoder layers & \texttt{enc-depth} & 6 \\
     No. of decoder layers & \texttt{dec-depth} & 6 \\
     Model dimension &  \texttt{dim-emb} & 1,024 \\
+    Feed-forward state dimension & \texttt{transformer-dim-ffn} & 4,096 \\
     Attention heads & \texttt{transformer-heads} & 16 \\
 %              & transformer-postprocess & dan \\
 %              & transformer-postprocess-emb & d\\
@@ -228,7 +232,7 @@ continued the training of the models on parallel data only.
     \bottomrule
   \end{tabular}
 
-  \caption{The hyper-parameters of the teacher models. The same values were
+  \caption{The hyperparameters of the teacher models. The same values were
     used for training the models for backtranslation.}%
   \label{tab:trafo-big-hparams}
 \end{table}
@@ -250,6 +254,50 @@ forward-translating backtranslated data.
 \section{Student Models}
 \label{sec:students}
 % ------------------------------------------------------------------------------
+
+In this section, we describe our non-autoregressive student models. We
+implemented the \acs{ctc}-based Transformer architecture in the Marian toolkit
+\citep{junczys-dowmunt-etal-2018-marian}. For the computation of the \ac{ctc}
+loss, we use the warp-ctc
+library,\footnote{\url{https://github.com/baidu-research/warp-ctc/}} an
+efficient parallelized implementation for GPUs \citep{amodei-etal-2016-deep}.
+
+We experiment with different hyperparameter settings that control the size of
+the student model. Our baseline non-autoregressive model is a big Transformer
+model with 6 encoder layers, followed by the state-splitting layer, and another
+6 decoder layers. Apart from the \ac{ctc}-specific configuration, we use the
+same hyperparameters as in the teacher models, shown in Table
+\ref{tab:trafo-big-hparams}. In addition, we train four smaller models based on
+the Transformer base hyperparameters -- using model dimension of 512,
+feed-forward state dimension of 2,048, and 8 attention heads. Each smaller
+model uses a different number of encoder and decoder layers. We show the number
+of encoder and decoder layers in Table \ref{tab:student-model-hparams}. In all
+settings, we use the splitting factor of 3 in the state splitting layer.
+
+
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{llrr}
+    \toprule
+    Model & Base architecture & \multicolumn{1}{l}{Encoder layers} & \multicolumn{1}{l}{Decoder layers} \\
+    \midrule
+    Teacher & Transformer big & 6 & 6 \\
+    \midrule
+    Large & Transformer big & 6 & 6 \\
+    \addlinespace
+    Base  & \multirow{4}{*}{Transformer base} & 6 & 6 \\
+    Small & & 3 & 3\\
+    Micro & & 2 & 2 \\
+    Tiny  & & 1 & 1 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{The hyperparameters of the student models.}%
+  \label{tab:student-model-hparams}
+\end{table}
+
 
 
 %%% Local Variables:
