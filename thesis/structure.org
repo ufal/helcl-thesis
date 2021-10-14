@@ -140,7 +140,7 @@
 ** Baseline (preliminary) Experiments
    Section about the original CTC experiments plus their analysis. This is
    without knowledge distillation and on different datasets than the recent
-   experiments. Also, Romanian (and Czech?) is included.
+   experiments. Also, Romanian is included.
 
    - we translate en-de and en-ro in both directions
    - data
@@ -160,7 +160,42 @@
 ** Autoregressive Teacher Models
    This section is based on the EN-DE models from UEDIN submission.
 
+   - we use the models from UEDIN submission as strong autoregressive baselines
+   - data cleaning
+     - dataset consists of clean and noisy parts, as well as monolingual with BT
+     - we apply rule based filtering on all gathered data
+     - we show data sizes in a table
+     - we also clean the noisy data with dual cross-entropy filtering
+     - we score the noisy data with models trained on clean data
+   - backtranslation
+     - we train for big models for backtranslation
+     - translated news crawl is added to the training mix
+     - we use tagged backtranslation
+   - teacher training
+     - train on shuffled concatenation
+     - after convergence, finetuned on clean parallel data only
+   - knowledge distillation
+     - teachers created artificial targets
+
 ** Student Models
    This section is about the student models distilled from the teacher models
 
-   - we train models in five settings
+   - models implemented in Marian and warpctc
+   - five experimental settings, large to tiny.
+
+   - jaky detaily o trenovani muzu pridat?
+     - urcite nejaky learning curves se hodí
+     - popsat jak jsem to trenoval.
+
+
+** Results
+   v tyhle sekci budou vysledky.
+
+   vysledkama se mysli:
+   - bleu score na nějakým rozumným datasetu (wmt21) pro teachers a pro students.
+   - bleu score na WMT14 (pro porovnani s predchozi kapitolou)
+
+   - časy v různých setupech, plus porovnání.
+   - s kým porovnávat?
+     - předchozí kapitola
+     - zjistit přesnej setting (myslim že to byla batch size 1 ale nejsem si jist)

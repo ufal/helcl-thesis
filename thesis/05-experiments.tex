@@ -98,12 +98,11 @@ consists of data from noisy sources.
 
 To further clean the data, we applied dual cross-entropy filtering, as proposed
 by \citet{junczys-dowmunt-2018-dual} and described in the data cleaning
-paragraph in Section \ref{sec:training:methodology}.
-
-We trained two Transformer base models for dual cross-entropy filtering using
-the clean part of the data after the rule-based cleaning step.  \JH{Add more
-  details on these models, perhaps include the hyperparameters somewhere in an
-  appendix, plus add the dev scores}
+paragraph in Section \ref{sec:training:methodology}.  We trained two
+Transformer base models for dual cross-entropy filtering using the clean part
+of the data after the rule-based cleaning step.  \JH{Add more details on these
+  models, perhaps include the hyperparameters somewhere in an appendix, plus
+  add the dev scores}
 
 We score the crawled part of the parallel data using the trained models, and we
 sort the sentence pairs according to the score. To estimate how many of the
@@ -251,7 +250,7 @@ forward-translating backtranslated data.
 \JH{Here should be a subsection about a different language pair. If it isn't,
   throw away the subsection heading above.}
 % ------------------------------------------------------------------------------
-\section{Student Models}
+\section{Student Models}%
 \label{sec:students}
 % ------------------------------------------------------------------------------
 
@@ -274,8 +273,6 @@ model uses a different number of encoder and decoder layers. We show the number
 of encoder and decoder layers in Table \ref{tab:student-model-hparams}. In all
 settings, we use the splitting factor of 3 in the state splitting layer.
 
-
-
 \begin{table}
   \centering
 
@@ -297,6 +294,15 @@ settings, we use the splitting factor of 3 in the state splitting layer.
   \caption{The hyperparameters of the student models.}%
   \label{tab:student-model-hparams}
 \end{table}
+
+
+\JH{Are there more details about training? Validation, early stopping, learning
+  curves?}
+
+% ------------------------------------------------------------------------------
+\section{Results}%
+\label{sec:results}
+% ------------------------------------------------------------------------------
 
 
 
