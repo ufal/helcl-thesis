@@ -218,24 +218,28 @@ continued the training of the models on parallel data only.
     Model dimension &  \texttt{dim-emb} & 1,024 \\
     Feed-forward state dimension & \texttt{transformer-dim-ffn} & 4,096 \\
     Attention heads & \texttt{transformer-heads} & 16 \\
-%              & transformer-postprocess & dan \\
-%              & transformer-postprocess-emb & d\\
+    % & transformer-postprocess & dan \\
+    % & transformer-postprocess-emb & d\\
     Vocabulary size & & 32,000 \\
     \midrule
     Optimizer method & \texttt{optimizer} & adam \\
     $\beta_1$ & \multirow{3}{*}{\texttt{optimizer-params}} & 0.9 \\
     $\beta_2$ & & 0.998 \\
-    $\epsilon$ & & 10$^{-9}$ \\
+    $\epsilon$ & & 10\textsuperscript{-9} \\
     No. of batches per update & \texttt{optimizer-delay} & 2 \\
-    Fit batch to available memory & \texttt{mini-batch-fit} & true\\
+    Fit batch to available memory & \texttt{mini-batch-fit} & true \\
+    Learning rate & \texttt{learn-rate}  & 10\textsuperscript{-4} \\
+    Learning rate warmup & \texttt{lr-warmup} & 8,000 \\
+    Learning rate decay & \texttt{lr-decay-inv-sqrt} & 8,000 \\
+    Gradient clipping\footnotemark & \texttt{clip-norm} & 0 \\
     \bottomrule
   \end{tabular}
 
   \caption{The hyperparameters of the teacher models. The same values were
     used for training the models for backtranslation.}%
   \label{tab:trafo-big-hparams}
-\end{table}
 
+\end{table}
 % ------------------------------------------------------------------------------
 \paragraph{Knowledge Distillation.} The teacher models are used to create
 artificial targets for the student models \citep{kim-rush-2016-sequence}. For
@@ -252,6 +256,11 @@ forward-translating backtranslated data.
 % ------------------------------------------------------------------------------
 \section{Student Models}%
 \label{sec:students}
+% ------------------------------------------------------------------------------
+\footnotetext{We did not use gradient clipping because of issues in the Marian
+  toolkit implementation.  \JH{is there an issue? Also, put this on the right
+    page.}}  % JH: Perhaps switch to the footnote package, which can handle
+             % that better
 % ------------------------------------------------------------------------------
 
 In this section, we describe our non-autoregressive student models. We
@@ -295,14 +304,61 @@ settings, we use the splitting factor of 3 in the state splitting layer.
   \label{tab:student-model-hparams}
 \end{table}
 
+All models were trained for approximately three weeks on four Nvidia Tesla P100
+GPUs. Every 8,000 updates of the training, a model checkpoint was saved and
+validated. As the validation dataset, we used the concatenation of three
+\ac{wmt} test sets, from years 2018, 2019, and 2020
+\citep{bojar-etal-2018-findings, barrault-etal-2019-findings,
+  barrault-etal-2020-findings}.  Figures \ref{fig:ende-learning-curves} and
+\ref{fig:deen-learning-curves} show the training progress of the student
+models. Each plot shows the validation \acs{bleu} scores after a given number
+of parameter updates.
 
-\JH{Are there more details about training? Validation, early stopping, learning
-  curves?}
+\begin{figure}
+  \centering
+  \input{./img/learning-curves/en-de.curves.tex}
+
+  \caption{The learning curves of the English $\rightarrow$ German \ac{nat}
+    models. The \acs{bleu} scores are reported on the concatenation of the test
+    sets from \acs{wmt} 18, 19, and 20.}%
+  \label{fig:ende-learning-curves}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \input{./img/learning-curves/de-en.curves.tex}
+
+  \caption{The learning curves of the German $\rightarrow$ English \ac{nat}
+    models. The \acs{bleu} scores are reported on the concatenation of the test
+    sets from \acs{wmt} 18, 19, and 20.}%
+  \label{fig:deen-learning-curves}
+\end{figure}
+
 
 % ------------------------------------------------------------------------------
 \section{Results}%
 \label{sec:results}
 % ------------------------------------------------------------------------------
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{lrr}
+    \toprule
+    Model & En $\rightarrow$ De & De $\rightarrow$ En \\
+    \midrule
+    Large & 27.0 & 30.9 \\
+    Base & 22.8 & 29.7 \\
+    Small & 23.1 & 28.7 \\
+    Micro & 24.1 & 27.1 \\
+    Tiny & 19.4 & 21.5 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{The BLEU scores of the best models \JH{...}}
+  \label{tab:wmt14-bleu-scores}
+\end{table}
+
 
 
 

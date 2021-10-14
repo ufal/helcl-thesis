@@ -25,13 +25,13 @@ fit lin_ar(x) 'decoding_speed.txt' u 1:2 via a1, b1
 lin_nar(x) = a2*x + b2
 fit lin_nar(x) 'decoding_speed.txt' u 1:3 via a2, b2
 
-set key inside right center vertical spacing 1 sample 0
+set key inside right center vertical spacing 1.5 sample 0
 
-set ylabel "decoding time in seconds" offset -1.5
+set ylabel "Latency (seconds)" offset -1.5
 set yrange [0:6]
 set ytics autofreq 0, 1, 6
 
-set xlabel "source subwords" offset 0
+set xlabel "Source tokens" offset 0
 set xrange [0:100]
 set xtics autofreq 0, 20, 100
 
@@ -46,7 +46,7 @@ plot lin_ar(x) \
      notitle, \
      "decoding_speed.txt" \
      using 1:2 \
-     title "AR" \
+     title '\acs{ar}' \
      with points linecolor rgb "#DD0000" \
      linewidth 0.8, \
 \
@@ -54,4 +54,4 @@ plot lin_ar(x) \
      using 1:3 \
      with points linecolor rgb "#0000DD" \
      lt 1 linewidth 0.8 \
-     title "NAR"
+     title '\acs{nar}'

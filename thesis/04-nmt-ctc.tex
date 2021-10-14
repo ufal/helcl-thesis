@@ -194,7 +194,7 @@ can be included in the second half of the layers, which attends to the states
 right after state splitting.
 
 % -----------------------------------------------------------------------------
-\section{Preliminary Experiments}
+\section{Preliminary Experiments}%
 \label{sec:ctc:experiments}
 % -----------------------------------------------------------------------------
 
@@ -275,10 +275,10 @@ settings for training models in both directions in both language pairs.
     Optimizer method & adam \\
     $\beta_1$ & 0.9 \\
     $\beta_2$ & 0.997 \\
-    $\epsilon$ & 10$^{-9}$ \\
-    Learning rate & 10$^{-4}$ \\
+    $\epsilon$ & 10\textsuperscript{-9} \\
+    Learning rate & 10\textsuperscript{-4} \\
     Fixed batch size & 20 \\
-    Gradient clip norm & 1 \\
+    Gradient clipping & 1 \\
     \bottomrule
   \end{tabular}
 
@@ -354,27 +354,91 @@ our autoregressive baseline. Also, the enhanced techniques (\ac{npd} and
 iterative refiniment) outperform our method in all scenarios, but at a
 computational cost.
 
-\JH{Add a table with latencies on a GPU without minibatching.}
+The decoding speed for \ac{ar} and {nar} models under different conditions is
+shown in Table~\ref{tab:end-to-end:speed}. We report the average time to decode
+a single sentence on the \ac{wmt}~15 test set \citep{bojar-etal-2015-findings},
+which consists of 2,169 sentence pairs. In the CPU setting, we are using a CPU
+machine with the TensorFlow session configured to use 12 CPU threads. The GPU
+results are measured on a single Nvidia GeForce GTX 1080 GPU. We show the
+average latency as well as the average time to decode a sentence when using
+batch decoding.
+\JH{Compare speed results? Or leave it for the next chapter.}
 
-\paragraph{Analysis.}
+\begin{table}
+  \centering
+
+  \begin{tabular}{lrr}
+    \toprule
+     & \multicolumn{1}{l}{CPU} & \multicolumn{1}{l}{GPU} \\
+    \midrule
+    \acs{ar}, batch=1 & 2,247 ms & 1,129 ms \\
+    \acs{ar}, batch=100 & & 127 ms\\
+    % AR, beam=?
+    \addlinespace
+    \acs{nar}, batch=1 & 397 ms & 353 ms  \\
+    \acs{nar}, batch=100 &  & 41 ms \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{The average times to decode one sentence under different conditions.}%
+  \label{tab:end-to-end:speed}
+
+\end{table}
+
+Figure \ref{fig:end-to-end:speed} shows the decoding latencies on sentences
+from the \ac{wmt}~15 test set \citep{bojar-etal-2015-findings}. As we can see
+from the relationship between the source sentence length and the decoding time,
+the non-autoregressive model exhibits lower time complexity than the
+autoregressive model. The latencies in the plot were measured on a CPU server
+using 12 threads. We used greedy decoding with a single sentence in a batch.
 
 \begin{figure}
   \centering
   \input{img/end-to-end-decoding-speed/speed.tex}
 
-  \caption{Decoding speed \JH{todo: caption, rerender the image with better
-      colors and scale}.}%
+  \caption{The relationship between the latency and the number of source tokens
+    using an \acs{ar} and an \acs{nar} model}%
   \label{fig:end-to-end:speed}
 \end{figure}
 
 
+\paragraph{Error Analysis.}
+We performed manual error analysis of the model outputs. We sampled 100 random
+sentences from the English--German test set for each translation direction.
+For each sentence in the test set, we first classified whether the sentence was
+correctly translated, or whether it was at least comprehensible.
+
+We then identified four types of errors which were prevalent the most in the
+outputs: 1) the output sentence was too short, 2) a verb was missing in the
+output, 3) a named entity that consists of mutliple subwords was not properly
+constructed, and 4) another multi-subword word was corrupted.
+
+The prevalence of the different types of errors we found is shown in Table
+\ref{tab:end-to-end:error-analysis}. We observed that when the outputs of the
+\ac{ar} model were incorrect, this was further amplified in the \ac{nar} model,
+rendering many sentences incomprehensible. Overall, we can see that the number
+of completely correct translations in the sample was low for the \ac{nar}
+model, less than a quarter of the sentences in both directions. One of the most
+common errors in English $\rightarrow$ German direction was the ommission of a
+verb at the end of the sentence. This is likely a manifest of the multimodality
+problem -- in German, there are two ways of composing the past tense, one of
+which inflects the verb in place, and the other puts the verb to the end of the
+sentence. In both directions, we noticed many errors connected to words which
+are represented with multiple wordpieces, such as rare or infrequent words or
+named entities.
+
+Many of the errors are related to the fluency of the output, which might be
+caused by the weakened language model in the \ac{nar} models. We address this
+issue by incorporating an external language model into the decoding process,
+and we describe these experiments in the following section.
+% In Section \ref{sec:ctc:fluency}
 
 \begin{table}
   \centering
   \begin{tabular}{lcccc}
     \toprule
     & \multicolumn{2}{c}{En $\rightarrow$ De} & \multicolumn{2}{c}{De $\rightarrow$ En} \\
-    & ~AR~ & NAR & ~AR~ & NAR \\
+    & \acs{ar} & \acs{nar} & \acs{ar} & \acs{nar} \\
     \midrule
     Correct        & 65 & 23 & 67 & 13 \\
     Comprehensible & 93 & 71 & 92 & 51 \\
@@ -396,6 +460,19 @@ computational cost.
 evaluation have their limitations. \JH{List all the limitations here: namely,
   no knowledge distillation, the autoregressive baselines are not comparable,
   etc.}
+
+% -----------------------------------------------------------------------------
+\section{Improving Fluency with n-gram Language Models}%
+\label{sec:ctc:fluency}
+% -----------------------------------------------------------------------------
+
+\paperdisclaim{This section is based on paper \emph{``Improving Fluency of
+    Non-Autoregressive Neural Machine Translation''}, joint work with Zdeněk
+  Kasner and Jindřich Libovický, published online at \texttt{arXiv.org}.}
+
+\noindent
+
+
 
 %%% Local Variables:
 %%% mode: latex

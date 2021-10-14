@@ -1,6 +1,6 @@
 \begin{tikzpicture}[gnuplot]
 %% generated with GNUPLOT 5.2p8 (Lua 5.3; terminal rev. Nov 2018, script rev. 108)
-%% Tue 12 Oct 2021 04:15:30 PM BST
+%% Thu 14 Oct 2021 08:30:26 PM BST
 \path (0.000,0.000) rectangle (9.000,7.000);
 \gpcolor{color=gp lt color border}
 \gpsetlinetype{gp lt border}
@@ -46,8 +46,8 @@
 \draw[gp path] (8.815,6.999)--(8.815,6.819);
 \node[gp node center] at (8.815,0.678) {$100$};
 \draw[gp path] (0.920,6.999)--(0.920,0.986)--(8.815,0.986)--(8.815,6.999)--cycle;
-\node[gp node center,rotate=-270] at (-0.016,3.992) {decoding time in seconds};
-\node[gp node center] at (4.867,0.216) {source subwords};
+\node[gp node center,rotate=-270] at (-0.016,3.992) {Latency (seconds)};
+\node[gp node center] at (4.867,0.216) {Source tokens};
 \gpcolor{rgb color={0.800,0.000,0.000}}
 \gpsetlinewidth{5.50}
 \draw[gp path] (0.920,1.263)--(1.000,1.336)--(1.079,1.410)--(1.159,1.484)--(1.239,1.558)%
@@ -83,7 +83,7 @@
   --(8.018,1.743)--(8.097,1.749)--(8.177,1.755)--(8.257,1.761)--(8.337,1.767)--(8.416,1.772)%
   --(8.496,1.778)--(8.576,1.784)--(8.656,1.790)--(8.735,1.796)--(8.815,1.802);
 \gpcolor{color=gp lt color border}
-\node[gp node right] at (8.083,4.146) {AR};
+\node[gp node right] at (8.083,4.223) {\acs{ar}};
 \gpcolor{rgb color={0.867,0.000,0.000}}
 \gpsetlinewidth{0.80}
 \gpsetpointsize{4.00}
@@ -1736,9 +1736,9 @@
 \gppoint{gp mark 3}{(4.078,4.687)}
 \gppoint{gp mark 3}{(3.841,3.423)}
 \gppoint{gp mark 3}{(3.210,3.152)}
-\gppoint{gp mark 3}{(8.357,4.146)}
+\gppoint{gp mark 3}{(8.357,4.223)}
 \gpcolor{color=gp lt color border}
-\node[gp node right] at (8.083,3.838) {NAR};
+\node[gp node right] at (8.083,3.761) {\acs{nar}};
 \gpcolor{rgb color={0.000,0.000,0.867}}
 \gppoint{gp mark 1}{(1.552,1.628)}
 \gppoint{gp mark 1}{(5.104,1.525)}
@@ -3389,7 +3389,7 @@
 \gppoint{gp mark 1}{(4.078,1.488)}
 \gppoint{gp mark 1}{(3.841,1.468)}
 \gppoint{gp mark 1}{(3.210,1.418)}
-\gppoint{gp mark 1}{(8.357,3.838)}
+\gppoint{gp mark 1}{(8.357,3.761)}
 \gpcolor{color=gp lt color border}
 \gpsetlinewidth{1.00}
 \draw[gp path] (0.920,6.999)--(0.920,0.986)--(8.815,0.986)--(8.815,6.999)--cycle;
