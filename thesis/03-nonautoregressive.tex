@@ -52,9 +52,11 @@ necessary techniques needed to match the quality of \ac{ar} models.  Then, we
 adapt the optimizations successfully used in \ac{ar} models for \ac{nar} models
 and evaluate the additional speed gains.
 
-This chapter begins with an overview of the non-autoregressive methods (Section
-\ref{sec:nat-methods}). In Section \ref{sec:nat-ctc}, we introduce
-non-autoregressive \ac{nmt} with \ac{ctc}. \JH{rewrite following commented:}
+\JH{Write chapter overview.}
+
+% This chapter begins with an overview of the non-autoregressive methods (Section
+% \ref{sec:nat-methods}). In Section \ref{sec:nat-ctc}, we introduce
+% non-autoregressive \ac{nmt} with \ac{ctc}. \JH{rewrite following commented:}
 % We present our experiments with \ac{ctc} in Section
 % \ref{sec:ctc-experiments}. We summarize our contributions and outline the
 % possible future efforts in Section \ref{sec:nat-future}.
@@ -517,49 +519,79 @@ size of 64.
 
 
 
+\subsection{Auxiliary Objective Methods}
+
+
 % ------------------------------------------------------------------------------
-\paragraph{\Ac{nat} with auxiliary regularization}
-\citet{wang2019nonautoregressive} use regularization terms to penalize
+\paragraph{\Ac{nat} with auxiliary regularization.}
+\citet{wang-etal-2019-nonautoregressive} use regularization terms to penalize
 similarity of hidden states corresponding to dissimilar words(which battles
 repeated translations), and to express a reconstruction loss using an external
-translation model (in order to battle incomplete translation problem).
+translation model (in order to battle incomplete translation
+problem). \JH{NAT-REG}
 
 % ------------------------------------------------------------------------------
+\paragraph{Hint-NAT.} \citet{li-etal-2019-hint} propose to regularize the
+training of the student \ac{nat} model using two types of signals (hints) from
+the \ac{ar} teacher. First, to bring the values of the decoder hidden states
+closer together the authors consider tying the teacher and student states with
+$L_1$ or $L_2$ distance, but argue that this straightforward approach
+destabilizes the student training process and fails. Instead, they use a weaker
+signal from the teacher model and define an auxiliary loss based on the cosine
+distances within the decoder hidden states. Second, they use the information
+from the teacher model cross-attention to guide the alignment learning in the
+student model. Again, this information is incorporated into the training as an
+auxiliary loss, based on the KL divergence between the teacher and student
+attention distributions.
+
+\JH{Add equations for the auxiliary losses? Ich dont think so..} \JH{Unify
+  losses, it's either $J$ or $\mathcal{L}$}
 
 
-% ------------------------------------------------------------------------------
+
+% -----------------------------------------------------------------------------
+\paragraph{ReorderNAT.} \citet{ran-etal-2021-guiding} \JH{this is not an
+  auxiliary objective}
+
+
+% -----------------------------------------------------------------------------
 \begin{itemize}
-\item NAT-REG \citep{wang2019nonautoregressive} -- NAR NMT with auxiliary regularization
-\item Hint-NAT \citep{li2019hint} -- hint-based training for NAR MT
 \item DCRF \citep{sun2019fast} -- fast structured decoding for sequence models
 \item Flowseq \citep{ma2019flowseq} -- NAR conditional sequence generator with generative flow
-\item ReorderNAT \citep{ran2019guiding} -- guiding NAR NMT decoding with reordering information
 \item EM+ODD \citep{sun2020em} -- an em approach to NAR conditional seq generation
 \item GLAT \citep{qian2020glancing} -- glancing transformer for NAR NMT
 \item Imputer \citep{saharia2020nonautoregressive} -- imputer (again)
+\item \citep{huang-etal-2021-nonautoregressive} -- layer-wise prediction and deep supervision (is it semi or not?)
 \end{itemize}
 
+\section{Discussion}
 
-% The idea behind our approach is that we do not explicitly estimate the target
-% sequence length. Instead, we fix the decoder length on an upper limit of the
-% target length, given by a hyperparameter. As the decoder input, we use the
-% encoder states, split and linearly projected to match the decoder state
-% dimension and the target length.
+\JH{Here should be a section on the limitations of the presented papers}
 
-% As a consequence, we allow the model to generate special ``blank'' tokens in
-% any given time steps. Since the alignment between the reference tokens and the
-% corresponding output distribution is unknown, we treat it as a latent variable,
-% and we use the loss function which marginalizes this latent variable out. In
-% other words, our loss function is the sum of losses given any possible
-% alignment. This loss, used mostly in speech recognition domain
-% \citep{graves2006connectionist}, is known as the \acf{ctc}. We describe
-% this function in more detail in Section \JH{...}.
+\JH{Many papers claim that reordering is an issue. While this might be true,
+  the culprit is the multimodality problem, as the reordering can be modeled
+  within the self-attentive layers. Also, the papers that propose methods to
+  model the reordering better, evaluate their method only on the end task
+  (translation) and do not assess the actual reordering ability. }
 
-% The \ac{ctc} loss is differentiable with respect to the model parameters,
-% which means we can back-propagate the gradients returned by the \ac{ctc}
-% computation. Thus, unlike the originally proposed architectures of
-% \citet{gu2017nonautoregressive}, our model can be trained end to end.
+\JH{We should also have a table with autoregressive baselines reported by each
+  study, and get some details on that.}
 
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{ll}
+    \toprule
+
+    \midrule
+
+    \bottomrule
+  \end{tabular}
+
+  \caption{An overview of the \ac{nat} models in the literature.}%
+  \label{tab:related-models}
+\end{table}
 
 %%% Local Variables:
 %%% mode: latex

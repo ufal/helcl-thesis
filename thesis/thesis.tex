@@ -130,17 +130,9 @@ da-ta-set
 % force-ordering citations according to dummy keys
 \newcommand{\dummybiborderkey}[1]{}
 
-\newcommand{\eos}{\texttt{</s>}}
 
-\DeclareMathOperator*{\softmax}{softmax}
-\DeclareMathOperator*{\argmax}{argmax}
-\DeclareMathOperator{\relu}{ReLu}
-\def\Pr{\ensuremath\mathsf{P}}
-\let\emptyset\varnothing{}
-\DeclareMathOperator*{\sgn}{sgn}
-\DeclareMathOperator{\attn}{Attn}
-\DeclareMathOperator{\multihead}{Multihead}
-\DeclareMathOperator{\concat}{concat}
+\include{macros}
+\newcommand{\eos}{\texttt{</s>}}
 
 \newcommand{\veryshortarrow}[1][3pt]{\mathrel{%
      \vcenter{\hbox{\rule[-.5\fontdimen8\textfont3]{#1}{\fontdimen8\textfont3}}}%
@@ -151,7 +143,9 @@ da-ta-set
 \footnotesize\it #1
 \end{minipage}\end{center}
 }
-\newcommand{\R}[2]{#1 \tiny $\pm$ \small #2}
+
+% standard deviation -- needs renaming, otherwise leave commented oot
+% \newcommand{\R}[2]{#1 \tiny $\pm$ \small #2}
 
 \def\JH#1{{\color{blue}JH: \it #1}}
 

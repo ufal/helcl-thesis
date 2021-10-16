@@ -670,16 +670,16 @@ hyperparameter values for these two settings.
 % ------------------------------------------------------------------------------
 
 Training of \ac{nmt} models is usually done under \emph{supervised} conditions,
-using a dataset of parallel sentences. \JH{move the following to the
-  experimental section:} The size of the available data varies a lot with
-different language pairs. Although there is no formal definition, when there is
-less than a million sentence pairs available, the language pair is reffered to
-as being \emph{low-resource}. For many languages, even a million sentences is a
-very large number compared to what is actually available. The data quality is
-also a factor. For example, when the only available data is crawled from the
-web, data cleaning can filter out a major part of the corpus. In this thesis,
-we focus on language pairs where the data size is not a major issue and we
-simulate the low-resource scenario using Romanian-English translation.
+using a dataset of parallel sentences. The size of the available data varies a
+lot with different language pairs. Although there is no formal definition, when
+there is less than a million sentence pairs available, the language pair is
+reffered to as being \emph{low-resource}. For many languages, even a million
+sentences is a very large number compared to what is actually available. The
+data quality is also a factor. For example, when the only available data is
+crawled from the web, data cleaning can filter out a major part of the
+corpus. However, in this thesis, we focus on language pairs where the data size
+is not a major issue.
+% and we simulate the low-resource scenario using Romanian-English translation.
 
 Translation models are trained by minimizing the loss function, usually
 expressed by cross-entropy between the output distribution and the one-hot
@@ -713,18 +713,12 @@ dataset $J(\theta)$:
 where $y_{<i}$ denote the target prefix and $T_{y}$ is the length of the target
 sentence $y$. The probability of a sentence can be reformulated using the chain
 rule.
-\JH{rovnice J hvězdička = argmin J over thetas}
 
-% Since the probability distributions are conditioned on the previously decoded
-% tokens, the likelihood of the target sentence is reformulated using the chain
-% rule:
-% %
-% \begin{equation}
-%   J_{\theta} = - \sum_{(x, y) \in D} \sum_{i = 1}^{T_y} \log p(y_i | x, y_{<i}, \theta)
-% \end{equation}
-% %
-% where $T_y$ is the length of the target sentence.
-
+The goal of the training is to find parameters $\theta^*$ that minimize the
+cost function defined above:
+\begin{equation}
+  \theta^* = \argmin_{\theta}J(\theta)
+\end{equation}
 
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -775,7 +769,9 @@ short sentences which appear commonly in the given language. For example, if
 English sentences ``Thank you'' and ``Thank you xxx'' both appear in the data
 as translations of the Czech ``Děkuji'', they might get equal probabilities
 when deduplication is used. Without deduplication, the frequency of the correct
-translation would be much higher in the training data.
+translation would be much higher in the training data, but other problems may
+arise, especially in data crawled from the Web, where there are many repeated
+snippets from page headers or footers which do not occur naturally so often.
 
 An advanced data cleaning technique is dual conditional cross-entropy filtering
 \citep{junczys-dowmunt-2018-dual}. Using two translation models trained on
@@ -832,7 +828,7 @@ the models in a limited environment, such as a mobile device.
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Batching.} In Equation \ref{eq:loss}, the loss function $J(\theta)$
 is defined as a sum of sequence-level losses over dataset $D$. We use gradient
-descent to find parameters $\theta$ which minimize the loss value. However, the
+descent to find parameters $\theta^*$ which minimize the loss value. However, the
 exact computation of the gradient is inefficient because it requires one pass
 through the whole dataset. Therefore, we estimate the gradient on a small
 sample of the training data, called a \emph{mini batch}, or simply a
@@ -842,10 +838,10 @@ batch. This method is called \emph{\ac{sgd}}.\footnote{Some sources use the
 
 The size of a mini batch is an important parameter and its value can have a
 large impact on the training convergence. Bigger batches provide better
-gradient estimates, but require more memory, which is an issue when using a
+gradient estimates, but require more memory, which is a concern when using a
 GPU.
 
-Because the data gets split into batches which serves as a random sample of the
+Because the data gets split into batches which serve as random samples of the
 data, a suitable data shuffling strategy should be considered. If we regard the
 dataset as a collection of sentences (as opposed to documents, for example),
 shuffling the sentences in the whole dataset before training is in most cases
@@ -853,13 +849,14 @@ sufficient.
 
 Another aspect of batching is how efficiently do we use the memory allocated
 for the batch with respect to the maximum sentence length. The batches are
-represented as matrices with examples on rows and the tokens on columns. When a
-sentence is shorter than the longest sentence in the batch, it is padded to the
-maximum length. If the overall amount of padding used in a batch is big, the
-optimization step takes longer. Therefore, we try to use batches of sentences
-with similar lengths. A possible implementation is to load a number of batches
-beforehand, sort the sentences by length and then re-batch the sorted list of
-sentences.
+represented as matrices, where each row corresponds to a sentence and each
+column corresponds to a token position in the sentence. Sentences shorter than
+the longest sentence in the batch are padded to the maximum length. If the
+overall amount of padding used in a batch is big, the optimization step takes
+longer. Therefore, we try to use batches of sentences with similar lengths. A
+possible implementation is to load a number of batches beforehand, sort the
+sentences by length and then re-batch the sorted list of sentences. In
+literature, this technique is reffered to as \emph{bucketing}.
 
 In some cases, it is not necessary to perform the parameter update after each
 batch. For example, large models tend to fit in a GPU memory only with a small
@@ -867,7 +864,17 @@ batch size. In such cases, we might choose to aggregate the gradients over
 multiple batches to simulate a bigger batch size. A similar strategy can be
 applied when the training uses multiple GPUs.
 
-\JH{we could mention Martin Popel's block-BT}
+\paragraph{Curriculum Training.} The ordering of the batches in training -- the
+\emph{curriculum} -- influences both the training process (see bucketing above)
+and the actual performance of the trained
+model. \citet{kocmi-bojar-2017-curriculum} experiment with various curriculum
+scenarios such as starting training on the shorter sentences and gradually
+include more complex ones, which has been shown to somewhat improve the final
+model. \citet{popel-etal-2020-transforming} propose switching between larger
+blocks of authentic and synthetic data during training. This technique,
+combined with checkpoint averaging, is the basis of the current
+state-of-the-art \ac{nmt} systems for English--Czech translation
+\citep{barrault-etal-2020-findings}. \JH{see 2021 findings}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Optimization.}
@@ -884,7 +891,26 @@ where $\nabla_{\theta} J$ is the gradient of the loss function, and
 $\alpha$ is the \emph{learning rate}. The learning rate is a hyperparameter
 that controls the size of the update steps.
 
-\JH{Adam optimizer, LR decay, trasformer (noah) LR scheme}
+There are more advanced optimization techniques than plain \ac{sgd}. Adagrad,
+Adadelta, RMSProp and Adam are among the most widely used optimizers, working
+with higher order derivatives or moving averages of the gradients
+\citep{duchi2011adaptive,zeiler2012adadelta,tieleman2012lecture,kingma2014adam}.
+
+The learning rate $\alpha$ is often set up to gradually decrease during
+training, a technique called \emph{learning rate decay}. Specific to the
+Transformer model, \citet{vaswani2017attention} define the \emph{Noam} learning
+rate decay scheme as follows:
+%
+\begin{equation}
+  \alpha =  d_{\text{model}}^{-0.5} \cdot \min( i^{-0.5}, i \cdot  w^{-1.5})
+\end{equation}
+%
+where $i$ is the number of training steps elapsed, $d_{\text{model}}$ is the
+Transformer model embedding dimension, and $w$ is a hyperparameter controlling
+the number of \emph{warmup} steps. This learning rate scheme increases the
+learning rate linearly during the first $w$ training steps, then proceeds to
+gradually decrease $\alpha$ proportionally to the inverse square root of the
+number of the current update. \JH{show this on a figure?}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Parameter Initialization.}
@@ -947,17 +973,70 @@ device, then summed and the update is performed on all copies. On the other
 hand, in \emph{asynchronous training}, the process does not wait for the
 computation to finish on all devices, but rather perform the updates as the
 gradients are computed. Synchronous training has the advantage of being
-deterministic, whereas asynchronous training can converge faster. \JH{confirm
-  this or rewrite}
-
-The delayed optimizer update, discussed in the batching paragraph above
-\JH{confirm this}, serves as a simulation of training on multiple devices.
+accurate and deterministic, whereas asynchronous training converges slower
+(more steps are needed) but the computational resources are used more
+efficiently (no need to wait for slower devices).  The delayed optimizer
+update, discussed in the batching paragraph above, serves as a simulation of
+training on multiple devices.
 
 % ------------------------------------------------------------------------------
 \section{Autoregressive Decoding}
 \label{sec:decoding}
 % ------------------------------------------------------------------------------
 
+The decoding from a trained model is formulated as a search problem to find a
+target-language sentence $y^*$ given the output probability distribution $p$
+estimated by the translation model with parameters $\theta$ and the input
+sentence $x$:
+%
+\begin{equation}
+  y^* = \argmax_{y} p(y|x, \theta)
+  \label{eq:argmax-search}
+\end{equation}
+%
+The size of the search space grows exponentially with the target sentence
+length, which makes exhaustive search for the best-scoring sentence
+intractable.\footnote{Even despite the fact that during decoding the maximum
+  output length is limited to prevent endless loops.}
+
+A simple approximation of Equation \ref{eq:argmax-search} is \emph{greedy}
+decoding. Instead of searching for the global maximum, greedy decoding takes
+the most likely word $y_t^*$ in each step $t$:
+%
+\begin{equation}
+  y_t^* = \argmax_{y_t \in \mathcal{V}} p(y_t | y_{<t}, x, \theta)
+  \label{eq:greedy-decoding}
+\end{equation}
+%
+Greedy decoding is a fast algorithm and is useful for example for validation,
+when we care more about the difference in performance between checkpoints than
+about the best results.
+
+\paragraph{Beam Search.}
+A widely adopted technique for exhaustive search approximation is the
+\emph{beam search} algorithm. \JH{more about beam search}
+
+\paragraph{Ensembles and Weight Averaging.} A common technique to increase
+model performance during decoding is model \emph{ensembling}. In ensembling,
+multiple models with the same architecture but different random initialization
+are trained and during decoding their output distributions are combined:
+%
+\begin{equation}
+  p_{\text{ens}}(y_t | y_{<t}, x, \theta_1 \ldots \theta_n) =
+  \frac{1}{n} \sum_{i=1}^n p(y_t | y_{<t}, x, \theta_i)
+\end{equation}
+
+An alternative to ensembling a group of independently trained models is to use
+the same model from differnent points in time during training, called
+\emph{checkpoints}. Unlike ensembles, weight averaging combines the parameters
+of the selected checkpoints into a single model, so the decoding is faster.
+Usually, the checkpoints are collected periodically during validation. There
+are a few different strategies for selecting the checkpoints, for example
+taking $n$ most recent checkpoints, or $n$ best-scoring according to an
+automatic evaluation metric such as \acs{bleu} or cross-entropy.
+
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+\paragraph{Training vs. Inference.}
 The models we described in the sections above are \emph{autoregressive} -- the
 output tokens are predicted left-to-right, while every decision is conditioned
 on the previously generated outputs. With this property, there comes an
@@ -979,11 +1058,7 @@ The Transformer models are quite different in this aspect. Since there is no
 recurrence operation which requires accumulation of information in a hidden
 state, the network can be trained on a whole ground-truth sentence in one step.
 The only requirement is to prevent the decoder self-attention from attending to
-the future positions. However, during training, the model is still conditioned
-on its own decisions. \JH{tohle neni pravda}
-
-
-
+the future positions which is achieved by the causal attention mask.
 
 \section{Evaluation}
 \label{sec:evaluation}

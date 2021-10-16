@@ -76,7 +76,7 @@ consists of data from noisy sources.
   \centering
   \begin{tabular}{lrrr}
     \toprule
-    Data source & \multicolumn{2}{l}{Raw size} & \multicolumn{1}{l}{Size after cleaning} \\
+    Data source & \multicolumn{2}{c}{Raw size} & \mc{Size after cleaning} \\
     \midrule
     Europarl & 1.83 & \multirow{3}{*}{3.86} & \multirow{3}{*}{3.1} \\
     RAPID & 1.63 & &\\
@@ -121,14 +121,14 @@ trained models are shown in Table \ref{tab:dual-cross-entropy-selection}.
   \begin{tabular}{lrrrr}
     \toprule
     Percentage & 25\% & 50\% & 75\% & 100\% \\
-    No. of sentences & 21.9  & 43.9 & 66.5 & 87.7 \\
+    No. of sentences (M) & 21.9  & 43.9 & 66.5 & 87.7 \\
     \midrule
     En $\rightarrow$ De &  & 43.68 & 43.40 & 42.70 \\
     De $\rightarrow$ En & 41.47 & 41.64 & 42.15 & 42.02 \\
     \bottomrule
   \end{tabular}
-  \caption{Development scores of the Transformer models trained on different
-    amounts of scored crawled parallel data in both directions.}%
+  \caption{Development \acs{bleu} scores of the Transformer models trained on
+    different amounts of scored crawled parallel data in both directions.}%
   \label{tab:dual-cross-entropy-selection}
 \end{table}
 
@@ -171,7 +171,7 @@ filtering described in the paragraphs above.
   \centering
   \begin{tabular}{llrr}
     \toprule
-    \multicolumn{2}{l}{Data source}  & Raw size  & Size after cleaning \\
+    \multicolumn{2}{l}{Data source}  & \mcl{Raw size}  & \mcl{Size after cleaning} \\
     \midrule
     \multirow{3}{*}{English News Crawl} & 2018 & 18.11 & 17.90 \\
                                      & 2019 & 33.60 & 32.80 \\
@@ -211,7 +211,7 @@ continued the training of the models on parallel data only.
   \centering
   \begin{tabular}{llr}
     \toprule
-    Parameter & Marian config variable & Value \\
+    Parameter & Marian config variable & \mcl{Value} \\
     \midrule
     No. of encoder layers & \texttt{enc-depth} & 6 \\
     No. of decoder layers & \texttt{dec-depth} & 6 \\
@@ -287,7 +287,7 @@ settings, we use the splitting factor of 3 in the state splitting layer.
 
   \begin{tabular}{llrr}
     \toprule
-    Model & Base architecture & \multicolumn{1}{l}{Encoder layers} & \multicolumn{1}{l}{Decoder layers} \\
+    Model & Base architecture & \mcl{Encoder layers} & \mcl{Decoder layers} \\
     \midrule
     Teacher & Transformer big & 6 & 6 \\
     \midrule
