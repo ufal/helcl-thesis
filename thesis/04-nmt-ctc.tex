@@ -366,6 +366,8 @@ our autoregressive baseline. Also, the enhanced techniques (\ac{npd} and
 iterative refiniment) outperform our method in all scenarios, but at a
 computational cost.
 
+\JH{Description of weight averaging and the beam search.}
+
 The decoding speed for \ac{ar} and {nar} models under different conditions is
 shown in Table~\ref{tab:end-to-end:speed}. We report the average time to decode
 a single sentence on the \ac{wmt}~15 test set \citep{bojar-etal-2015-findings},
@@ -493,10 +495,53 @@ models also points out that token repetition is also a frequent issue. \JH{but
   with blank token)}
 
 \Acp{lm} have been a very successful component in the classical phrase-based
-statistical \acs{mt} models \citep{koehn2009statistical}.
+statistical \acs{mt} models \citep{koehn2009statistical}. However in neural
+\acs{mt}, language modeling is handeled by the decoder part, which can be
+viewed as an \acs{lm} conditioned on the encoder hidden representation of the
+source sentence.
 
-\JH{compare to Gu et al's noisy parallel decoding in which they sample more
-  hypotheses and then rescore using an AR transformer (which is NAR)}
+By imposing the conditional independence assumption in non-autoregressive
+models (Equation \ref{eq:nat-output-distribution}) we impair the implicit
+language model, which leads to the lower fluency of the translations.
+
+In this study, we proposed to enhance the beam search algorithm described in
+the previous sections \JH{(check ref)} by a number of fluency-oriented
+features, which we include in the hypothesis scoring model:
+%
+\begin{equation}
+  \text{score}(y|x) = \log p(y|x) + \sum{i=1}^n w_i \cdot \Phi_i(y)
+\end{equation}
+%
+where $p(y|x)$ is the probability given by the \acs{ctc} model, $\Phi_i(y)$ are
+the scoring model features, and $w_i$ are their respective weights. This
+rescoring approach is somewhat similar to the \ac{npd} proposed by
+\citet{gu2017nonautoregressive}, in which they sample more hypotheses from the
+\ac{nat} model and rescore them using an \ac{ar} Transformer model as a scorer.
+
+We experiment with the following three features in the scoring model. First, we
+use the score of $y$ from an n-gram language model. We use KenLM, an efficient
+implementation of n-gram \acp{lm} in C++
+\citep{heafield-2011-kenlm}\footnote{\url{https://github.com/kpu/kenlm/}}. Second,
+we use the ratio of the blank tokens in the output alignment $y$:
+%
+\begin{equation}
+  \Phi_{\text{blank-ratio}}(y) = \max(0, \frac{B}{T_y - B} - 4 )
+\end{equation}
+%
+where $B$ is the number of blank tokens in the output, $T_y - B$ is the number
+of non-blank tokens. Third, we count the number of trailing blank symbols in
+the hypothesis:
+%
+\begin{equation}
+  \Phi_{\text{trailing-blanks}}(y) = \max(0, B^T - T_x)
+\end{equation}
+%
+where $B^T$ is the number of blank tokens at the end of the sequence, and $T_x$
+is the length of the source sentence.
+
+\subsection{Experiments and Results}
+
+\JH{continue here...}
 
 \begin{table}
   \centering
