@@ -348,10 +348,11 @@ constitutes the information highway that allows propagating the gradients over
 long distances in the sequence.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{\acs{gru}.} \acl{gru} networks \citep{cho2014gru} are an alternative
-to \acp{lstm}. Instead of four sets of parameter matrices, \acp{gru} need only
-three, while maintaining the theoretical strength. Unlike \acp{lstm}, \acp{gru}
-use only a single hidden state in the recurrence relations.
+\paragraph{\acs{gru}.} \acl{gru} networks \citep{cho-etal-2014-properties} are
+an alternative to \acp{lstm}. Instead of four sets of parameter matrices,
+\acp{gru} need only three, while maintaining the theoretical strength. Unlike
+\acp{lstm}, \acp{gru} use only a single hidden state in the recurrence
+relations.
 
 Given the time step $t$, input $x_t \in \mathbb{R}^m$, and previous hidden
 state $h_{t-1}$, one \ac{gru} step is defined as follows:
@@ -435,10 +436,10 @@ similarity metric is defined in Equation \ref{eq:attn-energies}.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Deep \acp{rnn}.} Some NMT architectures based on RNNs use multiple
-recurrent layers \citep{barone2017deep,wu2016google}. In deep RNNs, each layer
-is a recurrent network. The inputs of the second and each layer onwards are the
-outputs of the preceding layer. The output of the whole deep RNN is the output
-of the last layer.
+recurrent layers \citep{miceli-barone-etal-2017-deep,wu2016google}. In deep
+RNNs, each layer is a recurrent network. The inputs of the second and each
+layer onwards are the outputs of the preceding layer. The output of the whole
+deep RNN is the output of the last layer.
 
 In deep \acp{rnn}, there are a few settings to consider. \JH{tell me more}
 

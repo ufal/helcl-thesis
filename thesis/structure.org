@@ -84,6 +84,16 @@
   - survey of methods for non-autoregressive NMT.
   - leave at the beginning, despite forward references
 
+  - Categorization of the methods:
+    - fully NAT (Gu, CTC, AXE, Hint-NAT, Reorder-NAT (w/nar RM))
+    - iterative (Lee, Imputer)
+    - alignment-based (CTC, AXE, Imputer)
+    - Auxiliary objective (Bag of ngrams, hint-nat, )
+    - semi-autoregressive
+    - shallow autoregressive ?
+    - insertion based
+    - masked language models
+
 * NAT
    - efficiency of MT is important
    - local MT models have advantages

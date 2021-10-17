@@ -3,10 +3,12 @@
 \label{chap:nat}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\JH{this chapter needs reorganization}
+
 The efficiency of \ac{mt} models is often crucial in real-world applications.
 Most commercial \ac{nmt} models are available through a cloud-based service,
-such as Microsoft Translator\footnote{\url{https://microsoft.com/translator}}
-or Google Translate\footnote{\url{https://translate.google.com}}. Scaling
+such as Microsoft Translator\footnote{\url{https://microsoft.com/translator/}}
+or Google Translate\footnote{\url{https://translate.google.com/}}. Scaling
 cloud-based solutions for large user bases is simple but costly. But even with
 a large pool of computational resources, it is worthwhile to implement
 optimizations which decrease the model latency and improve the user experience.
@@ -26,13 +28,13 @@ more than a second on a standard CPU.
 Higher decoding speeds can be achieved by model optimization. In their 2019
 submission to the \ac{wngt} shared task on efficiency,
 \citet{kim-etal-2019-research} successfully employed knowledge distillation,
-quantization, shortlisting \citep{jean2015using} and a simpler recurrent unit
-design to bring the throughput of the translation model up to 3,600 words per
-second on a CPU, for a modest drop in the BLEU score. Following this
+quantization, shortlisting \citep{jean-etal-2015-using} and a simpler recurrent
+unit design to bring the throughput of the translation model up to 3,600 words
+per second on a CPU, for a modest drop in the BLEU score. Following this
 submission, \citet{bogoychev-etal-2020-edinburghs} reported further
 improvements with attention head pruning \citep{voita-etal-2019-analyzing}. The
 work has been a part of the Bergamot research project, which aims to bring
-offline translation models into a browser (\JH{cite}).
+offline translation models into a browser.\footnote{https://browser.mt/}
 
 % vedle toho tu jsou neautoregresivní modely který se na to snaží jít jinak
 
@@ -52,24 +54,28 @@ necessary techniques needed to match the quality of \ac{ar} models.  Then, we
 adapt the optimizations successfully used in \ac{ar} models for \ac{nar} models
 and evaluate the additional speed gains.
 
-\JH{Write chapter overview.}
+In this chapter, we present an overview of the current state of the research
+and the key concepts in non-autoregressive \ac{nmt}.  In Section
+\ref{sec:nat:principles}, we first describe the principles that most of the
+related literature has in common. Then, we provide a survey of notable
+approaches to \ac{nat}. We categorize the studied methods into alignment-based
+methods (Section \ref{sec:nat:alignment}), iterative methods (Section
+\ref{sec:nat:iterative}), methods using auxiliary objectives (Section
+\ref{sec:nat:aux}), and semi-autoregressive models (Section
+\ref{sec:nat:semi}). \JH{Then there is the Misc category ((Section
+  \ref{sec:nat:misc}).} We conclude this chapter with a discussion of the
+limitations of the presented literature and \JH{and what?}
+% Naturally, some methods belong to more than one category, in which case we
+% point that out to the reader.
 
-% This chapter begins with an overview of the non-autoregressive methods (Section
-% \ref{sec:nat-methods}). In Section \ref{sec:nat-ctc}, we introduce
-% non-autoregressive \ac{nmt} with \ac{ctc}. \JH{rewrite following commented:}
-% We present our experiments with \ac{ctc} in Section
-% \ref{sec:ctc-experiments}. We summarize our contributions and outline the
-% possible future efforts in Section \ref{sec:nat-future}.
-
+\JH{state difference between semi-autoregressive and iterative}
 
 % ------------------------------------------------------------------------------
-\section{Related Work}
-\label{sec:nat-methods}
+\section{Non-Autoregressive Models}%
+\label{sec:nat:principles}
 % ------------------------------------------------------------------------------
 
-This section presents the key concepts in non-autoregressive \ac{nmt}. We first
-describe the principles that most of the related literature has in
-common. Then, we provide a survey of notable approaches to \ac{nat}.
+
 
 % ------------------------------------------------------------------------------
 \paragraph{Conditional Independence.} The defining feature of a
@@ -140,7 +146,7 @@ explicitly, leaving out the \eos{} symbol from the mathematical model:
 % \JH{...}
 
 \JH{mention these:}
-\citep{ghazvininejad2019mask} \citep{mansimov2019generalized}
+\citep{ghazvininejad-etal-2019-mask} \citep{mansimov2019generalized}
 
 % ------------------------------------------------------------------------------
 \paragraph{Multimodality Problem.} In one of the first applications of a
@@ -320,8 +326,12 @@ copied to its neighbor, or swapped with the neighbor.
 During training, the two loss functions are stochastically mixed using a
 hyperparameter $\alpha$, sampled from a Bernoulli distribution.
 
-
 % ------------------------------------------------------------------------------
+\section{Alignment-Based Methods}%
+\label{sec:nat:alignment}
+% ------------------------------------------------------------------------------
+
+% -----------------------------------------------------------------------------
 \paragraph{Aligned Cross Entropy for \ac{nat}} One problem with using
 cross-entropy objective for training \ac{nat} models is that it heavily
 penalizes misaligned target words. If a correct word is generated at an
@@ -366,12 +376,36 @@ alignments. Unlike \ac{axe}, we only consider skipping the predictions, while
 not allowing to skip the target positions. We present the \ac{ctc}-based method
 in detail in Chapter \ref{chap:nar-nmt-ctc}.
 
+
+% -----------------------------------------------------------------------------
 \JH{relate the axe approach to bag-of-ngrams who also deal with misalignment}
 \paragraph{\JH{Batch of ngrams.}} \citet{shao2020minimizing} also address the
 misalignment issue. Instead of finding an appropriate alignment, they introduce
 a new bag-of-ngrams objective, which minimizes the difference between the
 \ac{nat} model output and the target sentence. \JH{tell me more!}
 
+
+% -----------------------------------------------------------------------------
+\paragraph{Imputer.} Antoher variant of the alignment-based approach was
+described by \citet{saharia-etal-2020-non}. In the paper, they experiment with
+a \acs{ctc}-based model similar to the model we use in this thesis, and an
+iterative variant called \emph{Imputer}.
+
+The model architecture is a stack of self-attentive layers without the causal
+mask. The \acs{ctc}-based model takes upsampled source sentence embeddings (in
+order to be able to create translations which are longer than the source) and
+processes them with the Transformer layer stack.  The Imputer model proceeds in
+a fixed number $L$ of iterations. In each iteration, the model generates
+(``imputes'') $\ceil*{\frac{T_y}{L}}$ on some positions where $T_y$ is the
+output length. This procedure is similar to decoding from \aclp{mlm} described
+below \JH{check ref}. Additionally to the \ac{ctc} model, the input to the
+Imputer model is the embedding of the partially decoded sentence from the
+previous iteration summed with the (upsampled) source sentence embeddings.
+
+The training of the Imputer model takes into account every partial output
+potentially already decoded and maximizes a log-likelihood lower bound, which
+can be comptued with a dynamic programming algorithm. \JH{more needed? or
+  less?}
 
 
 % ------------------------------------------------------------------------------
@@ -404,9 +438,75 @@ differences between \acp{mlm} and \acp{xlm}.
 
 
 
+% ------------------------------------------------------------------------------
+\section{Auxiliary Objective Methods}
+\label{sec:nat:aux}
+% ------------------------------------------------------------------------------
+
 
 
 % ------------------------------------------------------------------------------
+\paragraph{\Ac{nat} with auxiliary regularization.}
+\citet{wang-etal-2019-nonautoregressive} use regularization terms to penalize
+similarity of hidden states corresponding to dissimilar words(which battles
+repeated translations), and to express a reconstruction loss using an external
+translation model (in order to battle incomplete translation
+problem). \JH{NAT-REG}
+
+% ------------------------------------------------------------------------------
+\paragraph{Hint-NAT.} \citet{li-etal-2019-hint} propose to regularize the
+training of the student \ac{nat} model using two types of signals (hints) from
+the \ac{ar} teacher. First, to bring the values of the decoder hidden states
+closer together the authors consider tying the teacher and student states with
+$L_1$ or $L_2$ distance, but argue that this straightforward approach
+destabilizes the student training process and fails. Instead, they use a weaker
+signal from the teacher model and define an auxiliary loss based on the cosine
+distances within the decoder hidden states. Second, they use the information
+from the teacher model cross-attention to guide the alignment learning in the
+student model. Again, this information is incorporated into the training as an
+auxiliary loss, based on the KL divergence between the teacher and student
+attention distributions.
+
+\JH{Add equations for the auxiliary losses? Ich dont think so..} \JH{Unify
+  losses, it's either $J$ or $\mathcal{L}$}
+
+
+
+% -----------------------------------------------------------------------------
+\paragraph{ReorderNAT.} \citet{ran-etal-2021-guiding} propose a modification to
+the orignal \ac{nat} model \citep{gu2017nonautoregressive}. They introduce an
+intermediate Transformer block to model the sentence in the source language
+after reordering for translation to the target language.
+
+Formally, the translation model $p(y|x)$ is altered by including a latent
+variable $z$ which is marginalized out, similarly to the refinement process:
+%
+\begin{equation}
+  p(y|x) = \sum_{z} p(z|x) p(y|z,x)
+\end{equation}
+%
+where $p(z|x)$ is the reordering module, and $p(y|z,x)$ is a \ac{nar}
+Transformer decoder (i.e. without the causal mask) which receives the embedded
+sequence $z$ on the input. The authors experiment with both \ac{ar} and
+\ac{nar} variants of the reordering module, concluding that using a
+single-layer autoregressive Transformer decoder performs best while still
+retaining a speed improvement.
+
+The reordering module is trained in supervised fashion using the
+\texttt{fast\_align} alignment tool \citep{dyer-etal-2013-simple}. The model is
+trained end to end by minimizing the sum of the reordering and decoder module
+losses.
+
+
+% ------------------------------------------------------------------------------
+\section{Semi-Autoregressive Models.}%
+\label{sec:nat:semi}
+% ------------------------------------------------------------------------------
+
+
+
+\paragraph{Semi-Autoregressive \acs{nmt}} \citet{wang-etal-2018-semi}
+
 
 \paragraph{Blockwise Parallel Decoding for Deep Autoregressive Models.}
 \citet{stern2018blockwise} propose a semi-autoregressive approach where chunks
@@ -426,31 +526,45 @@ $\hat{k}$ words are generated and the decoding process jumps to time step
 $t + \hat{k}$.
 
 
+\paragraph{Insertion Transformer.} \citet{stern-etal-2019-insertion}
 
 
+\paragraph{KERMIT.} \citet{chan-etal-2019-kermit}
 
+\paragraph{Levenshtein Transformer.} \citet{gu-etal-2019-levenshtein}
 
-% ------------------------------------------------------------------------------
-
-\JH{add semiautroegressive paper from emnlp 2018}
-
-\begin{itemize}
-%\item iNat \citep{lee2018deterministic} -- iterative refinement
-%\item Blockwise \citep{stern2018blockwise}
-\item InsT \citep{stern2019insertion} -- insertion transformer
-%\item CMLM \citep{ghazvininejad2019mask} -- conditional masked language models
-\item LevT \citep{gu2019levenshtein} -- Levenshtein transformer
-\item KERMIT \citep{chan2019kermit} -- Kermit (arxiv)
-\item LaNMT \citep{shu2020latent} -- latent-variable NAR NMT with deterministic inference using a delta posterior
-\item SMART \citep{ghazvininejad2020semiautoregressive} -- semi-autoregressive training improves mask-predict decoding
-\item DisCO \citep{kasai2020nonautoregressive} -- NAR NMT with disentangled context transformer
-\item Imputer \citep{saharia2020nonautoregressive} -- NAR NMT with latent alignments
-\end{itemize}
-
-Fully NAT:
+\paragraph{SMART.} \citet{ghazvininejad-etal-2020-semiautoregressive}
 
 
 % ------------------------------------------------------------------------------
+
+
+% ------------------------------------------------------------------------------
+\section{Others}%
+\label{sec:nat:misc}
+% ------------------------------------------------------------------------------
+
+%\paragraph{LaNMT} \citep{shu2020latent} -- latent-variable NAR NMT with deterministic inference using a delta posterior \JH{to bych nechal na potom nebo vyhodil}
+\paragraph{DisCO.} \citep{kasai2020nonautoregressive} -- NAR NMT with disentangled context transformer
+
+\JH{these below} are considered fully NAT
+
+\paragraph{DCRF} \citep{sun2019fast} -- fast structured decoding for sequence
+models
+
+\paragraph{Flowseq} \citep{ma-etal-2019-flowseq} -- NAR conditional sequence
+generator with generative flow
+
+\paragraph{EM+ODD} \citep{sun2020em} -- an em approach to NAR conditional seq
+generation
+
+\paragraph{GLAT} \citep{qian2020glancing} -- glancing transformer for NAR NMT
+
+\paragraph{huang} \citep{huang-etal-2021-nonautoregressive} -- layer-wise
+prediction a nd deep supervision (is it semi or not?)
+
+
+\section{Fully NAT}
 
 \paragraph{Latent Transformer \citep{kaiser2018fast}.} Latent transformer (fast
 decoding in seq. models using discrete latent vars) Use latent variables to make
@@ -517,54 +631,10 @@ rescoring. p-DVQ and s-DVQ as well as improved semhash are comparable, semhash
 seems faster. Latency in the order of 100 ms, 7-8 ms per sentence with batch
 size of 64.
 
-
-
-\subsection{Auxiliary Objective Methods}
-
-
 % ------------------------------------------------------------------------------
-\paragraph{\Ac{nat} with auxiliary regularization.}
-\citet{wang-etal-2019-nonautoregressive} use regularization terms to penalize
-similarity of hidden states corresponding to dissimilar words(which battles
-repeated translations), and to express a reconstruction loss using an external
-translation model (in order to battle incomplete translation
-problem). \JH{NAT-REG}
-
+\section{Discussion}%
+\label{sec:nat:discussion}
 % ------------------------------------------------------------------------------
-\paragraph{Hint-NAT.} \citet{li-etal-2019-hint} propose to regularize the
-training of the student \ac{nat} model using two types of signals (hints) from
-the \ac{ar} teacher. First, to bring the values of the decoder hidden states
-closer together the authors consider tying the teacher and student states with
-$L_1$ or $L_2$ distance, but argue that this straightforward approach
-destabilizes the student training process and fails. Instead, they use a weaker
-signal from the teacher model and define an auxiliary loss based on the cosine
-distances within the decoder hidden states. Second, they use the information
-from the teacher model cross-attention to guide the alignment learning in the
-student model. Again, this information is incorporated into the training as an
-auxiliary loss, based on the KL divergence between the teacher and student
-attention distributions.
-
-\JH{Add equations for the auxiliary losses? Ich dont think so..} \JH{Unify
-  losses, it's either $J$ or $\mathcal{L}$}
-
-
-
-% -----------------------------------------------------------------------------
-\paragraph{ReorderNAT.} \citet{ran-etal-2021-guiding} \JH{this is not an
-  auxiliary objective}
-
-
-% -----------------------------------------------------------------------------
-\begin{itemize}
-\item DCRF \citep{sun2019fast} -- fast structured decoding for sequence models
-\item Flowseq \citep{ma2019flowseq} -- NAR conditional sequence generator with generative flow
-\item EM+ODD \citep{sun2020em} -- an em approach to NAR conditional seq generation
-\item GLAT \citep{qian2020glancing} -- glancing transformer for NAR NMT
-\item Imputer \citep{saharia2020nonautoregressive} -- imputer (again)
-\item \citep{huang-etal-2021-nonautoregressive} -- layer-wise prediction and deep supervision (is it semi or not?)
-\end{itemize}
-
-\section{Discussion}
 
 \JH{Here should be a section on the limitations of the presented papers}
 

@@ -1,5 +1,5 @@
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Non-autoregressive NMT with Connectionist Temporal Classification}
+\chapter{Non-Autoregressive NMT with Connectionist Temporal Classification}
 \label{chap:nar-nmt-ctc}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -487,12 +487,16 @@ In this section, we describe our effort to improve the language modeling
 capabilities of the \acs{ctc}-based \ac{nat} model. As described in the
 previous sections, frequent errors \acl{nar} models make include missing verbs
 or bad composition of words from multiple subwords. The literature on \ac{nar}
-models also points out that token repetition is also a frequent issue.
+models also points out that token repetition is also a frequent issue. \JH{but
+  not so much in alignment based models which often collapse the repetition
+  while still allowing to generate repeated words intentionally (separating
+  with blank token)}
 
 \Acp{lm} have been a very successful component in the classical phrase-based
 statistical \acs{mt} models \citep{koehn2009statistical}.
 
-
+\JH{compare to Gu et al's noisy parallel decoding in which they sample more
+  hypotheses and then rescore using an AR transformer (which is NAR)}
 
 \begin{table}
   \centering
