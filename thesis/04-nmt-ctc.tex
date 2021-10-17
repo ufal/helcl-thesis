@@ -13,6 +13,18 @@ thesis. We describe our experiments with an architecture based on the \ac{ctc}
 loss \citep{libovicky-helcl-2018-end}. \JH{ok to self-cite when sections will
   be based on this?} \JH{use \ac{nat} here somewhere}
 
+
+We begin with the description of the \ac{ctc} algorithm for compute the
+cross-entropy loss over all possible alignments between the reference sentence
+and the sequence of output states in Section \ref{sec:ctc}. Section
+\ref{sec:ctc:arch} introduces the proposed \ac{nat} model architecture based on
+the Transformer model \citep{vaswani2017attention}. The results of the
+preliminary experiments and the limitations are discussed in Section
+\ref{sec:ctc:experiments}. In Section \ref{sec:ctc:fluency}, we present our
+attempt to address the most severe issue non-autoregressive models have, which
+is the reduced fluency compared to the autoregressive models
+\citep{kasner2020improving,kasner2020incorporating}.
+
 % -----------------------------------------------------------------------------
 \section{Connectionist Temporal Classification}
 \label{sec:ctc}
@@ -471,6 +483,78 @@ evaluation have their limitations. \JH{List all the limitations here: namely,
   Kasner and Jindřich Libovický, published online at \texttt{arXiv.org}.}
 
 \noindent
+In this section, we describe our effort to improve the language modeling
+capabilities of the \acs{ctc}-based \ac{nat} model. As described in the
+previous sections, frequent errors \acl{nar} models make include missing verbs
+or bad composition of words from multiple subwords. The literature on \ac{nar}
+models also points out that token repetition is also a frequent issue.
+
+\Acp{lm} have been a very successful component in the classical phrase-based
+statistical \acs{mt} models \citep{koehn2009statistical}.
+
+
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{lccccr}
+    \toprule
+    & \multicolumn{2}{c}{WMT~16}
+    & \multicolumn{2}{c}{WMT~14}
+    & \multirow{2}{*}{Latency (ms)} \\
+    & En $\rightarrow$ Ro & Ro $\rightarrow$ En
+    & En $\rightarrow$ De & De $\rightarrow$ En  & \\
+    \midrule
+    Baseline & & & & & \\
+    \acs{ar}, greedy & 25.89 & 33.54 & 27.29 &  31.06 & 1,664 \\
+    \acs{ar}, beam 5 & 26.46 & 34.06 & 27.71 & 31.85 & 3,848 \\
+    \acs{nar} without \acs{lm} & 19.88 & 28.99 & 19.55 & 23.04 & 233 \\
+    \addlinespace
+    \acs{lm} scoring & & & & & \\
+    Beam 1 & 19.74 & 29.65 & 20.59 & 24.11 &  337 \\
+    Beam 5 & 22.46 & 33.01 & 23.61 & 27.19 & 408  \\
+    Beam 10 & 23.33 & 33.29 & 24.27 & 27.83 & 526 \\
+    Beam 20 & 24.11 & 33.51 & 24.41 & 28.14 & 1,097 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{The model performance (in terms of \acs{bleu} score and latency) for
+    the English--Romanian and English--German translation models with \acs{lm}
+    scoring with various beam sizes.}%
+  \label{tab:ngrams:bleu}
+\end{table}
+
+
+\begin{figure}
+  \centering
+  \input{img/ngrams-decoding-speed/speed.tex}
+
+  \caption{The relationship between the latency and the number of source tokens
+    in \acs{ar}, \acs{nar}, and \acs{nar} models with \acs{lm}.}%
+  \label{fig:ngrams:speed}
+\end{figure}
+
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{lcccc}
+    \toprule
+    Beam Size &  1 &  5 &  10 &  20 \\
+    \midrule
+    \acs{ctc} score & 21.67 & 22.06 & 22.13 & 22.17 \\
+    \quad + \acs{lm} & 22.05 & 24.64 & 24.77 & 25.12 \\
+    \quad + blank symbol ratio & 22.21 & 24.92 & 25.12 & 25.35 \\
+    \quad + trailing blank symbols  & 22.68 & 25.50 & 25.93 & 26.03 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{\JH{add caption}}}%
+  \label{tab:}
+\end{table}
+
+
+
 
 
 

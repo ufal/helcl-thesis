@@ -8,17 +8,6 @@ set lmargin 5
 set rmargin 1
 set tmargin 0
 
-#set border lw 3 lc rgb "white"
-
-# change text colors of  tics
-#set xtics textcolor rgb "white"
-#set ytics textcolor rgb "white"
-
-# change text colors of labels
-#set xlabel "X" textcolor rgb "white"
-#set ylabel "Y" textcolor rgb "white"
-#set key textcolor rgb "white"
-
 lin_ar(x) = a1*x + b1
 fit lin_ar(x) 'decoding_speed.txt' u 1:2 via a1, b1
 
