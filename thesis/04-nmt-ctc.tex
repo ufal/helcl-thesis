@@ -521,7 +521,7 @@ rescoring approach is somewhat similar to the \ac{npd} proposed by
 We experiment with the following three features in the scoring model. First, we
 use the score of $y$ from an n-gram language model. We use KenLM, an efficient
 implementation of n-gram \acp{lm} in C++
-\citep{heafield-2011-kenlm}\footnote{\url{https://github.com/kpu/kenlm/}}. Second,
+\citep{heafield-2011-kenlm}. Second,
 we use the ratio of the blank tokens in the output alignment $y$:
 %
 \begin{equation}
@@ -540,6 +540,38 @@ where $B^T$ is the number of blank tokens at the end of the sequence, and $T_x$
 is the length of the source sentence.
 
 \subsection{Experiments and Results}
+
+
+\begin{table}
+  \centering
+  \begin{tabular}{lr}
+    \toprule
+    & Data size \\
+    \midrule
+    Parallel & \\
+    En -- De & 4.58 M \\
+    En -- Ro & 613 k \\
+    \addlinespace
+    Monolingual & \\
+    En & 20 M \\
+    De & 20 M \\
+    Ro & 2.2 M \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{The sizes of the parallel and monolingual data used for training.}%
+  \label{tab:ngrams:data}
+\end{table}
+
+We follow a similar experimental setup as in the previous section with a few
+differences. In addition to the parallel data, we use backtranslated
+monolingual data, which we mix with upsampled parallel data so that the ratio
+of the synthetic and parallel data in the training dataset is approximately
+1:1. We train the \ac{ar} baselines and the \ac{nat} model on this dataset, so
+that the models with \ac{lm} scorer have access to the same data.  Instead of
+the wordpiece vocabulary, we use Sentencepiece
+\citep{kudo-richardson-2018-sentencepiece} with 50k tokens in the vocabulary.
+We train a 5-gram language model on the monolingual data using KenLM.\footnote{\url{https://github.com/kpu/kenlm/}}
 
 \JH{continue here...}
 

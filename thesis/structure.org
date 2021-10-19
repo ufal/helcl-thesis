@@ -121,6 +121,11 @@
      - gu copies encoder words to decoder using a fertility model
 
 
+   - sun2020em to strukturuje jako better training objectives, regularization,
+     complex structures, direct modeling with latent variables, and iterative
+     refinement.
+
+
 
 
 * NAR NMT with CTC

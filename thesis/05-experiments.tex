@@ -7,24 +7,17 @@ In this chapter, we present further experiments with \ac{nat} models trained
 with \ac{ctc}. We focus on fair comparison with other non-autoregressive
 approaches as well as state-of-the-art optimized autoregressive methods.
 
-We performed experiments on English-German and English-Czech translation \JH{do
-  the en-cs experiments!}. As stated in previous sections, knowledge
-distillation \citep{kim-rush-2016-sequence} is a crucial element that brings
-the performance of non-autoregressive methods closer to that of autoregressive
-methods. We use strong autoregressive teachers as both our baseline models, and
-as the source of the artificial target side data for training of the distilled
-models.
+We performed experiments on English-German translation. As stated in previous
+sections, knowledge distillation \citep{kim-rush-2016-sequence} is a crucial
+element that brings the performance of non-autoregressive methods closer to
+that of autoregressive methods. We use strong autoregressive teachers as both
+our baseline models, and as the source of the artificial target side data for
+training of the distilled models.
 
 % ------------------------------------------------------------------------------
 \section{Autoregressive Teacher Models}
 \label{sec:exp:autoregressive}
 % ------------------------------------------------------------------------------
-
-In this section, we describe the experimental settings for training the
-autoregressive teacher models, which we used for knowledge distillation of data
-for training our non-autoregressive student models.
-
-\subsection{English -- German.}
 
 \paperdisclaim{This section is based on ``The University of Edinburgh's
   English-German and English-Hausa Submissions to the WMT21 News Translation
@@ -33,21 +26,26 @@ for training our non-autoregressive student models.
   and Kenneth Heafield, published at WMT 2021.}
 
 \noindent
+In this section, we describe the experimental settings for training the
+autoregressive teacher models, which we used for knowledge distillation of data
+for training our non-autoregressive student models.
+
 In our English-German experiments, we use autoregressive models from our
-submission to the \ac{wmt} 2021 News Translation shared task \JH{add bib when
-  ready}. We use these models both as a strong autoregressive baseline, and as
-teacher models for generating distilled data for the non-autoregressive student
-models, described in the next section.  The models were trained on cleaned
-parallel data augmented with backtranslated monolingual data.
+submission to the \ac{wmt} 2021 News Translation shared task
+\citep{chen-etal-2021-university}. We use these models both as a strong
+autoregressive baseline, and as teacher models for generating distilled data
+for the non-autoregressive student models, described in the next section.  The
+models were trained on cleaned parallel data augmented with backtranslated
+monolingual data.
 
 % ------------------------------------------------------------------------------
-\paragraph{Data Cleaning.} For our English-German models, we prepare the
-training dataset consisting of the following parts. First, we used clean
-parallel data from the Europarl corpus \citep{koehn-2005-europarl}, the Tilde
-MODEL -- RAPID corpus \citep{rozis-skadins-2017-tilde}, and News Commentary
-corpus from OPUS \citep{tiedemann-2012-parallel}. Next, we included sources of
-crawled parallel data from the web, which are considered noisy. These include
-Paracrawl \citep{espla-etal-2019-paracrawl}, Common
+\paragraph{Data Cleaning.} We prepare the training dataset consisting of the
+following parts. First, we used clean parallel data from the Europarl corpus
+\citep{koehn-2005-europarl}, the Tilde MODEL -- RAPID corpus
+\citep{rozis-skadins-2017-tilde}, and News Commentary corpus from OPUS
+\citep{tiedemann-2012-parallel}. Next, we included sources of crawled parallel
+data from the web, which are considered noisy. These include Paracrawl
+\citep{espla-etal-2019-paracrawl}, Common
 Crawl\footnote{\url{https://commoncrawl.org/}}, and WikiMatrix
 \citep{schwenk2019wikimatrix}, and the Wikipedia Parallel Titles
 Corpus\footnote{\url{https://linguatools.org/tools/corpora/wikipedia-parallel-titles-corpora/}}. Finally,
@@ -249,10 +247,6 @@ teacher models. We do not create wholly synthetic datasets by
 forward-translating backtranslated data.
 
 
-
-% ------------------------------------------------------------------------------
-\JH{Here should be a subsection about a different language pair. If it isn't,
-  throw away the subsection heading above.}
 % ------------------------------------------------------------------------------
 \section{Student Models}%
 \label{sec:students}
@@ -340,22 +334,33 @@ of parameter updates.
 \label{sec:results}
 % ------------------------------------------------------------------------------
 
+Table \ref{tab:wmt14-bleu-scores} shows the \acs{bleu} scores measured on the
+\acs{wmt}~14 test set.\footnote{Sacrebleu tag: {\scriptsize
+    \texttt{BLEU+case.mixed+lang.en-de+numrefs.1+smooth.exp+test.wmt14/full+tok.13a+version.1.5.1}}}
+We also show the scores reached after the first 300 thousand updates, to
+compare better with some of the results in the related work.
+
 \begin{table}
   \centering
 
-  \begin{tabular}{lrr}
+  \begin{tabular}{lrrrr}
     \toprule
-    Model & \mc{En $\rightarrow$ De} & \mc{De $\rightarrow$ En} \\
+    & \multicolumn{2}{c}{En $\rightarrow$ De}
+    & \multicolumn{2}{c}{De $\rightarrow$ En} \\
+    Model
+    & 300k & Final & 300k & Final \\
     \midrule
-    Large & 27.0 & 30.9 \\
-    Base & 22.8 & 29.7 \\
-    Small & 23.1 & 28.7 \\
-    Micro & 24.1 & 27.1 \\
-    Tiny & 19.4 & 21.5 \\
+
+    Large & 26.5 & 27.0 & 29.8 & 30.9 \\
+    Base & 21.6 & 22.8 & 27.9 & 29.7 \\
+    Small & 22.2 & 23.1 & 26.7 & 28.7 \\
+    Micro & 22.9 & 24.1 & 25.2 & 27.1 \\
+    Tiny & 18.4 & 19.4 & 19.9 & 21.5 \\
     \bottomrule
   \end{tabular}
 
-  \caption{The BLEU scores of the best models \JH{...}}
+  \caption{The \acs{bleu} scores of the best models on the WMT~14 test set
+    after 300k updates and at the end of the training.}
   \label{tab:wmt14-bleu-scores}
 \end{table}
 

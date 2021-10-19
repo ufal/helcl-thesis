@@ -384,6 +384,24 @@ misalignment issue. Instead of finding an appropriate alignment, they introduce
 a new bag-of-ngrams objective, which minimizes the difference between the
 \ac{nat} model output and the target sentence. \JH{tell me more!}
 
+\paragraph{order-agnostic XE for NAT} \textbf{AXE but extended to non-monotonic}
+The alignment-based methods, such as \ac{axe} or \ac{ctc} assume that the
+alignment between the label and the output sequences is monotonic, i.e. the
+ordering of aligned positions is the same. \citet{du2021orderagnostic} design
+\ac{oaxe}, a new training objective which permits non-monotonic alignments (see
+illustration in Figure \ref{fig:oaxe-example}).
+\JH{continue}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{img/oaxe.png}
+
+  \caption{An illustration of (a) cross-entropy, (b) aligned cross-entropy, and
+    (c) order-agnostic cross-entropy on a toy example. We use the figure from
+    \citet{du2021orderagnostic}}%
+  \label{fig:oaxe-example}
+\end{figure}
+
 
 % -----------------------------------------------------------------------------
 \paragraph{Imputer.} Antoher variant of the alignment-based approach was
@@ -505,7 +523,16 @@ losses.
 
 
 
-\paragraph{Semi-Autoregressive \acs{nmt}} \citet{wang-etal-2018-semi}
+\paragraph{Semi-Autoregressive \acs{nmt}} One of the first attempts to bring
+together the best of the worlds of \ac{ar} and \ac{nar} models was proposed by
+\citet{wang-etal-2018-semi}. In their work, the authors use a
+semi-autoregressive Transformer model which predicts groups of $K$ consecutive
+tokens at a time. The tokens in each group are predicted independently and in
+parallel, but the conditional dependency is retained between the groups in
+autoregressive fashion.
+
+As expected, the authors find that increasing $K$ leads to degraded translation
+quality, but brings improvements in terms of decoding speed.
 
 
 \paragraph{Blockwise Parallel Decoding for Deep Autoregressive Models.}
@@ -525,11 +552,19 @@ $1 \leq i \leq \hat{k}$ are all considered best by $p_1$. Third, the accepted
 $\hat{k}$ words are generated and the decoding process jumps to time step
 $t + \hat{k}$.
 
+\paragraph{Insertion Transformer.} The Insertion Transformer
+\citep{stern-etal-2019-insertion} is an extension of the Transformer model
+which handles sequence generation in an arbitrary order. Instead of predicting
+tokens left-to-right, the model predicts a sequence of insertion operations in
+each step. An insertion operation specifies what tokens to insert, and where to
+insert them. In each steps, the insertion operations are generated in parallel
+and independently, thus we can include this approach in the semi-autoregressive
+category. The authors experiment with decoding in a balanced binary-tree order,
+which can generate the output sequence in a logarithmic number of steps.
 
-\paragraph{Insertion Transformer.} \citet{stern-etal-2019-insertion}
+An extension to the Insertion Transformer is
+KERMIT. \citep{chan-etal-2019-kermit} \JH{more about kermit}
 
-
-\paragraph{KERMIT.} \citet{chan-etal-2019-kermit}
 
 \paragraph{Levenshtein Transformer.} \citet{gu-etal-2019-levenshtein}
 
@@ -545,23 +580,83 @@ $t + \hat{k}$.
 % ------------------------------------------------------------------------------
 
 %\paragraph{LaNMT} \citep{shu2020latent} -- latent-variable NAR NMT with deterministic inference using a delta posterior \JH{to bych nechal na potom nebo vyhodil}
-\paragraph{DisCO.} \citep{kasai2020nonautoregressive} -- NAR NMT with disentangled context transformer
+\paragraph{DisCO.} \textbf{iterative, change to the attention and objective}
+\citep{kasai2020nonautoregressive} -- the authors extend the \ac{cmlm} model
+\citep{ghazvininejad-etal-2019-mask}. Instead of predicting only the tokens
+which are masked-out, the authors propose an architecture that is able for each
+position in the target sequence to predict a subset of the other tokens. They
+achieve this goal by adapting the attention module. First the self-attention
+does not attend to the same position in the previous layer. Second, to prevent
+information leakage between the same positions on different layers, the
+self-attention keys and values are decontextualized, meaning that instead of
+the hidden states from the previous layer, the decoder input embeddings are
+used.
+
+\paragraph{JM-NAT} \textbf{iterative, auxiliary objective}
+\citep{guo-etal-2020-jointly} They mask some words in the encoder (as they do
+it in BERT) in each step to achieve a more robust representation in the
+encoder. They introduce an auxiliary loss for the encoder, for predicting the
+masked tokens. They do the same thing for the decoder, but they mask random
+n-grams instead of random tokens. Unlike encoder, they first randomly select
+the number n-grams to mask (to allow for iterative unmasking during
+decoding). They also use an auxiliary n-gram loss function which is tailored to
+help with the problem of repetitive tokens in the translation. They use
+mask-predict \citep{ghazvininejad-etal-2019-mask} for decoding.
+
 
 \JH{these below} are considered fully NAT
 
-\paragraph{DCRF} \citep{sun2019fast} -- fast structured decoding for sequence
-models
+\paragraph{DCRF} \textbf{CRF decoding on top of vanilla NAT, not really NAT
+  (similar to CTC+beam)} \citet{sun2019fast} propose to use \ac{crf} instead of
+the argmax decoding from the \ac{nat} model, which allows the modeling of
+causal relations within the output sequence. Although this process is not
+\acl{ar} given the nature of the \ac{crf} decoding, the Transformer model needs
+to be run only once and does not need to take into account the tokens as they
+are being generated.
 
-\paragraph{Flowseq} \citep{ma-etal-2019-flowseq} -- NAR conditional sequence
-generator with generative flow
+\paragraph{Flowseq} \textbf{latent variables} \citep{ma-etal-2019-flowseq} --
+NAR conditional sequence generator with generative flow. The authors use an
+intermediate latent variable $z$, but they argue that the prior distribution
+$p(z|x)$ needs to be complex to model all of the dependency relations. They
+propose to use generative flows \citep{rezende2015variational} for deriving the
+complex distribution from a simple prior using a series of invertible
+transformations. \JH{megacomplex paper}
 
-\paragraph{EM+ODD} \citep{sun2020em} -- an em approach to NAR conditional seq
-generation
+\paragraph{EM+ODD} \textbf{iterative knowledge distillation, fully NAT}
+\citep{sun2020em} -- they start from the multimodality problem, and the common
+way of addressing it -- knowledge distillation using an autoregressive
+teacher. They iterate the knowledge distillation step. They alternate the
+training of the \ac{ar} teacher model and the \ac{nar} student model, where the
+sellection of samples for the \ac{ar} training dataset is informed by the log
+likelihood as modeled by the \ac{nar} model.
 
-\paragraph{GLAT} \citep{qian2020glancing} -- glancing transformer for NAR NMT
+Additionally, the authors propose \acf{odd} which tackles the issue with
+repetitive oputput tokens while preserving the predicted output length and
+finds the optimal sequence without repetition.
+
+
+\paragraph{GLAT} \citep{qian2020glancing} -- \textbf{auxiliary objective, fully
+  NAT} The authors propose \acf{glat}, a technique for training the \ac{nat}
+model similarly to \acp{cmlm}, but enabling decoding in a single pass instead
+of an iterative process.
+
+During training, the model first generates an intermediate output
+non-autoregressively. Then, a number of positions is masked according to a
+glancing sampling strategy, and the model is trained to predict the masked
+tokens on the selected positions. \JH{equations?} The sampling strategy
+randomly selects $S$ positions, where $S$ is proportional to the number of
+errors in the intermediate prediction.
+
+The decoding is similar to the process proposed by
+\citet{gu2017nonautoregressive}, but the target length prediction is done as in
+the \ac{cmlm} approach -- an artificial source token \texttt{[LENGTH]} is
+prepended to the source sentence, and the encoder representation at the first
+position is used to predict the target length.
+
 
 \paragraph{huang} \citep{huang-etal-2021-nonautoregressive} -- layer-wise
 prediction a nd deep supervision (is it semi or not?)
+
 
 
 \section{Fully NAT}
@@ -646,6 +741,81 @@ size of 64.
 
 \JH{We should also have a table with autoregressive baselines reported by each
   study, and get some details on that.}
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{lrcc}
+    \toprule
+    Method & Steps & En $\rightarrow$ De & De $\rightarrow$ En \\
+    \midrule
+    \citet{gu2017nonautoregressive} & & & \\
+    \quad \acs{nat} + FT & 1 & 17.69 & 21.47 \\
+    \quad \acs{nat} + FT + top-100 \acs{npd} rescoring & 101 & 19.17 & 23.20 \\
+
+    \citet{lee-etal-2018-deterministic} & & \\
+    \quad 1 iteration & 1 & 13.91 & 16.77 \\
+    \quad 10 iterations & 10 & 21.61 & 25.48 \\
+
+    \citet{kaiser2018fast} & & \\
+    \quad \acs{lt}, no rescoring & 1 & 19.80 & -- \\
+    \quad \acs{lt}, top-100 rescoring & 101 & 22.50 & -- \\
+
+    \citet{ghazvininejad-etal-2019-mask} & & \\
+    \quad Base \acs{cmlm} with Mask-Predict, 1 iteration & 1 & 18.05 & 21.83 \\
+    \quad Base \acs{cmlm} with Mask-Predict, 10 iterations & 10 & 27.03 & 30.53 \\
+
+    \citet{sun2019fast} & & & \\
+    \quad \acs{nat} + \acs{dcrf}, no rescoring & 1 & 23.44 & 27.22 \\
+    \quad \acs{nat} + \acs{dcrf}, top-19 rescoring & 20 & 26.80 & 30.04 \\
+
+    \citet{wang-etal-2019-nonautoregressive} & & & \\
+    \quad \acs{natreg}, no rescoring & 1 &  20.65 & 24.77 \\
+    \quad \acs{natreg}, top-9 rescoring & 10 & 20.65 & 24.77 \\
+
+    \citet{li-etal-2019-hint} & & & \\
+    \quad \acs{hintnat}, no rescoring & 1 & 21.11  & 25.24 \\
+    \quad \acs{hintnat}, top-9 rescoring & 10 & 25.20  & 29.52 \\
+
+    \citet{ma-etal-2019-flowseq} & & & \\
+    \quad FlowSeq-large & 1 & 23.72 & 28.39 \\
+    \quad FlowSeq-large + top-30 \acs{npd} rescoring & 31 & 25.31 & 30.68 \\
+
+    \citet{ghazvininejad2020aligned} \acs{axe} \acs{cmlm} & 1 & 23.53 & 27.90 \\
+
+    \citet{guo-etal-2020-jointly} & & & \\
+    \quad \acs{jmnat}, 4 iterations & 4 & 27.05 & 31.51 \\
+    \quad \acs{jmnat}, 10 iterations & 10 & 27.69 & 32.24 \\
+
+    \citet{saharia-etal-2020-non} & & & \\
+    \quad \acs{ctc} & 1 & 25.70 & 28.10 \\
+    \quad Imputer &  \JH{??} & 25.80 & 28.40 \\
+
+    \citet{kasai2020nonautoregressive} -- DisCo + Easy-First
+           & \JH{??} & 27.34 & 31.31 \\
+
+    \citet{sun2020em} -- \acs{emodd} & \JH{??} & 24.54 & 27.93 \\
+
+    \citet{qian2020glancing} & & & \\
+    \quad \acs{glat} + \acs{ctc} & 1 & 26.39 & 29.54 \\
+    \quad \acs{glat} + \acs{ctc} + top-5 \acs{npd} rescoring & 6 & 26.55 & 31.02 \\
+
+    \citet{ran-etal-2021-guiding} & & &  \\
+    \quad \acs{ar} reordering & N & 26.49 & 31.13  \\
+    \quad \acs{nar} reordering & 1\footnotemark\JH{..} & 22.79 & 27.28 \\
+
+    \citet{gu-kong-2021-fully} \acs{nat} + \acs{ctc} + \acs{glat}
+           & 1\JH{?} & 27.20 & 31.39 \\
+
+    \citet{du2021orderagnostic} -- \acs{cmlm} + \acs{oaxe}
+           & \JH{1?} & 26.10 & 30.20 \\
+
+    \bottomrule
+  \end{tabular}
+  \caption{The results (in terms of \acs{bleu}) of the described models
+    measured on the \acs{wmt}~14 test set, as reported by the authors.}%
+  \label{tab:related:wmt14}
+\end{table}
 
 
 \begin{table}
