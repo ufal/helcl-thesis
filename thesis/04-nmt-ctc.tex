@@ -232,12 +232,12 @@ Table~\ref{tab:end-to-end:data}.
 
 \begin{table}
   \centering
-  \begin{tabular}{lr}
+  \begin{tabular}{lrr}
     \toprule
-     & Sentence pairs \\
+     & Sentence pairs & Vocabulary size \\
     \midrule
-    En -- De & 4.58 M \\
-    En -- Ro & 613 k \\
+    En -- De & 4.58 M & 41,488 \\
+    En -- Ro & 613 k & 38,440 \\
     \bottomrule
   \end{tabular}
 
@@ -250,7 +250,8 @@ repository,\footnote{\url{https://github.com/moses-smt/mosesdecoder/}} a part
 of the Moses translation toolkit \citep{koehn-etal-2007-moses}. Namely, we
 normalize the punctuation in the data, then we use the tokenizer and a
 truecaser. We segment the data using the wordpiece algorithm, creating a
-vocabulary of 32,000 tokens \citep{wu2016google}.
+vocabulary of approximately 41k wordpieces for English--German, and 38k
+wordpieces fro English--Romanian \citep{wu2016google}.
 
 \paragraph{Models and Training.}
 We implement and train our models in the Neural Monkey toolkit
@@ -282,7 +283,7 @@ settings for training models in both directions in both language pairs.
     Feed-forward hidden size & 4,096 \\
     State splitting factor & 3 \\
     State splitting projection size & 1,536 \\
-    Vocabulary size & 32,000 \\
+    Vocabulary size & See Table \ref{tab:end-to-end:data} \\
     \midrule
     Optimizer method & adam \\
     $\beta_1$ & 0.9 \\
@@ -470,10 +471,7 @@ and we describe these experiments in the following section.
 \end{table}
 
 
-\paragraph{Limitations.} The proposed approaches and the experimental
-evaluation have their limitations. \JH{List all the limitations here: namely,
-  no knowledge distillation, the autoregressive baselines are not comparable,
-  etc.}
+\JH{is there something to add?}
 
 % -----------------------------------------------------------------------------
 \section{Improving Fluency with n-gram Language Models}%
@@ -515,8 +513,9 @@ features, which we include in the hypothesis scoring model:
 where $p(y|x)$ is the probability given by the \acs{ctc} model, $\Phi_i(y)$ are
 the scoring model features, and $w_i$ are their respective weights. This
 rescoring approach is somewhat similar to the \ac{npd} proposed by
-\citet{gu2017nonautoregressive}, in which they sample more hypotheses from the
-\ac{nat} model and rescore them using an \ac{ar} Transformer model as a scorer.
+\citet{gu2017nonautoregressive}, in which they create more hypotheses by
+sampling from the fertility model and rescore them using an \ac{ar} Transformer
+model as a scorer.
 
 We experiment with the following three features in the scoring model. First, we
 use the score of $y$ from an n-gram language model. We use KenLM, an efficient
@@ -565,15 +564,26 @@ is the length of the source sentence.
 
 We follow a similar experimental setup as in the previous section with a few
 differences. In addition to the parallel data, we use backtranslated
-monolingual data, which we mix with upsampled parallel data so that the ratio
-of the synthetic and parallel data in the training dataset is approximately
-1:1. We train the \ac{ar} baselines and the \ac{nat} model on this dataset, so
-that the models with \ac{lm} scorer have access to the same data.  Instead of
-the wordpiece vocabulary, we use Sentencepiece
-\citep{kudo-richardson-2018-sentencepiece} with 50k tokens in the vocabulary.
-We train a 5-gram language model on the monolingual data using KenLM.\footnote{\url{https://github.com/kpu/kenlm/}}
+monolingual data (dataset sizes are shown in Table~\ref{tab:ngrams:data}),
+which we mix with upsampled parallel data so that the ratio of the synthetic
+and parallel data in the training dataset is approximately 1:1. We train the
+\ac{ar} baselines and the \ac{nat} model on this dataset, so that the models
+with \ac{lm} scorer have access to the same data.  Instead of the wordpiece
+vocabulary, we use Sentencepiece \citep{kudo-richardson-2018-sentencepiece}
+with 50k tokens in the vocabulary.  We train a 5-gram language model on the
+monolingual data using KenLM.\footnote{\url{https://github.com/kpu/kenlm/}}
+We use structured perceptron \citep{huang-etal-2012-structured} to learn the
+feature weights in the rescoring model. We train the perceptron on the
+development set, using half of the devset for training and the other half for
+testing.
 
-\JH{continue here...}
+Table \ref{tab:ngrams:bleu} shows the \acs{bleu} scores on the test data and
+the latencies of the \ac{nar} models when decoding with various beam sizes. We
+can see that even for lower beam size settings, the beam rescoring model
+achieves considerable improvements over the \ac{nar} baseline. The rescoring
+model does affect the decoding speed as the beam size grows, but the
+translation improvement gained by beam sizes up to 10 does not cost too much in
+terms of speed.
 
 \begin{table}
   \centering
@@ -605,16 +615,19 @@ We train a 5-gram language model on the monolingual data using KenLM.\footnote{\
   \label{tab:ngrams:bleu}
 \end{table}
 
-
-\begin{figure}
-  \centering
-  \input{img/ngrams-decoding-speed/speed.tex}
-
-  \caption{The relationship between the latency and the number of source tokens
-    in \acs{ar}, \acs{nar}, and \acs{nar} models with \acs{lm}.}%
-  \label{fig:ngrams:speed}
-\end{figure}
-
+We conduct an ablation study of the features in the rescoring model. The
+\acs{bleu} scores of the rescoring model with different sets of rescoring
+features (\ac{lm}, blank vs. non-blank symbol ratio, and the number of trailing
+blank tokens) for various beam sizes are shown in Table
+~\ref{tab:ngrams:features}. In the first row, only the \ac{ctc} score is used,
+therefore no rescoring is performed. In the second row, the \ac{lm} score is
+added to the model. We see that adding the \ac{lm} alone accounts for most of
+the performance gain. In the third row, we add the blank vs. non-blank symbol
+ratio to the \ac{ctc} and \ac{lm} scores. The fourth row shows results of the
+scoring model with the full set of features.\footnote{Note that we use a
+  different test set (\ac{wmt}~15 news test set). For comparison with the other
+  models on this test set, we refer the reader to \citet{kasner2020improving}
+  or \citet{kasner2020incorporating}.}
 
 \begin{table}
   \centering
@@ -630,12 +643,48 @@ We train a 5-gram language model on the monolingual data using KenLM.\footnote{\
     \bottomrule
   \end{tabular}
 
-  \caption{\JH{add caption}}%
-  \label{tab:}
+  \caption{The translation score of the English--German \ac{nat} model when
+    using various combinations of features and beam sizes measured on the
+    \acs{wmt}~15 test set.}%
+  \label{tab:ngrams:features}
+\end{table}
+
+Similarly to Figure \ref{fig:end-to-end:speed} in the previous section, we
+analyze the relationship between the latencies in models with and without
+\ac{lm} rescoring in Figure \ref{fig:ngrams:speed}. We can see that even
+though the latency of the \acs{nar}+\acs{lm} system grows with the length of
+the source sentence slightly faster than the latency of the pure \acs{nar}
+system, it is still much faster than the \ac{ar} counterpart.
+
+\begin{figure}
+  \centering
+  \input{img/ngrams-decoding-speed/speed.tex}
+
+  \caption{The relationship between the latency and the number of source tokens
+    in \acs{ar}, \acs{nar}, and \acs{nar} models with \acs{lm}.}%
+  \label{fig:ngrams:speed}
+\end{figure}
+
+To illustrate how can the beam rescoring improve the fluency of the outputs of
+the \ac{nar} model, we hand-pick a few examples from the German--English test
+set and we show them in Table \ref{tab:ngrams:examples}.
+
+\begin{table}
+  \centering
+  \input{img/ngrams_examples.tex}
+
+  \caption{Hand-picked examples of the model outputs for German--English
+    translation.}%
+  \label{tab:ngrams:examples}
 \end{table}
 
 
 
+\section{Limitations}
+
+The proposed approaches and the experimental evaluation have their
+limitations. \JH{List all the limitations here: namely, no knowledge
+  distillation, the autoregressive baselines are not comparable, etc.}
 
 
 

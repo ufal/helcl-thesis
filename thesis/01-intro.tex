@@ -3,30 +3,21 @@
 \label{chap:intro}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+This thesis is structured as follows.
+%
+In Chapter \ref{chap:nmt}, we introduce the field of \ac{nmt}. We show how
+models for \ac{nmt} process textual data, and how they deal with the large
+number of different words they need to understand. We introduce the concept of
+encoder-decoder architectures, which are the backbone of nearly every \ac{nmt}
+system there is, and their two types, \acs{rnn}-based models and the
+Transformer. We give an overview of how to train these models, including a
+number of practical aspects of training, such as what methods do we use for
+data cleaning, or what training algorithms do we use and how to configure
+them. We briefly talk about methods for decoding applied once the model has
+been trained. We conclude the chapter by discussing the evaluation, which tells
+us how good or how bad our translation models are.
 
-\JH{rewrite celý}
-
-% It is universally agreed that context plays a vital role in human communication.
-
-% při rozhovoru je kontext kromě toho, co bylo řečeno i to, kde, kdo s kým a za
-% jakých okolností komunikuje. V případě korespondence je kontext omezenější
-
-% In this thesis, we present two case studies aimed on this phenomenon. In the
-% first study, we provide additional context to a \gls{nmt} system and observe the
-% changes in translation quality. In the other case study, we go the other way: we
-% limit the context available to the decoder and examine the model behavior.
-
-This thesis is structured as follows. In Chapter \ref{chap:nmt}, we describe the
-basics of \gls{nmt} as well as recent advancements in the field. % Chapter
-% \ref{chap:context} summarizes the scientific contributions exploring the
-% influence of context in \gls{nmt} from different perspectives. \JH{rewrite, NAT
-%   chapter: \ref{chap:nat}}
-%   We present two
-% case studies focused on the importance of context in \gls{nmt} in Chapters
-% \ref{chap:mmmt} and \ref{chap:nat}.
-%The discussion of the results observed in the case studies is given in Chapter
-%\ref{chap:discuss}.
-
+Chapter \ref{chap:nat} presents \ac{nat}.
 
 %%% Local Variables:
 %%% mode: latex

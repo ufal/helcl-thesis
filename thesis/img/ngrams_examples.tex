@@ -1,0 +1,116 @@
+\begin{tabularx}{\textwidth}{lX}
+%\begin{tabular}{lp{8cm}}
+  \toprule
+  Source & Die Armee teilte zugleich mit, dass in den vergangenen 24
+           Stunden sieben Soldaten getötet worden seien.  \\
+  \addlinespace
+  Reference & The army announced at the same time that over the
+              past 24 hours,
+              seven soldiers have been killed. \\
+  \addlinespace
+  \acs{ar} & The army also announced that seven soldiers have been killed over
+             the past 24 hours.\\
+  \addlinespace
+  \acs{nar} & The army also announced that seven soldiers \redund{had}
+              \redund{killed} killed in the last \redund{24} 24 hours. \\
+         & \quad \it Missing verb, Repeated tokens \\
+  \addlinespace
+  \acs{nar} + \acs{lm}
+         & The army also announced that \redund{the} seven soldiers
+           \greenund{had been killed} in the last \greenund{24} hours.  \\
+         & \quad \it Fixed issues but inserted a definite article \\
+
+  \midrule
+
+  Source & Wir waren früher ein freundliches Land, wie kann es sein, dass wir
+           nun kämpfen? \\
+  \addlinespace
+
+  Reference & We used to be one friendly country in the past, how did it happen
+              that we are fighting now? \\
+  \addlinespace
+
+  \acs{ar} & We used to be a friendly country, how can we fight now? \\
+         & \quad \it Translation too short \\
+  \addlinespace
+
+  \acs{nar}
+         & We \redund{were} a friendly country, \redund{how can it we}
+              are fighting now? \\
+         & \quad \it Missing words \\
+  \addlinespace
+
+  \acs{nar} + \acs{lm}
+         & We \redund{were} a friendly country, \greenund{how can it be}
+           that we are fighting now? \\
+         & \quad \it Partially correct \\
+
+  % \midrule
+
+  % Source & Ein 78-jähriger Mann steht wegen des Überfahrens eines
+  %          dreijährigen Mädchens auf einem Fußgängerüberweg in Fife
+  %          vor Gericht. \\
+
+  % \addlinespace
+  % Reference  & A 78-year-old man is to stand trial accused of running
+  %              over a three-year-old girl on a pelican crossing in Fife. \\
+
+  % \addlinespace
+  % \acs{ar} &  A 78-year-old man is in court for crossing a three-year-old girl on a pedestrian crossing in Fife. \\
+
+  % \addlinespace
+  % \acs{nar} &  A 78-year-old man isold girl on a pedestrian in Fifeyear girl. \\
+
+  % \addlinespace
+  % \acs{nar} + \acs{lm} \\
+  % A 78-year-old man is on a pedestrian crossing in Fife.
+
+
+  \midrule
+
+  Source & Seiner Ansicht nach könnten alle Mitglieder beider Vereine künftig wieder an einem Strang ziehen. \\
+  \addlinespace
+
+  Reference & In his opinion, all members of each club could come together again in the future. \\
+  \addlinespace
+
+  \acs{ar} & In his view, all members of both clubs could pull together again in the future. \\
+  \addlinespace
+
+  \acs{nar} & \redund{In} believes that all members of both clubs could pull \redund{together future}. \\
+         & \quad \it Ungrammatical beginning and end \\
+  \addlinespace
+
+  \acs{nar} + \acs{lm}
+         & \greenund{He} believes that all \blueund{the} members of both
+           clubs could pull together. \\
+         & \quad \it Fluency corrections; inserted ``the'' again, this time
+           not a mistake \\
+
+
+ % \midrule
+  % Source & \\
+  % Reference & \\
+  % \acs{ar} & \\
+  % \acs{nar} & \\
+  % \acs{nar} + \acs{lm} & \\
+
+  \bottomrule
+%\end{tabular}
+\end{tabularx}
+
+%    nAR &  \blueund{Aggressivitätivität}  \\
+%    & \quad\rotatebox[origin=c]{180}{$\Lsh$} \it  with repeated subwords (blue). \\
+
+%    nAR + LM &  \greenund{angeborenen}  \\
+%    & \quad\rotatebox[origin=c]{180}{$\Lsh$} \it  chosen. \\
+
+%    AR &  \greenund{angeborenen} . \\
+
+%    Reference & Aufgrund ihrer ureigenen Aggressivität wurden Songs dieser Art nicht
+% mehr auf der Konsole gespielt. \\
+%   \midrule
+
+
+%   \bottomrule
+% \end{tabular}

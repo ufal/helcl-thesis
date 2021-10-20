@@ -75,7 +75,12 @@ limitations of the presented literature and \JH{and what?}
 \label{sec:nat:principles}
 % ------------------------------------------------------------------------------
 
-
+This section summarizes the main features of \ac{nar} models and some of the
+basic concepts and the research problems in this field. The \ac{nar} variant of
+the Transformer model was first described by \citet{gu2017nonautoregressive}
+and \citet{lee-etal-2018-deterministic}. Each of these two foundational papers
+provides different (complementary) grounds for further research discussed later
+in this chapter -- using latent variables, and iterative decoding.
 
 % ------------------------------------------------------------------------------
 \paragraph{Conditional Independence.} The defining feature of a
@@ -244,6 +249,19 @@ intractable. Therefore, the authors experiment with three approximation methods
 -- argmax and average decoding, and \ac{npd}.
 
 % ------------------------------------------------------------------------------
+\paragraph{Autoregressive Rescoring.} A usual technique in the \ac{nat}
+literature is to use some form of rescoring of the outputs of a \acl{nar} model
+by an \acl{ar} model. The nature of the Transformer model allows to score a
+sentence in a single step (as opposed to generating one), which means that the
+additional rescoring computation increases the decoding complexity only
+linearly with respect to the number of the candidate hypoteheses for rescoring.
+
+The choice of the rescoring candidates varies. \citet{gu2017nonautoregressive}
+use \acf{npd}, which first samples the decoder input sequences from the
+fertility distribution, compute the best candidate for each input, and then
+rescore the results using the \ac{ar} teacher model.
+
+% ------------------------------------------------------------------------------
 \paragraph{Knowledge Distillation.} To tackle the multimodality problem from
 another angle, \citet{gu2017nonautoregressive} propose to use sequence-level
 knowledge distillation to create artificial training data
@@ -403,7 +421,7 @@ illustration in Figure \ref{fig:oaxe-example}).
 \end{figure}
 
 
-% -----------------------------------------------------------------------------
+% ----------------------------------------------------------------------------
 \paragraph{Imputer.} Antoher variant of the alignment-based approach was
 described by \citet{saharia-etal-2020-non}. In the paper, they experiment with
 a \acs{ctc}-based model similar to the model we use in this thesis, and an
