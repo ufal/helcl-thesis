@@ -496,7 +496,7 @@ the overview of the model components.
     applied on the output of each layer. The decoder stack uses three
     sub-layers, where the additional cross-attention layer attends to the
     encoder output. We show the original image from
-    \citet{vaswani2017attention}.}
+    \citet{vaswani2017attention}, Figure 1.}
   \label{fig:transformer}
 \end{figure}
 
@@ -531,7 +531,7 @@ the similarity metric, so the attention itself does not use any trainable
 parameters. Formally, self-attention is defined as function:
 %
 \begin{equation}
-  \mathcal{A}(Q,K,V) = \softmax \left( \frac{QK^\top}{\sqrt{d}} V  \right)
+  \mathcal{A}(Q,K,V) = \softmax \left( \frac{QK^\top}{\sqrt{d}} \right) V
   \label{eq:scaled-dot-product}
 \end{equation}
 %
