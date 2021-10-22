@@ -3,6 +3,8 @@
 \label{chap:intro}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\JH{Write the introduction.}
+
 This thesis is structured as follows.
 %
 In Chapter \ref{chap:nmt}, we introduce the field of \ac{nmt}. We show how
@@ -17,7 +19,34 @@ them. We briefly talk about methods for decoding applied once the model has
 been trained. We conclude the chapter by discussing the evaluation, which tells
 us how good or how bad our translation models are.
 
-Chapter \ref{chap:nat} presents \ac{nat}.
+Chapter \ref{chap:nat} walks us through the research on \ac{nat}. We explain
+the principal differences between \acl{ar} and \acl{nar} models, what issues
+arise when using the latter, and how can we solve them. We provide a
+comprehensive survey of the literature, owing to the fact that the whole domain
+of \ac{nat} resarch is fairly new. We describe efforts to keep the most
+important feature \ac{nat} models -- high decoding speed -- intact by
+introducing constraints on the training process, or other efforts that
+partially sacrifice the higher decoding speed for better translation quality by
+iterative refinement. \JH{In the end of the chapter, we discuss some of the
+  weaknesses which are prevalent in a large part of the literature on this
+  topic. }
+
+We present a method for training \acl{nar} models for \ac{nmt} with \ac{ctc} in
+Chapter \ref{chap:nar-nmt-ctc}. We first describe the \ac{ctc} algorithm for
+computing loss between unaligned label and prediction sequences. Having such
+loss function relaxes the requirement for target length prediction, which is
+one of the obstacles in \ac{nat}. We show the changes we need to apply to the
+model architecture so we can use the \ac{ctc} loss, and we report on our
+experiments and their results, both in terms of speed and translation quality.
+Our analysis shows that \ac{nat} models suffer from reduced fluency of the
+translations, which is in line with the conclusions of other \ac{nat} studies.
+We briefly mention our attempt to improve the translation fluency using a
+\acl{lm} rescoring.
+
+\JH{text about chapter \ref{chap:experiments}}
+
+\JH{refer to conclusions in chapter \ref{chap:conclusions} and conclude the
+  introduction}
 
 %%% Local Variables:
 %%% mode: latex
