@@ -787,14 +787,6 @@ sequence $l$ based on a source sentence $x$. Third, an \acs{nar}
 \emph{decoder}, used to generate $y$ given the source sentence $x$ and the
 hidden sequence $l$.
 
-% The model has three components: autoencoder $ae(y, x)$ which maps $y$ to shorter
-% latent sequence $l$, latent prediction model $lp(x)$ which produces $l$ out of
-% $x$, and decoder $ad(l, x)$ which non-autoregressively produces $y$ out of $l$
-% and $x$. They use two losses with equal weights: recunstruction loss computed
-% from $ad(ae(y,x),x)$ and latent prediction loss comparing $ae(y,x)$ and $lp(x)$.
-% The latent predictor is a transformer, the autoencoder is stack of convolutions
-% with residual connections, and the decoder consists of up-convolutions.
-
 The autoencoder is used for training in order to condense the longer target
 sequence $y$ into a shorter (usually 8 times) sequence $l$, which is used as an
 itermediate representation of $y$. Unlike perhaps more common autoencoders,
@@ -803,63 +795,6 @@ methods (decomposed vector quantization and latent semantic hashing) for the
 discretization. A stack of convolutions with residucl connections is selected
 as the autoencoder architecture. The latent predictor is a stack of Transformer
 layers, and the decoder consists of up-convolutions.
-
-% \paragraph{Latent Transformer \citep{kaiser2018fast}.} Latent transformer (fast
-% decoding in seq. models using discrete latent vars) Use latent variables to make
-% decoding parallelizable. Auto-encode targets to latent variables which are
-% predicted autoregressively, then decode from these latent variables in
-% parallel. Mostly use one eigth of the original sentence length.
-
-% Unlike perhaps more common autoencoders, this autoencoder uses discrete latent
-% variables.  The discretization is studied and decomposed vector quantization
-% (DVQ) or latent semantic hashing is proposed as best-performing. Generally,
-% $enc(y) \in \mathbb{R}^D$, where $D$ is latent space dimension. $[K]$ is the
-% discrete latent space alphabet. $enc(y)$ is discretized to two latent variables
-% $z_d(y) \in K$ as the latent representation and $z_q(y)$ as input to the
-% decoder. $\tau_m(i)$ is binary representation of $i$ using $m$ bits.
-
-% \textbf{Gumbel softmax} -- produce logits $l = W \text{enc}(y)$,
-% $W \in \mathbb{R}^{K \times D}$, then take argmax to get $z_d(y)$. Decoder input
-% $z_q(y)$ is embedding of $z_d(y)$. To make this argmax differentiable, during
-% training, Gumbel-Softmax trick is used: $g_1, \ldots, g_K$ are sampled from
-% Gumbel distribution, $g_i \sim -\log(-\log u)$, where $u \sim U(0,1)$, and:
-% \begin{equation}
-%   w_i= \frac{\exp((l_i + g_i) / \tau) }{\sum_i exp((l_i + g_i)/\tau)}
-% \end{equation}
-% to get $w \in \mathbb{R}^K$, and use $z_q(y) = w \times E$. Gumbel-softmax is
-% simply used as differentiable sampling from intermediate logits.
-
-% \textbf{Improved semantic hashing} -- use rounding bottleneck after squashing
-% encoder state $z_e(y)$ using saturating sigmoid:
-% \begin{equation}
-%   \sigma'(x) = \max(0, \min(1, 1.2 \sigma(x) - 0.1))
-% \end{equation}
-% During training, gaussian noise is added before the saturating sigmoid to
-% encoder states $z_e(y)$: $f_e(y) = \sigma'(z_e(y) + \eta ~ N(0,1)^D)$. Discrete
-% latent representation, binary vector $g_e(y)$ is constructed by rounding
-% $f_e(y)$ to zeros and ones. $z_d(y)$ is computed as $\tau^{-1}_{log_K}(g(y))$
-% (that is, by conversion of $g_e(y)$ from binary to decimal with base $K$). The
-% input $z_q(y) = e^1_{h_e(y)} + e^2_{1-h_e(y)}$ where $h_e(y)$ is either $f_e$ or
-% $g_e$ during training, but only $g_e$ during inference.
-
-% \textbf{Vector quantizated variational autoencoder (VQ-VAE)} --
-% $enc(y)\in\mathbb{R}$ mapped on embeddeding $e\in\mathbb{R}^{K\times D}$ as
-% nearest-neighbor lookup. $z_q(y) = e_k$, whereoq
-% $k = argmin_{j\in[K]} || enc(y) - e_j ||_2$, latent $z_d(y)$ being $k$. This is
-% trained with reconstruction loss, and $enc(y)$ being drawn to fixed values of
-% $z_q(y)$. They also keep moving averages of the embeddings and the counts,
-% EM-like.
-
-% \textbf{DVQ} -- the former has an issue with a few indices receiving the most signal
-% during training. Proposed two solutions: sliced VQ and projected VQ. In sliced,
-% idea is to slice $enc(y)$ to smaller vectors and do the nearest neighbor using
-% the sslices, reconstructing $z_q(y)$ from the results. In projected, instead of
-% slicing, the vector is projected multiple times to subspace.
-
-% Results measured on WMT'14 EN-DE. Baseline 27.3 BLEU, they achieve 22.5 with
-% rescoring. p-DVQ and s-DVQ as well as improved semhash are comparable, semhash
-% seems faster. Latency in the order of 100 ms, 7-8 ms per sentence with batch
-% size of 64.
 
 % ------------------------------------------------------------------------------
 \section{Discussion}%
