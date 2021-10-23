@@ -253,9 +253,10 @@ additional rescoring computation increases the decoding complexity only
 linearly with respect to the number of the candidate hypoteheses for rescoring.
 
 The choice of the rescoring candidates varies. \citet{gu2017nonautoregressive}
-use \acf{npd}, which first samples the decoder input sequences from the
-fertility distribution, compute the best candidate for each input, and then
-rescore the results using the \ac{ar} teacher model.
+use \ac{npd} which first samples the decoder input sequences from the fertility
+distribution, compute the best candidate for each input, and then rescore the
+results using the \ac{ar} teacher model. A closely related method is \ac{lpd}
+which generates and scores sentences of different lengths.
 
 % ------------------------------------------------------------------------------
 \paragraph{Knowledge Distillation.} To tackle the multimodality problem from
@@ -345,6 +346,34 @@ hyperparameter $\alpha$, sampled from a Bernoulli distribution.
 \label{sec:nat:alignment}
 % ------------------------------------------------------------------------------
 
+\Acl{ar} models are trained using the cross-entropy loss (recall Equation
+\ref{eq:loss}). When we assume a single sentence pair $(x,y)$, the negative
+log-likelihood is the sum of negative log-probabilities
+$\log p(y_i|x, y_{<i}, \theta)$ for $i=1, \ldots, T_y$, as estimated by the
+model with parameters $\theta$.  Notice how the ground-truth sequence
+$y_1, \ldots, y_{T_y}$ corresponds to the sequence of the probabilities
+$p(y_i|\ldots)$: we require that the $i$-th reference token is decoded at the
+$i$-th position of the output state sequence. The methods described in this
+section relax this requirement.
+
+We define an alignment as a function $a$ which maps the positions in the
+ground-truth sentence to the positions in the output. In autoregressive
+models, $a(i) = i$ for every position $i$ in the ground truth. % When we
+% generalize the cross-entropy loss for sentence pair $(x, y)$ to account for the
+% alignment, we get
+Methods that consider different alignments allow to work with output and label
+sequences with different lengths, which is a useful feature in the context of
+\ac{nat} models.
+
+To the best of our knowledge, we were the first to propose an alignment-based
+method for \ac{nat} \citep{libovicky-helcl-2018-end}. Our method is based on
+\acf{ctc}\glsunset{ctc}, which computes the cross-entropy losses over all
+possible alignments between the ground truth and a longer output state
+seqeunce. We describe this method in detail in Chapter \ref{chap:nar-nmt-ctc}.
+In the following paragraphs, we present a number of related methods based on
+modeling the alignment between the sequences of outputs and ground-truth
+labels.
+
 % -----------------------------------------------------------------------------
 \paragraph{Aligned Cross Entropy for \ac{nat}} One problem with using
 cross-entropy objective for training \ac{nat} models is that it heavily
@@ -392,18 +421,12 @@ in detail in Chapter \ref{chap:nar-nmt-ctc}.
 
 
 % -----------------------------------------------------------------------------
-\JH{relate the axe approach to bag-of-ngrams who also deal with misalignment}
-\paragraph{\JH{Batch of ngrams.}} \citet{shao2020minimizing} also address the
-misalignment issue. Instead of finding an appropriate alignment, they introduce
-a new bag-of-ngrams objective, which minimizes the difference between the
-\ac{nat} model output and the target sentence. \JH{tell me more!}
-
-\paragraph{Order-Agnostic Cross-Entropy for \acs{nat}.} \textbf{AXE but
-  extended to non-monotonic} The alignment-based methods, such as \ac{axe} or
-\ac{ctc} assume that the alignment between the label and the output sequences
-is monotonic, i.e. the ordering of aligned positions is the
-same. \citet{du2021orderagnostic} design \ac{oaxe}, a new training objective
-which permits non-monotonic alignments (see illustration in Figure
+% AXE, but extended to non-monotonic
+\paragraph{Order-Agnostic Cross-Entropy.} The alignment-based methods discussed
+in this section so far are considering only monotonic alignments, i.e. for
+every alignment $a$ the condition $a(i) \leq a(i + 1)$
+holds. \citet{du2021orderagnostic} design \ac{oaxe}, a new training objective
+which also permits non-monotonic alignments (see illustration in Figure
 \ref{fig:oaxe-example}).  \JH{continue}
 
 \begin{figure}
@@ -415,6 +438,13 @@ which permits non-monotonic alignments (see illustration in Figure
     \citet{du2021orderagnostic}, Figure 1}%
   \label{fig:oaxe-example}
 \end{figure}
+
+% -----------------------------------------------------------------------------
+\JH{relate the axe approach to bag-of-ngrams who also deal with misalignment}
+\paragraph{\JH{Batch of ngrams.}} \citet{shao2020minimizing} also address the
+misalignment issue. Instead of finding an appropriate alignment, they introduce
+a new bag-of-ngrams objective, which minimizes the difference between the
+\ac{nat} model output and the target sentence. \JH{tell me more!}
 
 
 % ----------------------------------------------------------------------------
@@ -677,14 +707,13 @@ refinement iteration is performed non-autoregressively.
 
 
 % ------------------------------------------------------------------------------
-\section{Others}%
+\section{Fully NAT}%
 \label{sec:nat:misc}
 % ------------------------------------------------------------------------------
 
-%\paragraph{LaNMT} \citep{shu2020latent} -- latent-variable NAR NMT with deterministic inference using a delta posterior \JH{to bych nechal na potom nebo vyhodil}
-
-
-\JH{these below} are considered fully NAT
+% \paragraph{LaNMT} \citep{shu2020latent} -- latent-variable NAR NMT with
+% deterministic inference using a delta posterior \JH{to bych nechal na potom
+% nebo vyhodil}
 
 \paragraph{DCRF} \textbf{CRF decoding on top of vanilla NAT, not really NAT
   (similar to CTC+beam)} \citet{sun2019fast} propose to use \ac{crf} instead of
@@ -749,88 +778,140 @@ entropies of the layer-wise softmax predictions on all Transformer layers in
 the decoder stack.
 
 
-\section{Fully NAT}
+\paragraph{Latent Transformer.} \citet{kaiser2018fast} use discrete latent
+variables in a model called \acf{lt}\glsunset{lt}. The model has three
+components. First, the \emph{autoencoder} takes a sentence pair $(x, y)$ and
+encode the target sentence $y$ into a sequence of discrete latent variables
+$l$. Second, an \acl{ar} \emph{latent prediction} model, which predicts the
+sequence $l$ based on a source sentence $x$. Third, an \acs{nar}
+\emph{decoder}, used to generate $y$ given the source sentence $x$ and the
+hidden sequence $l$.
 
-\paragraph{Latent Transformer \citep{kaiser2018fast}.} Latent transformer (fast
-decoding in seq. models using discrete latent vars) Use latent variables to make
-decoding parallelizable. Auto-encode targets to latent variables which are
-predicted autoregressively, then decode from these latent variables in
-parallel. Mostly use one eigth of the original sentence length.
+% The model has three components: autoencoder $ae(y, x)$ which maps $y$ to shorter
+% latent sequence $l$, latent prediction model $lp(x)$ which produces $l$ out of
+% $x$, and decoder $ad(l, x)$ which non-autoregressively produces $y$ out of $l$
+% and $x$. They use two losses with equal weights: recunstruction loss computed
+% from $ad(ae(y,x),x)$ and latent prediction loss comparing $ae(y,x)$ and $lp(x)$.
+% The latent predictor is a transformer, the autoencoder is stack of convolutions
+% with residual connections, and the decoder consists of up-convolutions.
 
-Unlike perhaps more common autoencoders, this autoencoder uses discrete latent
-variables.  The discretization is studied and decomposed vector quantization
-(DVQ) or latent semantic hashing is proposed as best-performing. Generally,
-$enc(y) \in \mathbb{R}^D$, where $D$ is latent space dimension. $[K]$ is the
-discrete latent space alphabet. $enc(y)$ is discretized to two latent variables
-$z_d(y) \in K$ as the latent representation and $z_q(y)$ as input to the
-decoder. $\tau_m(i)$ is binary representation of $i$ using $m$ bits.
+The autoencoder is used for training in order to condense the longer target
+sequence $y$ into a shorter (usually 8 times) sequence $l$, which is used as an
+itermediate representation of $y$. Unlike perhaps more common autoencoders,
+this autoencoder uses discrete latent variables. The authors propose two
+methods (decomposed vector quantization and latent semantic hashing) for the
+discretization. A stack of convolutions with residucl connections is selected
+as the autoencoder architecture. The latent predictor is a stack of Transformer
+layers, and the decoder consists of up-convolutions.
 
-\textbf{Gumbel softmax} -- produce logits $l = W \text{enc}(y)$,
-$W \in \mathbb{R}^{K \times D}$, then take argmax to get $z_d(y)$. Decoder input
-$z_q(y)$ is embedding of $z_d(y)$. To make this argmax differentiable, during
-training, Gumbel-Softmax trick is used: $g_1, \ldots, g_K$ are sampled from
-Gumbel distribution, $g_i \sim -\log(-\log u)$, where $u \sim U(0,1)$, and:
-\begin{equation}
-  w_i= \frac{\exp((l_i + g_i) / \tau) }{\sum_i exp((l_i + g_i)/\tau)}
-\end{equation}
-to get $w \in \mathbb{R}^K$, and use $z_q(y) = w \times E$. Gumbel-softmax is
-simply used as differentiable sampling from intermediate logits.
+% \paragraph{Latent Transformer \citep{kaiser2018fast}.} Latent transformer (fast
+% decoding in seq. models using discrete latent vars) Use latent variables to make
+% decoding parallelizable. Auto-encode targets to latent variables which are
+% predicted autoregressively, then decode from these latent variables in
+% parallel. Mostly use one eigth of the original sentence length.
 
-\textbf{Improved semantic hashing} -- use rounding bottleneck after squashing
-encoder state $z_e(y)$ using saturating sigmoid:
-\begin{equation}
-  \sigma'(x) = \max(0, \min(1, 1.2 \sigma(x) - 0.1))
-\end{equation}
-During training, gaussian noise is added before the saturating sigmoid to
-encoder states $z_e(y)$: $f_e(y) = \sigma'(z_e(y) + \eta ~ N(0,1)^D)$. Discrete
-latent representation, binary vector $g_e(y)$ is constructed by rounding
-$f_e(y)$ to zeros and ones. $z_d(y)$ is computed as $\tau^{-1}_{log_K}(g(y))$
-(that is, by conversion of $g_e(y)$ from binary to decimal with base $K$). The
-input $z_q(y) = e^1_{h_e(y)} + e^2_{1-h_e(y)}$ where $h_e(y)$ is either $f_e$ or
-$g_e$ during training, but only $g_e$ during inference.
+% Unlike perhaps more common autoencoders, this autoencoder uses discrete latent
+% variables.  The discretization is studied and decomposed vector quantization
+% (DVQ) or latent semantic hashing is proposed as best-performing. Generally,
+% $enc(y) \in \mathbb{R}^D$, where $D$ is latent space dimension. $[K]$ is the
+% discrete latent space alphabet. $enc(y)$ is discretized to two latent variables
+% $z_d(y) \in K$ as the latent representation and $z_q(y)$ as input to the
+% decoder. $\tau_m(i)$ is binary representation of $i$ using $m$ bits.
 
-\textbf{Vector quantizated variational autoencoder (VQ-VAE)} --
-$enc(y)\in\mathbb{R}$ mapped on embeddeding $e\in\mathbb{R}^{K\times D}$ as
-nearest-neighbor lookup. $z_q(y) = e_k$, whereoq
-$k = argmin_{j\in[K]} || enc(y) - e_j ||_2$, latent $z_d(y)$ being $k$. This is
-trained with reconstruction loss, and $enc(y)$ being drawn to fixed values of
-$z_q(y)$. They also keep moving averages of the embeddings and the counts,
-EM-like.
+% \textbf{Gumbel softmax} -- produce logits $l = W \text{enc}(y)$,
+% $W \in \mathbb{R}^{K \times D}$, then take argmax to get $z_d(y)$. Decoder input
+% $z_q(y)$ is embedding of $z_d(y)$. To make this argmax differentiable, during
+% training, Gumbel-Softmax trick is used: $g_1, \ldots, g_K$ are sampled from
+% Gumbel distribution, $g_i \sim -\log(-\log u)$, where $u \sim U(0,1)$, and:
+% \begin{equation}
+%   w_i= \frac{\exp((l_i + g_i) / \tau) }{\sum_i exp((l_i + g_i)/\tau)}
+% \end{equation}
+% to get $w \in \mathbb{R}^K$, and use $z_q(y) = w \times E$. Gumbel-softmax is
+% simply used as differentiable sampling from intermediate logits.
 
-\textbf{DVQ} -- the former has an issue with a few indices receiving the most signal
-during training. Proposed two solutions: sliced VQ and projected VQ. In sliced,
-idea is to slice $enc(y)$ to smaller vectors and do the nearest neighbor using
-the sslices, reconstructing $z_q(y)$ from the results. In projected, instead of
-slicing, the vector is projected multiple times to subspace.
+% \textbf{Improved semantic hashing} -- use rounding bottleneck after squashing
+% encoder state $z_e(y)$ using saturating sigmoid:
+% \begin{equation}
+%   \sigma'(x) = \max(0, \min(1, 1.2 \sigma(x) - 0.1))
+% \end{equation}
+% During training, gaussian noise is added before the saturating sigmoid to
+% encoder states $z_e(y)$: $f_e(y) = \sigma'(z_e(y) + \eta ~ N(0,1)^D)$. Discrete
+% latent representation, binary vector $g_e(y)$ is constructed by rounding
+% $f_e(y)$ to zeros and ones. $z_d(y)$ is computed as $\tau^{-1}_{log_K}(g(y))$
+% (that is, by conversion of $g_e(y)$ from binary to decimal with base $K$). The
+% input $z_q(y) = e^1_{h_e(y)} + e^2_{1-h_e(y)}$ where $h_e(y)$ is either $f_e$ or
+% $g_e$ during training, but only $g_e$ during inference.
 
-The model has three components: autoencoder $ae(y, x)$ which maps $y$ to shorter
-latent sequence $l$, latent prediction model $lp(x)$ which produces $l$ out of
-$x$, and decoder $ad(l, x)$ which non-autoregressively produces $y$ out of $l$
-and $x$. They use two losses with equal weights: recunstruction loss computed
-from $ad(ae(y,x),x)$ and latent prediction loss comparing $ae(y,x)$ and $lp(x)$.
-The latent predictor is a transformer, the autoencoder is stack of convolutions
-with residual connections, and the decoder consists of up-convolutions.
+% \textbf{Vector quantizated variational autoencoder (VQ-VAE)} --
+% $enc(y)\in\mathbb{R}$ mapped on embeddeding $e\in\mathbb{R}^{K\times D}$ as
+% nearest-neighbor lookup. $z_q(y) = e_k$, whereoq
+% $k = argmin_{j\in[K]} || enc(y) - e_j ||_2$, latent $z_d(y)$ being $k$. This is
+% trained with reconstruction loss, and $enc(y)$ being drawn to fixed values of
+% $z_q(y)$. They also keep moving averages of the embeddings and the counts,
+% EM-like.
 
-Results measured on WMT'14 EN-DE. Baseline 27.3 BLEU, they achieve 22.5 with
-rescoring. p-DVQ and s-DVQ as well as improved semhash are comparable, semhash
-seems faster. Latency in the order of 100 ms, 7-8 ms per sentence with batch
-size of 64.
+% \textbf{DVQ} -- the former has an issue with a few indices receiving the most signal
+% during training. Proposed two solutions: sliced VQ and projected VQ. In sliced,
+% idea is to slice $enc(y)$ to smaller vectors and do the nearest neighbor using
+% the sslices, reconstructing $z_q(y)$ from the results. In projected, instead of
+% slicing, the vector is projected multiple times to subspace.
+
+% Results measured on WMT'14 EN-DE. Baseline 27.3 BLEU, they achieve 22.5 with
+% rescoring. p-DVQ and s-DVQ as well as improved semhash are comparable, semhash
+% seems faster. Latency in the order of 100 ms, 7-8 ms per sentence with batch
+% size of 64.
 
 % ------------------------------------------------------------------------------
 \section{Discussion}%
 \label{sec:nat:discussion}
 % ------------------------------------------------------------------------------
 
-\JH{Here should be a section on the limitations of the presented papers}
+In the conclusion to this chapter, we take a high-level view on the approaches
+we have presented here. We point out a few aspects that most of the literature
+has in common, as well as some issues regarding evaluation and comparison to
+meaningful baselines.
 
-\JH{Many papers claim that reordering is an issue. While this might be true,
-  the culprit is the multimodality problem, as the reordering can be modeled
-  within the self-attentive layers. Also, the papers that propose methods to
-  model the reordering better, evaluate their method only on the end task
-  (translation) and do not assess the actual reordering ability. }
+\paragraph{Results.} Table \ref{tab:related-models} shows selected results of
+the described approaches measured on the \acs{wmt}~14 test set. We can see that
+rescoring using an \acl{ar} teacher consistently helps the translation
+performance. However, the more rescoring steps is taken, the less decoding
+speed is gained. \JH{There should be a table with the decoding speeds, and
+  there should be a figure showing the pareto-frontier.}
 
-\JH{We should also have a table with autoregressive baselines reported by each
+\paragraph{Capturing Reordering.} \JH{Many papers claim that reordering is an
+  issue. While this might be true, the culprit is the multimodality problem, as
+  the reordering can be modeled within the self-attentive layers. Also, the
+  papers that propose methods to model the reordering better, evaluate their
+  method only on the end task (translation) and do not assess the actual
+  reordering ability. However, modeling reordering helps reducing the
+  multimodality. Anyway, if they claim it, they should measuring I guess.}
+
+
+\paragraph{Evaluation Methodology.} \JH{This paragraph will discuss the
+  evalutaion in general. Reporting relative speed-up OK, but citing
+  autoregressive latency by others and then measure speed up relative to that
+  is not OK, as well as citing and comparing to relative speed-ups of others.
+  Most papers report GPU latency, but it is not a rule. The speed should be
+  reported under multiple settings, best would be to report it as they do in
+  WNGT, i.e. latency and throughput (batching and no-batching), and both on CPU
+  and on GPU. Also, they should always say how many cores they used.}
+
+\JH{We could also have a table with autoregressive baselines reported by each
   study, and get some details on that.}
+
+
+\paragraph{Decoding Speed.} \JH{this is regarding the baseline decoding speeds
+  reported by NAT literature. This paragraph should look into WNGT 20 or 21 and
+  check the speeds of best AR results and compare to the autoregressive speeds
+  reported in the NAT literature. What do we find is, that the AR baselines in
+  NAT models are actually much slower. Often, which is another issue, the
+  decoding speeds are not reported at all.  }
+
+\paragraph{Translation Quality.} \JH{Using BLEU is fine, but we should not be
+  stuck on WMT14 with results of \citet{vaswani2017attention}, since they are
+  not really up to date. }
+
+\JH{perhaps add something about time complexity and how it is not constant?}
 
 \begin{table}
   \centering
