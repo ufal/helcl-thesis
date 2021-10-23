@@ -377,7 +377,7 @@ It is possible for the alignment to either skip a target position (as in the
 example above), or keep an unaligned position in the prediction sequence. In
 case of skipping the predictions, an empty token is aligned with the skipped
 position (so that $-\log p(y_t = \epsilon)$ is added to the loss). In case of
-skipping a target position, the negative log probability of the skipped target
+skipping a target position, the negative log-probability of the skipped target
 word is added to the loss, weighted by a hyperparameter $\delta$ which controls
 the cost of the skip-target operation.
 
