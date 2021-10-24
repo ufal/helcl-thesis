@@ -1,0 +1,59 @@
+SRC | TGT | AR BEAM 10 | NAR | NAR + LM BEAM 10
+
+
+|----------------------+---------------------------------------------------------------------------------------------|
+| Source               | Wir waren früher ein freundliches Land, wie kann es sein, dass wir nun kämpfen?             |
+| Reference            | We used to be one friendly country in the past, how did it happen that we are fighting now? |
+| \acs{ar}             | We used to be a friendly country, how can we fight now?                                     |
+| \acs{nar}            | We were a friendly country, how can it we are fighting now?                                 |
+| \acs{nar} + \acs{lm} | We were a friendly country, how can it be that we are fighting now?                         |
+|----------------------+---------------------------------------------------------------------------------------------|
+
+
+Ich war absolut sicher, dass mein kleiner Junge in dieser Hölle unmöglich überlebt haben konnte.
+I was absolutely sure that there was no way my little boy could have survived in this hell.
+I was absolutely sure that my little boy could not survive in this hell.
+I was absolutely sure that my little boy could survived in this hell hell.
+I was absolutely sure that my little boy could survive in this hell.
+
+
+Ein 78-jähriger Mann steht wegen des Überfahrens eines dreijährigen Mädchens auf einem Fußgängerüberweg in Fife vor Gericht.
+A 78-year-old man is to stand trial accused of running over a three-year-old girl on a pelican crossing in Fife.
+A 78-year-old man is in court for crossing a three-year-old girl on a pedestrian crossing in Fife.
+A 78-year-old man isold girl on a pedestrian in Fifeyear girl.
+A 78-year-old man is on a pedestrian crossing in Fife.
+
+
+Laut Hochrechnungen der Medaus würde sich der Verkehr im Park von Schloss Hohenfels damit verzehnfachen.
+According to higher estimates of the Medaus, the traffic in the Hohenfels castle park would increase ten-fold.
+According to estimates of the Medaus, traffic in the park of Hohenfels castle would increase tenfold.
+According Med traffic in the Hohenfel.
+According to the Med, traffic in the park of Hohenfels.
+
+
+Gerade ist ein Tweet von meinem Konto aus versendet worden, der nicht von mir autorisiert war.
+A tweet just went out from my account that was unauthorized.
+A Tweet has just been sent from my account, which was not authorized by me.
+Just aweet sent from my account was not authorized by.
+A tweet sent from my account was not authorized by.
+
+
+Auch die einheimischen Händler und Bauern reagieren: Nur wenige Kaufleute verlassen noch ihre Heimatorte, um Nachschub zu besorgen.
+Even local traders and farmers are reacting: Only a few business people are still leaving their home towns to replenish their supplies.
+Local traders and farmers are also reacting: few merchants are leaving their homes to get supplies.
+Local traders and farmers react: few merchant leave their to supply.
+Local traders and farmers: few merchants leave their home to get supply.
+
+
+Die Armee teilte zugleich mit, dass in den vergangenen 24 Stunden sieben Soldaten getötet worden seien.
+The army announced at the same time that over the past 24 hours, seven soldiers have been killed.
+The army also announced that seven soldiers have been killed over the past 24 hours.
+The army also announced that seven soldiers had killed killed in the last 24 24 hours.
+The army also announced that the seven soldiers had been killed in the last 24 hours.
+
+
+Seiner Ansicht nach könnten alle Mitglieder beider Vereine künftig wieder an einem Strang ziehen.
+In his opinion, all members of each club could come together again in the future.
+In his view, all members of both clubs could pull together again in the future.
+In believes that all members of both clubs could pull together future.
+He believes that all the members of both clubs could pull together.
