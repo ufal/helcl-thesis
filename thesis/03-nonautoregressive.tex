@@ -813,16 +813,109 @@ performance. However, the more rescoring steps is taken, the less decoding
 speed is gained. \JH{There should be a table with the decoding speeds, and
   there should be a figure showing the pareto-frontier.}
 
-\paragraph{Capturing Reordering.} \JH{Many papers claim that reordering is an
-  issue. While this might be true, the culprit is the multimodality problem, as
-  the reordering can be modeled within the self-attentive layers. Also, the
-  papers that propose methods to model the reordering better, evaluate their
-  method only on the end task (translation) and do not assess the actual
-  reordering ability. However, modeling reordering helps reducing the
-  multimodality. Anyway, if they claim it, they should measuring I guess.}
+\paragraph{Capturing Reordering.} Many papers referenced in this section claim
+that non-autoregressive models cannot capture reordering, which is seen as the
+main culprit of the low translation quality of the vanilla \acs{nat} model
+\citep{gu-kong-2021-fully, ran-etal-2021-guiding}.  While this might be true,
+we see the multimodality problem as the root cause.  We argue that reordering
+itself can be modeled by stacks of self-attentive layers, and if the space of
+possible target sentences is less multimodal, reordering is not a big problem
+for a \acs{nat} model, as illustrated in \citet{du2021orderagnostic}.
+
+However, the effect of reordering on data complexity is intuitive.
+\citet{zhou-etal-2020-understanding} view the amount of reordering in a dataset
+as a predictor of its complexity and show that knowledge distillation reduces
+the reordering score, leading to a simpler dataset, and thus reducing the
+multimodality.
+
+\paragraph{Translation Quality.} Weak \acl{ar} baseline models are a common
+element in the \acl{nar} literature. In most cases, the Transformer base model
+is used as baseline (and most of the hyperparameters are used for the \ac{nat}
+model as well), arguing that the similar numbers of parameters makes the
+baseline and the \ac{nat} model comparable. Having comparable model size is a
+valid point, but on the other hand, it allows for doubts whether the difference
+between large \ac{ar} and \ac{nar} model variants will be the same or not.
+
+Another point is that even a Transformer base model can be trained in a better
+way than as reported by \citet{vaswani2017attention} and as referenced by many
+\ac{nat} papers as their baseline, achieving a better translation quality
+\citep{popel-bojar-2018-training}.
+
+\paragraph{Decoding Speed.} Similarly to the previous paragraph, the baselines
+that appear in the literature are usually weak also in terms of decoding speed.
+For example, \citet{gu2017nonautoregressive} report latency of 408 ms for their
+\ac{ar} model (a Transformer base), measured on a single Nvidia P100 GPU,
+without batching. In contrast, our implementation achieves latency of around
+100 ms with the same model under the same hardware and hyper-parameter settings
+and no optimizations. Additionally, most papers cite baseline \ac{ar} latency
+of 607 ms, which is the result of \citet{gu2017nonautoregressive} with beam
+search, even though mostly there is no beam search decoding hapenning in the
+\ac{nar} models.
+
+% \JH{this is regarding the baseline decoding speeds
+%   reported by NAT literature. This paragraph should look into WNGT 20 or 21 and
+%   check the speeds of best AR results and compare to the autoregressive speeds
+%   reported in the NAT literature. What do we find is, that the AR baselines in
+%   NAT models are actually much slower. Often, which is another issue, the
+%   decoding speeds are not reported at all.  }
+
+% \JH{dalsi vec je ze setup GPU batch 1 hodne zvyhodnuje neautoregresivni modely}
 
 
-\paragraph{Evaluation Methodology.} \JH{This paragraph will discuss the
+\paragraph{Evaluation Methodology.} Another aspect we need to address is the
+evaluation methodology itself. Setting aside the fact that automatic quality
+evaluation using \acs{bleu} is the only reported metric, perhaps complemented
+by a cursory manual evaluation on a small sample, the evaluation of the speed
+improvements is inconsistent and sometimes the interpretation of the results is
+outright wrong.
+
+The main problem is that the actual decoding speed depends on lots of factors
+that are not easily reproducible. The most obvious factor is perhaps the
+hardware on which the decoding speed is measured, being followed by the
+implementation. The average decoding time per sentence is also influenced
+heavily by the batch size in batched decoding. Table \ref{tab:related:hardware}
+shows that these conditions vary wildly within the literature.
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{llcr}
+    \toprule
+    Publication & GPU type & CPU? & Batch \\
+    \midrule
+    \citet{gu2017nonautoregressive} & P100 & \xmark & 1 \\
+    \citet{lee-etal-2018-deterministic} & P100 or P40 & \cmark & 1  \\
+    \citet{kaiser2018fast} & GeForce GTX 1080 & \xmark  & 1, 64  \\
+    \citet{ghazvininejad-etal-2019-mask} & Possibly V100 & \xmark  & 10 \\
+    \citet{sun2019fast} & P100 & \xmark & 1    \\
+    \citet{wang-etal-2019-nonautoregressive} & P100 & \xmark & 1    \\
+    \citet{li-etal-2019-hint} & Possibly M40 & \xmark  & 1   \\
+    \citet{ma-etal-2019-flowseq} &  TITAN X & \xmark &  various    \\
+    \citet{ghazvininejad2020aligned} & Not reported & \xmark  & unknown  \\
+    \citet{shao2020minimizing} &  TITAN X & \xmark  & 1   \\
+    \citet{guo-etal-2020-jointly} & GTX 1080 Ti & \xmark & 1    \\
+    \citet{kasai2020nonautoregressive} & V100 & \xmark & 1    \\
+    \citet{qian2020glancing} & GTX 1080 Ti & \xmark  & 1?  \\
+    \citet{ran-etal-2021-guiding} & P40 & \xmark & 1   \\
+    \citet{gu-kong-2021-fully} & V100 & \cmark  & 1   \\
+    \citet{du2021orderagnostic} & Not reported & \xmark  & 1   \\
+    \citet{huang-etal-2021-nonautoregressive} & V100 & \xmark & 1   \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{The hardware setting and decoding batch size for measuring the
+    decoding speed as reported in a sample of papers described in this
+    section.}%
+  \label{tab:related:hardware}
+\end{table}
+
+A popular solution that takes into account the varying conditions for
+evaluating decoding speed is to report the relative speed-up measured between
+experiments within a single study. However, comparing these relative speed-up
+ratios between different papers disregards the actual decoding times.
+
+
+\JH{This paragraph will discuss the
   evalutaion in general. Reporting relative speed-up OK, but citing
   autoregressive latency by others and then measure speed up relative to that
   is not OK, as well as citing and comparing to relative speed-ups of others.
@@ -831,27 +924,26 @@ speed is gained. \JH{There should be a table with the decoding speeds, and
   WNGT, i.e. latency and throughput (batching and no-batching), and both on CPU
   and on GPU. Also, they should always say how many cores they used.}
 
-\JH{We could also have a table with autoregressive baselines reported by each
-  study, and get some details on that.}
+% \JH{We could also have a table with autoregressive baselines reported by each
+%   study, and get some details on that.}
+
+Our final observation is that measuring the latency on a single GPU without
+batching is a setup that favorizes \ac{nar} models, even though other scenarios
+should also be considered for real-world applications. In batched GPU decoding,
+the differences between \ac{ar} and \ac{nar} models fade, because the
+batch-parallelization of \ac{ar} models makes up for the time-parallelization
+of \ac{nar} models. On the other hand, in an online decoding scenario on a CPU,
+there is little parallelization possible, so the advantage of \ac{nar} models
+is also diminished.
 
 
-\paragraph{Decoding Speed.} \JH{this is regarding the baseline decoding speeds
-  reported by NAT literature. This paragraph should look into WNGT 20 or 21 and
-  check the speeds of best AR results and compare to the autoregressive speeds
-  reported in the NAT literature. What do we find is, that the AR baselines in
-  NAT models are actually much slower. Often, which is another issue, the
-  decoding speeds are not reported at all.  }
-
-\paragraph{Translation Quality.} \JH{Using BLEU is fine, but we should not be
-  stuck on WMT14 with results of \citet{vaswani2017attention}, since they are
-  not really up to date. }
 
 \JH{perhaps add something about time complexity and how it is not constant?}
 
 \begin{table}
   \centering
 
-  \begin{tabular}{lrcc}
+  \begin{tabular}{l>{\ignorecolumn}r@{}cc}
     \toprule
     Method & Steps & En $\rightarrow$ De & De $\rightarrow$ En \\
     \midrule
@@ -868,8 +960,8 @@ speed is gained. \JH{There should be a table with the decoding speeds, and
     \quad \acs{lt}, top-100 rescoring & 101 & 22.50 & -- \\
 
     \citet{ghazvininejad-etal-2019-mask} & & \\
-    \quad Base \acs{cmlm} with Mask-Predict, 1 iteration & 1 & 18.05 & 21.83 \\
-    \quad Base \acs{cmlm} with Mask-Predict, 10 iterations & 10 & 27.03 & 30.53 \\
+    \quad \acs{cmlm} + Mask-Predict, 1 iteration & 1 & 18.05 & 21.83 \\
+    \quad \acs{cmlm} + Mask-Predict, 10 iterations & 10 & 27.03 & 30.53 \\
 
     \citet{sun2019fast} & & & \\
     \quad \acs{nat} + \acs{dcrf}, no rescoring & 1 & 23.44 & 27.22 \\
@@ -887,7 +979,9 @@ speed is gained. \JH{There should be a table with the decoding speeds, and
     \quad FlowSeq-large & 1 & 23.72 & 28.39 \\
     \quad FlowSeq-large + top-30 \acs{npd} rescoring & 31 & 25.31 & 30.68 \\
 
-    \citet{ghazvininejad2020aligned} \acs{axe} \acs{cmlm} & 1 & 23.53 & 27.90 \\
+    \citet{shao2020minimizing}, BoN-Joint+FT & \JH{1} & 20.90 & 24.61 \\
+
+    \citet{ghazvininejad2020aligned}, \acs{axe} \acs{cmlm} & 1 & 23.53 & 27.90 \\
 
     \citet{guo-etal-2020-jointly} & & & \\
     \quad \acs{jmnat}, 4 iterations & 4 & 27.05 & 31.51 \\
@@ -895,27 +989,29 @@ speed is gained. \JH{There should be a table with the decoding speeds, and
 
     \citet{saharia-etal-2020-non} & & & \\
     \quad \acs{ctc} & 1 & 25.70 & 28.10 \\
-    \quad Imputer &  \JH{??} & 25.80 & 28.40 \\
+    %\quad Imputer  &  1 & 25.80 & 28.40 \\
+    \quad Imputer & 8 & 28.20 & 31.80 \\
 
-    \citet{kasai2020nonautoregressive} -- DisCo + Easy-First
+    \citet{kasai2020nonautoregressive}, DisCo + Easy-First
            & \JH{??} & 27.34 & 31.31 \\
 
-    \citet{sun2020em} -- \acs{emodd} & \JH{??} & 24.54 & 27.93 \\
+    \citet{sun2020em}, \acs{emodd} & \JH{??} & 24.54 & 27.93 \\
 
     \citet{qian2020glancing} & & & \\
     \quad \acs{glat} + \acs{ctc} & 1 & 26.39 & 29.54 \\
-    \quad \acs{glat} + \acs{ctc} + top-5 \acs{npd} rescoring & 6 & 26.55 & 31.02 \\
+    \quad \acs{glat} + \acs{ctc} + top-7 \acs{npd} rescoring & \JH{discuss} & 26.55 & 31.02 \\
 
     \citet{ran-etal-2021-guiding} & & &  \\
     \quad \acs{ar} reordering & N & 26.49 & 31.13  \\
     \quad \acs{nar} reordering & 1\footnotemark\JH{..} & 22.79 & 27.28 \\
 
-    \citet{gu-kong-2021-fully} \acs{nat} + \acs{ctc} + \acs{glat}
+    \citet{gu-kong-2021-fully}, \acs{nat} + \acs{ctc} + \acs{glat}
            & 1\JH{?} & 27.20 & 31.39 \\
 
-    \citet{du2021orderagnostic} -- \acs{cmlm} + \acs{oaxe}
+    \citet{du2021orderagnostic}, \acs{cmlm} + \acs{oaxe}
            & \JH{1?} & 26.10 & 30.20 \\
 
+    \citet{huang-etal-2021-nonautoregressive}, CTC + DSLP &\JH{?} & 27.02  &  31.61 \\
     \bottomrule
   \end{tabular}
   \caption{The results (in terms of \acs{bleu}) of the described models
@@ -924,12 +1020,15 @@ speed is gained. \JH{There should be a table with the decoding speeds, and
 \end{table}
 
 
+\JH{the step numbers in table \ref{tab:related:wmt14} are false and do not say
+  much anyway.}
+
 \begin{table}
   \centering
 
-  \begin{tabular}{ll}
+  \begin{tabular}{lll}
     \toprule
-
+    Method & Steps & \acs{bleu} \\
     \midrule
 
     \bottomrule

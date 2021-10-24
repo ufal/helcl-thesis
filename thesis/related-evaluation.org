@@ -1,26 +1,101 @@
 
+* What do they report in terms of speed
+
+  | Method                              | Variant                | HW                               |        Batch |                                    Latency [ms] |  Speedup |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | \citet{gu2017nonautoregressive}     | AR (beam 4)            | 1x P100 GPU                      |            1 |                                             607 |        1 |
+  |                                     | Ar greedy              |                                  |              |                                             408 |          |
+  |                                     | NAT+FT                 |                                  |              |                                              39 |     15.6 |
+  |                                     |                        |                                  |              |                                             257 |     2.36 |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | \citet{lee-etal-2018-deterministic} |                        | CPU (unknown number of cores)    |            1 |                                ? (tps reported) |          |
+  |                                     |                        | GPU (P100 or P40, unclear)       |              |                                                 |          |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | fully NAT                           | AR (base, beam?)       | 1x V100                          |            1 |                                             342 |          |
+  |                                     |                        | CPU 80 cores                     |              |                                             653 |          |
+  |                                     | NAT+CTC                | 1x V100                          |              |                                            17.3 |          |
+  |                                     |                        | CPU 80 cores                     |              |                                              84 |          |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | cmlm + mask-predict                 |                        | looks like 1x V100               |           10 |                       not reported, just a plot |          |
+  |                                     |                        |                                  |              |                      also exclude model loading |          |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | AXE                                 |                        | ?                                |            ? |                     just say same speed as cmlm |          |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | CTC (us)                            | AR (no beam)           | CPU (>1 cores)                   |            1 |                                            2247 |          |
+  |                                     |                        | GPU (not say which but gtx 1080) |              |                                            1200 |          |
+  |                                     | NAR                    | CPU                              |              |                                             386 |          |
+  |                                     |                        | GPU                              |              |                                             350 |          |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | LT                                  | LT+semhash             | 1x GPU GTX 1080                  |            1 |                                             105 |          |
+  |                                     |                        |                                  |           64 |                                               8 |          |
+  |                                     | AR (no beam)           |                                  |            1 |                                             408 |          |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | nat-reg                             | AR                     | gu et al's                       |            1 |                                    607 (copied) |          |
+  |                                     |                        | P100 (at least the same type)    |              |                                                 |          |
+  |                                     | NAT-reg no rescore     |                                  |              |                                              22 |          |
+  |                                     | + rescore              |                                  |              |                                              40 |          |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | bag-of-ngrans                       | AR (beam)              | 1x GTX TITAN X                   |            1 |                0.2 on iwslt (report secs/batch) |          |
+  |                                     | BoN-Joint+FT           |                                  |              |                                   1.41 on iwslt |          |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | GLAT                                | AR                     | 1x 1080ti                        | (probably 1) |                             report only speedup |       1x |
+  |                                     | GLAT+NPD7              |                                  |              |                                                 |     7.9x |
+  |                                     | GLAT+CTC               |                                  |              |                                                 |    14.6x |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | Flwoseq                             | AR                     | 1x TITAN X                       |      varying |        plot, ~250 for b=1, down to ~25 for b>50 |          |
+  |                                     | Flowseq-large          |                                  |              |              ~275 for b=1, down to <10 for b>50 | up to 4x |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | Imputer                             | Imputer single step    | ?                                |            ? |                                                 |    18.6x |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | JM-NAT                              | AR                     | 1x 1080 ti                       |            1 |            607 (copied from different hardware) |          |
+  |                                     | NAT 4 iter             |                                  |              |                                              45 |          |
+  |                                     | NAT 10 iter            |                                  |              |                                             106 |          |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | hint-nat                            | AR                     | M40 for training but unclear     |    not given |                                             784 |          |
+  |                                     | nat+hints no rescoring |                                  |              |                                              26 |          |
+  |                                     | nat+hints, 9 cand      |                                  |              |                                              44 |          |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | reorder-nat                         | AR                     | P40                              |            1 | valset of iwslt ende, compare to god knows what |       1x |
+  |                                     | ar reordering          |                                  |              |                                                 |    5.96x |
+  |                                     | nar reordering         |                                  |              |                                                 |   16.11x |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | huang                               | AR                     | 1x V100                          |            1 |                                          326.80 |          |
+  |                                     | CTC+DSLP mixed train   |                                  |              |                                           22.06 |          |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | dcrf                                | AR beam 4              | 1x P100                          |            1 |                                             387 |          |
+  |                                     | nat+dcrf no rescoring  |                                  |              |                                              37 |          |
+  |                                     | nat+dcrf top-19        |                                  |              |                                              88 |          |
+  |-------------------------------------+------------------------+----------------------------------+--------------+-------------------------------------------------+----------|
+  | disco                               |                        | 1x V100                          |            1 |                                                 |          |
+
+
+
+
+
 * Evaluation methodologies in non-autoregressive papers
 
 
- | paper                                                       | CPU / GPU | batched decoding | report                                                            | notes                                                                                     |
- |-------------------------------------------------------------+-----------+------------------+-------------------------------------------------------------------+-------------------------------------------------------------------------------------------|
- | gu et al, non-autoreg                                       | GPU       | 1                | latency (avg over dataset), relative speedup                      |                                                                                           |
- | lee et al, deterministic                                    | both      | 1 ?              | tokens per second                                                 | "decoding efficiency is measured sentence-by-sentence"                                    |
- | fully NAT                                                   | both      |                  | speedup in comparison table, latency and speedup in their results | contains plot showing pareto frontier of BLEU/latency trade-off                           |
- | mask-predict (CMLM)                                         | GPU       | 10 sent.         | plot BLEU vs relative speedup, not really detailed                | both same implementation, AR use state caching (128.5s with, 210s without), NAR does not. |
- | AXE                                                         | dnr       | dnr              | they just say it is same speed as CMLM (their previous work)      |                                                                                           |
- | CTC (my)                                                    | both      | unclear :)       | do not compare speeds against others (gu and lee at the time)     |                                                                                           |
- | laNMT                                                       | GPU       | unclear          | avg latency incl std, relative speedup, compare rel. speedups     | they compare rel speedups local to a given publication; plot BLEU v. speedup tradeoff     |
- | latent transformer                                          | GPU       | 1 or 64          | latency (avg over dataset)                                        |                                                                                           |
- | NAT-REG nat with aux prediction (wang2019nonautoregressive) | GPU       | 1                | latency (avg over dataset), relative speedup,                     | copy times from different papers, some reproduction                                       |
- | bag-of-ngrams  shao2020minimizing                           | GPU       | unclear          | relative speedup, seconds-per-batch in one setting;               | compare relative speedups under different settings           (copy gu et al's 15,6x)      |
- | GLAT (qian et al 2008 glancing)                             | unclear   | unclear          | relative speedup,                                                 | no abs times; relative to numbers reported on different hardware                          |
- | flowSeq (ma et al)                                          | GPU       | varying          | latency plots                                                     | plot batch size vs latency, length vs latency                                             |
- | imputer/ctc (saharia et al)                                 | unclear   | unclear          | relative speedup                                                  |                                                                                           |
- | JM-NAT                                                      | GPU       | 1                | latency, relative speedup                                         | copy times from different papers, some reproduction                                       |
- | hint-NAT                                                    | GPU       | 1                | latency, relative speedup                                         | some measured on reproduction, some copied (but absolute times, speedup computed here)    |
- | reorder-NAT                                                 | GPU       | 1                | relative speedup, NO latency                                      |                                                                                           |
- |-------------------------------------------------------------+-----------+------------------+-------------------------------------------------------------------+-------------------------------------------------------------------------------------------|
+#+ATTR_LATEX: :booktabs
+ | paper                             | CPU / GPU | batched decoding | report                                                            | notes                                                                                                                                    |
+ |-----------------------------------+-----------+------------------+-------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------|
+ | gu et al, non-autoreg             | GPU       | 1                | latency (avg over dataset), relative speedup                      |                                                                                                                                          |
+ | lee et al, deterministic          | both      | 1 ?              | tokens per second                                                 | "decoding efficiency is measured sentence-by-sentence"                                                                                   |
+ | fully NAT                         | both      |                  | speedup in comparison table, latency and speedup in their results | contains plot showing pareto frontier of BLEU/latency trade-off                                                                          |
+ | mask-predict (CMLM)               | GPU       | 10 sent.         | plot BLEU vs relative speedup, not really detailed                | both same implementation, AR use state caching (128.5s with, 210s without), NAR does not; exclude model loading                          |
+ | AXE                               | dnr       | dnr              | they just say it is same speed as CMLM (their previous work)      |                                                                                                                                          |
+ | CTC (my)                          | both      | unclear :)       | do not compare speeds against others (gu and lee at the time)     |                                                                                                                                          |
+ | laNMT                             | GPU       | unclear          | avg latency incl std, relative speedup, compare rel. speedups     | they compare rel speedups local to a given publication; plot BLEU v. speedup tradeoff                                                    |
+ | latent transformer                | GPU       | 1 or 64          | latency (avg over dataset)                                        |                                                                                                                                          |
+ | NAT-REG nat with aux prediction   | GPU       | 1                | latency (avg over dataset), relative speedup,                     | copy times from different papers, some reproduction                                                                                      |
+ | bag-of-ngrams  shao2020minimizing | GPU       | 1 (sent-by-sent) | relative speedup, seconds-per-batch in one setting;               | compare relative speedups under different settings (copy gu et al's 15,6x; copmare lee's speedup that they compute out of tokens/second) |
+ | GLAT (qian et al 2008 glancing)   | GPU       | unclear          | relative speedup,                                                 | no abs times; relative to numbers reported on different hardware                                                                         |
+ | flowSeq (ma et al)                | GPU       | varying          | latency plots                                                     | plot batch size vs latency, length vs latency                                                                                            |
+ | imputer/ctc (saharia et al)       | unclear   | unclear          | relative speedup                                                  |                                                                                                                                          |
+ | JM-NAT                            | GPU       | 1                | latency, relative speedup                                         | copy times from different papers, some reproduction                                                                                      |
+ | hint-NAT                          | GPU       | 1                | latency, relative speedup                                         | some measured on reproduction, some copied (but absolute times, speedups compared to their baselines)                                    |
+ | reorder-NAT                       | GPU       | 1                | relative speedup, NO latency                                      |                                                                                                                                          |
+ | huang                             | GPU       | 1                | latency and relative speedup                                      |                                                                                                                                          |
+ |-----------------------------------+-----------+------------------+-------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------|
 
 
  ** Notes
