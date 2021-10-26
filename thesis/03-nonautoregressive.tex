@@ -3,22 +3,17 @@
 \label{chap:nat}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\JH{this chapter needs reorganization}
-
 The efficiency of \ac{mt} models is often crucial in real-world applications.
 Most commercial \ac{nmt} models are available through a cloud-based service,
 such as Microsoft Translator\footnote{\url{https://microsoft.com/translator/}}
-or Google Translate\footnote{\url{https://translate.google.com/}}. Scaling
-cloud-based solutions for large user bases is simple but costly. But even with
-a large pool of computational resources, it is worthwhile to implement
+or Google Translate.\footnote{\url{https://translate.google.com/}} Scaling
+cloud-based solutions for large user bases is simple but costly. Even with a
+large pool of computational resources, it is worthwhile to implement
 optimizations which decrease the model latency and improve the user experience.
-
-% lokální modely maj tu výhodu, že to běží u mně, takže to jde pouyžít offline
-% a taky se nemusím bát o svoje soukromý data. ale jsou pomalý.
 
 Locally-deployed \ac{nmt} models provide a number of advantages over
 cloud-based solutions. First, the service does not rely on internet
-connection. Second, the data are not being sent to a 3rd party server, and
+connection. Second, the data is not being sent to a 3rd party server, and
 therefore it is suitable for translating private or confidential data.
 However, without optimization, running state-of-the-art translation models
 locally often requires specialized hardware, such as one or more GPU
@@ -30,20 +25,18 @@ submission to the \ac{wngt} shared task on efficiency,
 \citet{kim-etal-2019-research} successfully employed knowledge distillation,
 quantization, shortlisting \citep{jean-etal-2015-using} and a simpler recurrent
 unit design to bring the throughput of the translation model up to 3,600 words
-per second on a CPU, for a modest drop in the BLEU score. Following this
-submission, \citet{bogoychev-etal-2020-edinburghs} reported further
+per second on a CPU, for a modest drop in the translation quality. Following
+this submission, \citet{bogoychev-etal-2020-edinburghs} reported further
 improvements with attention head pruning \citep{voita-etal-2019-analyzing}. The
 work has been a part of the Bergamot research project, which aims to bring
 offline translation models into a browser.\footnote{https://browser.mt/}
 
-% vedle toho tu jsou neautoregresivní modely který se na to snaží jít jinak
-
 \Ac{nar} models present an alternative approach to model optimization, using a
 different architecture and decoding algorithm which has lower time complexity.
 In \ac{nmt}, a non-autoregressive decoding algorithm does not access the
-previously decoded outputs, imposing conditional independence on the output
-token probability distributions. This assumption allows parallelization of the
-decoding which can significantly reduce the latency of the translation
+previously decoded outputs, imposing conditional independence assumption on the
+output token probability distributions. This assumption allows parallelization
+of the decoding which can significantly reduce the latency of the translation
 system. On the other hand, it also presents a challenge to the language model,
 which usually leads to poorer translation quality.
 
@@ -52,22 +45,25 @@ models for translation (\acs{nat}\glsunset{nat}) in the quest for faster
 translation models. We first analyze the \ac{nat} models alone and assess the
 necessary techniques needed to match the quality of \ac{ar} models.  Then, we
 adapt the optimizations successfully used in \ac{ar} models for \ac{nar} models
-and evaluate the additional speed gains.
+and evaluate the additional speed gains. \JH{This is currently not in the
+  thesis. We'll have shortlisting with a fast implementation.}
 
 In this chapter, we present an overview of the current state of the research
-and the key concepts in non-autoregressive \ac{nmt}.  In Section
-\ref{sec:nat:principles}, we first describe the principles that most of the
-related literature has in common. Then, we provide a survey of notable
-approaches to \ac{nat}. We categorize the studied methods into alignment-based
-methods (Section \ref{sec:nat:alignment}), iterative (or semi-autoregressive)
-methods (Section \ref{sec:nat:semi}), methods using auxiliary objectives
-(Section \ref{sec:nat:aux}). \JH{Then there is the Misc category ((Section
-  \ref{sec:nat:misc}).} We conclude this chapter with a discussion of the
-limitations of the presented literature and \JH{and what?}
-% Naturally, some methods belong to more than one category, in which case we
-% point that out to the reader.
+and the key concepts in non-autoregressive \ac{nmt}. We begin with the
+description of the principles that most of the literature on this topic has in
+common in Section \ref{sec:nat:principles}. Then, we provide a survey of
+notable approaches to \ac{nat}. We categorize the studied methods into four
+groups, each of which is described in separate section. The methods most
+similar to our work are based on a relaxed alignment between the output and
+target sequences (Section \ref{sec:nat:alignment}). Methods that improve the
+training process using auxiliary objectives are described in Section
+\ref{sec:nat:aux}. Section \ref{sec:nat:semi} introduce approaches based on
+iterative decoding. Natually, the groups are not mutually exclusive and there
+is an overlap. Relevant methods not falling clearly into any of the categories
+above are summarized in Section \ref{sec:nat:misc}.  We conclude this chapter
+with a discussion of the limitations of the presented literature, mostly
+concerning the evaluation methodology.
 
-\JH{state difference between semi-autoregressive and iterative}
 
 % ------------------------------------------------------------------------------
 \section{Non-Autoregressive Models}%
@@ -83,9 +79,10 @@ in this chapter -- using latent variables, and iterative decoding.
 
 % ------------------------------------------------------------------------------
 \paragraph{Conditional Independence.} The defining feature of a
-non-autoregressive model is the conditional independence of the output
-distributions across time steps. Recall Equation \ref{eq:output-distribution}
-which defines the output distribution for autoregressive models:
+non-autoregressive model is the assumption of conditional independence between
+the output distributions across time steps. Recall Equation
+\ref{eq:output-distribution} which defines the output distribution for
+autoregressive models:
 %
 \begin{equation*}
   p(y|x) = \prod_{t=1}^{T_y}p(y_t|y_{<t},x,\theta).
@@ -103,51 +100,18 @@ modeled as:
 \end{equation}
 
 Although technically possible, making the outputs in \acs{rnn}-based models
-conditionally independent does not reduce the decoding time because in
-\acsp{rnn}, each state depends on the value of the preceding state. However, in
-the Transformer model, the hidden states in one layer depend only on the states
-from the previous layer. This allows for parallelization on the layer level.
+conditionally independent does not reduce the time complexity because in
+\acsp{rnn}, the value of each hidden state depends on the value of the
+preceding state. However, in the Transformer model, hidden states in one layer
+depend only on the states from the previous layer. This allows for
+parallelization of the computation on the layer level.
 
-Since the outputs are conditionally independent, the Transformer decoder cannot
-work with the previously decoded outputs. In the following paragraphs, we
-discuss the necessary alterations to the Transformer architecture.  First, the
-decoder needs to know the sentence length. Second, we need to supply the
-decoder inputs. Third, the causal mask in the decoder self-attention is now
-unnecessary.
-
-% ------------------------------------------------------------------------------
-\paragraph{Target Length Estimation.} In a standard NMT model such as the
-Transformer or an \acs{rnn}-based model with attention, the length of the
-output sentence is modeled implicitly by using the special end-of-sentence
-(\eos{}) token. Equations \ref{eq:output-distribution} and
-\ref{eq:nat-output-distribution} work with the sentence length implicitly,
-assuming that the last token $y_{T_y}$ is the \eos{} token and that \eos{} does
-not appear among the previous tokens $y_{<T_y}$.
-
-The probability distribution in Equation \ref{eq:nat-output-distribution} can
-be factorized to express the estimation of the target sentence length
-explicitly, leaving out the \eos{} symbol from the mathematical model:
-\begin{equation}
-  p(y|x) = p_L(T_y|x, \theta) \cdot \prod_{t=1}^{T_y}p(y_t|x,\theta).
-  \label{eq:explicit-length}
-\end{equation}
-
-
-% When using Equation \ref{eq:output-distribution} to model probability
-% distribution over the set of all possible sentences, the probabilities assigned
-% to longer sentences are considerably lower than the probabilities of sentences
-% which are short. This follows from the multiplication of probabilities, which
-% are numbers between zero and one. \JH{další věc je že je ten search space
-%   exponenciálně roste -- This follows from the fact that the search space
-%   (i.e. the number of all possible sentences of length $T_y$) grows
-%   exponentially with $T_y$.}  \JH{odkazat spis na argmax nez na output
-%   distribution.} To diminish the negative influence of this property,
-% \citet{wu2016google} introduce length normalization to the beam search algorithm
-% (\JH{odkazat na eq. v intro do MT}). The normalization acts as a prior imposed
-% on the target sentence length distribution.
-
-% It is, however, possible to estimate the target length explicitly.
-% \JH{...}
+Since the outputs are conditionally independent, we cannot feed the previously
+decoded outputs into the Transformer decoder. In the following paragraphs, we
+discuss the necessary alterations to the Transformer architecture. We need to
+provide the decoder inputs and estimate the target length. The causal mask in
+the decoder self-attention is now unnecessary. We also address the main issue
+and the reason \ac{ar} models are still superior in modeling language.
 
 % ------------------------------------------------------------------------------
 \paragraph{Multimodality Problem.} In one of the first applications of a
@@ -160,8 +124,8 @@ multiple words which get a high probability. These words are the so called
 \emph{modes} of the distribution. In autoregressive models, once a word gets
 selected, other modes are ignored in the following time steps. However, a
 non-autoregressive model does not base the decisions on the preceding ones, so
-when multiple positions have multiple modes, the model has no way of knowing
-which modes have been selected on other positions.
+when multiple positions have multiple modes, the model has no means to
+coordinate the selection of modes across different time steps.
 
 % This issue is illustrated in Figure \ref{fig:multimodality-problem}.
 % \begin{figure}
@@ -190,18 +154,40 @@ A well-known example of the multimodality problem is the translation of the
 sentence ``thank you'' into German, which has two equally likely translations:
 ``vielen dank'' and ``danke schön.'' In this case, the pair of German tokens
 ``danke'' and ``vielen'' create the two modes on the first position, and the
-tokens ``dank'' and ``schön'' are modes on the second position. If an
-autoregressive model chooses to generate ``danke'' on the first position, the
-token ``dank'' on the second position will no longer be likely. However, when a
-non-autoregressive model assigns high probabilities to the correct
-translations, it also has to assign high probabilities to the other (incorrect)
-two combinations, ``danke dank'' and ``vielen schön''.
+tokens ``dank'' and ``schön'' are the modes on the second position. If an
+\acl{ar} model chooses to generate ``danke'' on the first position, the token
+``dank'' on the second position will no longer receive high probability by the
+model. However, when a \acl{nar} model assigns high probabilities to the
+correct translations, it also has to assign high probabilities to the other
+(incorrect) two combinations, ``danke dank'' and ``vielen schön''. \JH{Come up
+  with a different example.}
 
 % ------------------------------------------------------------------------------
-\paragraph{\Ac{nat} with Fertility Model.} Non-autoregressive Transformer
-decoder does not receive the previously decoded tokens on the input. A solution
-proposed by \citet{gu2017nonautoregressive} is to use a simple fertility model,
-which also serves as the explicit target length estimator.
+\paragraph{Target Length Estimation.} In a standard NMT model such as the
+Transformer or an \acs{rnn}-based model with attention, the length of the
+output sentence is modeled implicitly by using the special end-of-sentence
+(\eos{}) token. Equations \ref{eq:output-distribution} and
+\ref{eq:nat-output-distribution} work with the sentence length implicitly,
+assuming that the last token $y_{T_y}$ is the \eos{} token and that \eos{} does
+not appear among the previous tokens $y_{<T_y}$.
+
+The probability distribution in Equation \ref{eq:nat-output-distribution} can
+be factorized to express the estimation of the target sentence length
+explicitly: %leaving out the \eos{} symbol from the mathematical model:
+\begin{equation}
+  p(y|x, \theta) = p_L(T_y|x, \theta) \cdot \prod_{t=1}^{T_y}p(y_t|x,\theta).
+  \label{eq:explicit-length}
+\end{equation}
+
+The explicit target length estimation is a useful technique of moderating the
+multimodality problem. It also helps with the problem of supplying the inputs
+for the decoder, as seen in many of the approaches described here.
+
+% ------------------------------------------------------------------------------
+\paragraph{\Ac{nat} with Fertility Model.} \Acs{nar} Transformer decoder cannot
+receive the previously decoded tokens on the input. A solution proposed by
+\citet{gu2017nonautoregressive} is to use a simple fertility model, which also
+serves as the explicit target length estimator.
 
 Compared to the autoregressive Transformer model, the model has the following
 modifications. First, the inputs to the decoder are made up of the sequence of
@@ -212,33 +198,38 @@ states in both directions. Third, \emph{positional attention} is added to every
 decoder layer where the positional encoding is used as queries and keys, and
 the decoder states as values.
 
-In \citet{gu2017nonautoregressive}, the multimodal problem is addressed by
-introducing a latent fertility variables $f_1, \ldots, f_{T_x}$ sampled from a
-prior distribution. Each $f_i \in \mathbb{N}_0$ denotes the number of times to
-copy $x_i$ to the decoder input. The output probability is then conditioned on
-the value of the latent variable.
-% \begin{equation}
-%   p(y|x) = p_L(T_y|x, \theta) \cdot \prod_{t=1}^{T_y}p(y_t|x, z, \theta).
-% \end{equation}
-
-The training is done by combining two loss functions -- translation loss and
-fertility loss:
+In \citet{gu2017nonautoregressive}, the multimodality problem (and the length
+estimation) is addressed by introducing a latent fertility variables
+$F = f_1, \ldots, f_{T_x}$ sampled from a prior distribution. Each
+$f_i \in \mathbb{N}_0$ denotes the number of times to copy $x_i$ to the decoder
+input (summing up to the target length $T_y$). The output probability is then
+conditioned on the latent variable $F$, which is marginalized out:
+%
+\begin{equation}
+  p(y|x, \theta) = \sum_{F \in \mathcal{F}} p(F|x, \theta) \cdot p(y|x, F, \theta)
+\end{equation}
+%
+where the fertility model $p(F|x, \theta)$ and the translation model
+$p(y|x, F, \theta)$ can be trained jointly using a variational lower bound with
+a candidate distribution $q$:
 \begin{align}
-  \mathcal{L}(\theta)  & = \log p(y|x, \theta) \\
-                       & = log \sum_{F \in \mathcal{F}} p(F| x, \theta ) p(y | x, F, \theta) \\
-                       & \geq \mathbb{E}_{\bar{F} \sim q}
-                         \left(
-                         \sum_{t=1}^{T_y} \log p(y_t | x, \bar{F}, \theta)
-                         + \sum_{t=1}^{T_x} \log p(f_t | x, \theta)
-                         \right)
-                         + \mathcal{H}(q)
+  \begin{split}
+    \mathcal{L}(\theta)
+    & = \log p(y|x, \theta) = \log \sum_{F \in \mathcal{F}} p(F| x, \theta ) \cdot p(y | x, F, \theta) \\
+    & \geq \mathbb{E}_{F \sim q} \left(\sum_{t=1}^{T_y} \log p(y_t | x, F, \theta)
+      + \sum_{t=1}^{T_x} \log p(f_t | x, \theta) \right) + \mathcal{H}(q)
+  \end{split}
 \end{align}
 %
-where \JH{... describe the equation, or comment it out. Also, what is $\mathcal{H}$?}
+where $q$ is an external deterministic fertility model, and therefore
+$\mathcal{H}$ is a constant and the expectation is also deterministic. \JH{I
+  dont completely understand but assume that there is a single sample with
+  probability of 1, so you just minimize the inside of the big bracket and
+  ignore the rest.}
 %
-The fertility model depends on an external module and is not trained end to
-end. The authors fine-tune the trained model using reinforcement learning
-\citep{williams1992simple}.
+The fertility model depends on an external module which is not trained together
+with the model. The authors fine-tune the trained model using reinforcement
+learning \citep{williams1992simple}.
 
 During decoding, the marginalizing over all possible fertility values is
 intractable. Therefore, the authors experiment with three approximation methods
@@ -246,10 +237,10 @@ intractable. Therefore, the authors experiment with three approximation methods
 
 % ------------------------------------------------------------------------------
 \paragraph{Autoregressive Rescoring.} A usual technique in the \ac{nat}
-literature is to use some form of rescoring of the outputs of a \acl{nar} model
-by an \acl{ar} model. The nature of the Transformer model allows to score a
-sentence in a single step (as opposed to generating one), which means that the
-additional rescoring computation increases the decoding complexity only
+literature is to use some form of rescoring of the outputs of the \acl{nar}
+model by an \acl{ar} model. The nature of the Transformer model allows to score
+a sentence in a single step (as opposed to generating one), which means that
+the additional rescoring computation increases the decoding complexity only
 linearly with respect to the number of the candidate hypoteheses for rescoring.
 
 The choice of the rescoring candidates varies. \citet{gu2017nonautoregressive}
@@ -257,6 +248,10 @@ use \ac{npd} which first samples the decoder input sequences from the fertility
 distribution, compute the best candidate for each input, and then rescore the
 results using the \ac{ar} teacher model. A closely related method is \ac{lpd}
 which generates and scores sentences of different lengths.
+
+Note that in contrast to \ac{ar} models, the highest-scoring sequence in an
+\acs{nar} model can be found simply by taking the highest-scoring token in each
+step, because of the conditional independence assumption.
 
 % ------------------------------------------------------------------------------
 \paragraph{Knowledge Distillation.} To tackle the multimodality problem from
@@ -269,13 +264,14 @@ of the distribution modes.
 According to an ablation study published by \citet{gu-kong-2021-fully}, using
 knowledge distillation is a crucial element in training non-autoregressive
 translation models, regardless the actual method used.
+\citet{zhou-etal-2020-understanding} further study the effects of knowledge
+distillation strategies on the translation quality of \ac{nar} models.
 
 % ------------------------------------------------------------------------------
 \paragraph{Iterative Refinement.} Another attempt to introduce latent variables
-in a non-autoregressive model was proposed by
-\citet{lee-etal-2018-deterministic}.  Instead of modeling fertility, the
-authors introduce $L$ discrete sequential latent variables interpreted as
-stages of refinement:
+in a \acl{nar} model was proposed by \citet{lee-etal-2018-deterministic}.
+Instead of modeling fertility, the authors introduce $L$ discrete sequential
+latent variables interpreted as stages of refinement:
 %
 \begin{align}
   \begin{split}
@@ -293,10 +289,11 @@ Each summation in the equations above is computed over the whole space of
 possible sequences, and thus, it is intractable for the probablility $p(y|x)$
 to be caluculated exactly. To overcome this problem, the authors approximate
 the sums with only the element corresponding to the sequence with the largest
-probability, $\hat{y}_t = \argmax_{y_t}p(y_t|x)$.\footnote{Note that in
-  non-autoregressive model where the probability does not depend on previously
-  decoded outputs $y_{<t}$, getting the most probable tokens will also yield
-  the most probable sequence.}  Putting it together with the equations above
+probability, $\hat{y} = \argmax_{y}p(y|x)$.% \footnote{Note that in
+  % non-autoregressive model where the probability does not depend on previously
+  % decoded outputs $y_{<t}$, getting the most probable tokens will also yield
+  % the most probable sequence.}
+Putting it together with the equations above
 and moving to the logarithmic domain, we get:
 \begin{align}
   \begin{split}
@@ -309,7 +306,7 @@ and moving to the logarithmic domain, we get:
 \end{align}
 %where $Y^0 = X$ and $\hat{y}_t^{L+1} = y_t$.
 
-The initial sequence $\hat{y}_t^0$ is set to $x_{t'}$ where
+The tokens $\hat{y}_t^0$ in the initial sequence are set to $x_{t'}$ where
 $t' = (T_x / T_y) \cdot t$, i.e. the source sentence is either squished or
 stretched by copying or omitting some of the source words in order to fit the
 target sentence length. During training, the length of the reference sentence
@@ -319,7 +316,7 @@ are modeled with neural networks with shared parameters. In this way, the
 number of intermediate refinement steps remains flexible during the decoding.
 
 The latent variable model is trained by minimizing the log-likelihood of the
-eference sentence $y^*$ in each of the refinement steps:
+reference sentence $y^*$ in each of the refinement steps:
 \begin{equation}
   \mathcal{L}_{\text{LVM}}(\theta) = - \sum_{l=1}^{L+1} \left(
     \sum_{t=1}^{T_{y^*}} \log p(y_t^* | \hat{y}^{l-1}, x, \theta)
@@ -340,6 +337,7 @@ copied to its neighbor, or swapped with the neighbor.
 
 During training, the two loss functions are stochastically mixed using a
 hyperparameter $\alpha$, sampled from a Bernoulli distribution.
+
 
 % ------------------------------------------------------------------------------
 \section{Alignment-Based Methods}%
@@ -378,19 +376,18 @@ labels.
 \paragraph{Aligned Cross Entropy for \ac{nat}} One problem with using
 cross-entropy objective for training \ac{nat} models is that it heavily
 penalizes misaligned target words. If a correct word is generated at an
-incorrect position in the target sentence, the loss is the same as when the
-model generates a completely unrelated word. In autoregressive models, this
-problem is avoided with teacher forcing -- the model is provided with the
-preceding words from the reference sentence. Without teacher forcing, the
-alignment between the predicted distributions and the positions in the
+incorrect position in the target sentence, it does not have a positive effect
+on the loss, same as when a completely unrelated word is generated. In \acl{ar}
+models, this problem is avoided with teacher forcing -- the model is provided
+with the preceding words from the reference sentence. Without teacher forcing,
+the alignment between the predicted distributions and the positions in the
 reference sentence is too rigid. For example, consider the reference sentence
-``Thank you for your cooperation.'' In a non-autoregressive model, another
-translation ``Thanks for your cooperation'' receives the same training signal
-as a completely wrong translation. The difference is that on the second
-position, the autoregressive model knows that ``Thank'' was expected on the
-first position, so the next word ``for'' does not receive high probability.
-One way to address this problem is to consider the alignment as a latent
-variable.
+``Thank you for your cooperation.'' In a \acl{nar} model, another translation
+``Thanks for your cooperation'' receives the same training signal as a
+completely wrong translation. The difference is that on the second position,
+the autoregressive model knows that ``Thank'' was expected on the first
+position, so the next word ``for'' does not receive high probability.  One way
+to address this problem is to consider the alignment as a latent variable.
 
 \Acl{axe} \glsunset{axe} (\acs{axe}; \citealp{ghazvininejad2020aligned}) is an
 objective function that takes this problem into account. It uses a dynamic
@@ -402,15 +399,24 @@ the output. Either of the first two positions in the label sequence can be
 aligned to the first position in the output sequence, while the other label
 position remains unaligned.
 
-It is possible for the alignment to either skip a target position (as in the
-example above), or keep an unaligned position in the prediction sequence. In
-case of skipping the predictions, an empty token is aligned with the skipped
-position (so that $-\log p(y_t = \epsilon)$ is added to the loss). In case of
-skipping a target position, the negative log-probability of the skipped target
-word is added to the loss, weighted by a hyperparameter $\delta$ which controls
-the cost of the skip-target operation.
+The alignments considered in the \ac{axe} approach are monotonic (i.e.
+$a(i) \leq a(j)$ for every $i \leq j$, when defined), but the mapping does not
+have to be defined for each ground-truth position, as well as any position in
+the prediciton sequence is not required to be mapped to a reference position.
+In case of skipping a prediction, the model learns to output an empty token
+$\epsilon$ ($-\log p(y_t = \epsilon | x, \theta)$ is added to the loss).  When
+a position in the ground-truth sequence is skipped, the negative
+log-probability of the skipped token is added to the loss at the current
+prediction position, weighted by a hyperparameter $\delta$ which controls the
+cost of the skip-target operation.  The alignment with the minimum
+cross-entropy is chosen for computing the gradients and updating the model.
 
-Formally, ... \JH{doplnit}
+The authors use \aclp{cmlm} as the base architecutre (described later in
+Section \ref{sec:nat:semi}).  Since the empty tokens are discarded during
+decoding, the authors choose similar approach to
+\citet{libovicky-helcl-2018-end} and initialize the decoder input length with
+the source length multiplied by a factor of $\lambda$, which they estimate
+empirically from the dataset.
 
 In our experiments, we use the \ac{ctc} loss, which is similar to this
 approach. Instead of considering the alignment that yields the minimum
@@ -419,15 +425,13 @@ alignments. Unlike \ac{axe}, we only consider skipping the predictions, while
 not allowing to skip the target positions. We present the \ac{ctc}-based method
 in detail in Chapter \ref{chap:nar-nmt-ctc}.
 
-
 % -----------------------------------------------------------------------------
-% AXE, but extended to non-monotonic
-\paragraph{Order-Agnostic Cross-Entropy.} The alignment-based methods discussed
-in this section so far are considering only monotonic alignments, i.e. for
-every alignment $a$ the condition $a(i) \leq a(i + 1)$
-holds. \citet{du2021orderagnostic} design \ac{oaxe}, a new training objective
-which also permits non-monotonic alignments (see illustration in Figure
-\ref{fig:oaxe-example}).  \JH{continue}
+\paragraph{Order-Agnostic Cross-Entropy.} The alignment-based method discussed
+in the previous paragraphs considers only monotonic
+alignments. \citet{du2021orderagnostic} design \ac{oaxe}, a new training
+objective which also permits non-monotonic alignments (see illustration in
+Figure \ref{fig:oaxe-example}). Similarly to \ac{axe}, they select the ordering
+with minimum cross-entropy for gradient propagation.
 
 \begin{figure}
   \centering
@@ -439,13 +443,13 @@ which also permits non-monotonic alignments (see illustration in Figure
   \label{fig:oaxe-example}
 \end{figure}
 
-% -----------------------------------------------------------------------------
-\JH{relate the axe approach to bag-of-ngrams who also deal with misalignment}
-\paragraph{\JH{Batch of ngrams.}} \citet{shao2020minimizing} also address the
-misalignment issue. Instead of finding an appropriate alignment, they introduce
-a new bag-of-ngrams objective, which minimizes the difference between the
-\ac{nat} model output and the target sentence. \JH{tell me more!}
-
+The dynamic programming algorithm used in the \ac{ctc} and \ac{axe} methods is
+no longer suitable for non-monotonic alignments. Moreover, the search space is
+even larger than in the previous case as it is proportional to the factorial of
+the target length. The authors use the Hungarian algorithm
+\citep{kuhn1955hungarian} which finds a maximum bipartite matching in a
+polynomial time. They also incorporate heuristics and tweak the search
+algorithm to exclude invalid orderings or predictions.
 
 % ----------------------------------------------------------------------------
 \paragraph{Imputer.} Antoher variant of the alignment-based approach was
@@ -460,8 +464,8 @@ processes them with the Transformer layer stack.  The Imputer model proceeds in
 a fixed number $L$ of iterations. In each iteration, the model generates
 (``imputes'') $\ceil*{\frac{T_y}{L}}$ on some positions where $T_y$ is the
 output length. This procedure is similar to decoding from \aclp{mlm} described
-below \JH{check ref}. Additionally to the \ac{ctc} model, the input to the
-Imputer model is the embedding of the partially decoded sentence from the
+in Section \ref{sec:nat:semi}. Additionally to the \ac{ctc} model, the input to
+the Imputer model is the embedding of the partially decoded sentence from the
 previous iteration summed with the (upsampled) source sentence embeddings.
 
 The training of the Imputer model takes into account every partial output
@@ -470,87 +474,131 @@ can be comptued with a dynamic programming algorithm. \JH{more needed? or
   less?}
 
 
-
 % ------------------------------------------------------------------------------
-\section{Auxiliary Objective Methods}
+\section{Auxiliary Objective Methods}%
 \label{sec:nat:aux}
 % ------------------------------------------------------------------------------
 
+Auxiliary objectives can be viewed as a form of regularization of the training
+process. Unlike techniques that aim at improving the convergence speed, such as
+$L_2$ regularization or dropout, the objectives described here are designed to
+help \acl{nar} models cope with the conditional independence assumption in
+order to better model the target language.
 
+The following methods are based on including one or more auxiliary objectives
+into the training procedure. Unlike the methods in different sections which
+also use auxiliary objectives, none of these methods changes the decoding
+process, which is done by taking the highest-scoring token in each time step in
+parallel.
 
 % ------------------------------------------------------------------------------
-\paragraph{\Ac{nat} with auxiliary regularization.}
-\citet{wang-etal-2019-nonautoregressive} use regularization terms to penalize
-similarity of hidden states corresponding to dissimilar words(which battles
-repeated translations), and to express a reconstruction loss using an external
-translation model (in order to battle incomplete translation
-problem). \JH{NAT-REG}
+\paragraph{\Ac{nat} with Auxiliary Regularization.}
+\citet{wang-etal-2019-nonautoregressive} analyze the basic \ac{nat} model
+\citep{gu2017nonautoregressive} and identify two frequent translation errors --
+repeated and incomplete translation. For each of these symptoms, they design a
+special auxiliary objective to mitigate their effect.
+
+For the repeated translation problem, where the same token is generated
+multiple times in conseutive time steps, the authors propose to increase the
+dissimilarity of adjacent hidden states when different tokens should be
+decoded, tiyng the similarity of the target token embeddings to the similarity
+of the corresponding hidden states.
+
+The incomplete translation problem is a case of tokens missed out from the
+translation. To battle this problem, an reverse \ac{ar} translation model is
+used to reconstruct the source sentence back from the decoder output states.
+The loss of this backward translation model is again used as an auxiliary
+objective.
+
+In the final \acs{natreg} model, the two auxiliary losses are mixed in with the
+standard cross-entropy loss, using weight hyperparameters which are set
+empirically.
 
 % ------------------------------------------------------------------------------
-\paragraph{Hint-NAT.} \citet{li-etal-2019-hint} propose to regularize the
-training of the student \ac{nat} model using two types of signals (hints) from
-the \ac{ar} teacher. First, to bring the values of the decoder hidden states
-closer together the authors consider tying the teacher and student states with
-$L_1$ or $L_2$ distance, but argue that this straightforward approach
-destabilizes the student training process and fails. Instead, they use a weaker
-signal from the teacher model and define an auxiliary loss based on the cosine
-distances within the decoder hidden states. Second, they use the information
-from the teacher model cross-attention to guide the alignment learning in the
-student model. Again, this information is incorporated into the training as an
-auxiliary loss, based on the KL divergence between the teacher and student
-attention distributions.
+\paragraph{\Acs{hintnat}.} As mentioned in the introductory section of this
+chapter, knowledge distillation is used quite often in \ac{nat}
+research. \citet{li-etal-2019-hint} decide to use the \ac{ar} teacher model to
+provide signals (hints) to the training of the student model.
 
-\JH{Add equations for the auxiliary losses? Ich dont think so..} \JH{Unify
-  losses, it's either $J$ or $\mathcal{L}$}
-
-
+They propose to use two types of hints from the teacher model. First, to bring
+the values of the decoder hidden states closer together the authors consider
+tying the teacher and student states with $L_1$ or $L_2$ distance, but argue
+that this straightforward approach destabilizes the student training process
+and fails. Instead, they use a weaker signal from the teacher model and define
+an auxiliary loss based on the cosine distances within the decoder hidden
+states. Second, they use the information from the teacher model cross-attention
+to guide the alignment learning in the student model. Again, this information
+is incorporated into the training as an auxiliary loss, based on the KL
+divergence between the teacher and student attention distributions.  Again, the
+auxiliary losses are mixed using weighting hyperparameters along with
+the cross-entropy loss.
 
 % -----------------------------------------------------------------------------
-\paragraph{ReorderNAT.} \citet{ran-etal-2021-guiding} propose a modification to
-the orignal \ac{nat} model \citep{gu2017nonautoregressive}. They introduce an
-intermediate Transformer block to model the sentence in the source language
-after reordering for translation to the target language.
+\paragraph{\Acl{bon} Difference.} \citet{shao2020minimizing} address the
+issue of misalignment between the targets and the outputs. Instead of finding
+an appropriate alignment, they design a new \acf{bon}\glsunset{bon} objective,
+which minimizes the difference between the \ac{nat} model output and the target
+sentence.
 
-Formally, the translation model $p(y|x)$ is altered by including a latent
-variable $z$ which is marginalized out, similarly to the refinement process:
-%
-\begin{equation}
-  p(y|x) = \sum_{z} p(z|x) p(y|z,x)
-\end{equation}
-%
-where $p(z|x)$ is the reordering module, and $p(y|z,x)$ is a \ac{nar}
-Transformer decoder (i.e. without the causal mask) which receives the embedded
-sequence $z$ on the input. The authors experiment with both \ac{ar} and
-\ac{nar} variants of the reordering module, concluding that using a
-single-layer autoregressive Transformer decoder performs best while still
-retaining a speed improvement.
+The \ac{bon} objective is based on the $L_1$ distance between two sparse
+vectors representing the n-grams which are present in the reference sentence
+and are likely to be present in the translation (based on the output
+probabilities). As in the previous two cases, this objective is complemented by
+the cross-entropy objective. The authors also show that fine-tuning with the
+\ac{bon} objective alone is helpful.
 
-The reordering module is trained in supervised fashion using the
-\texttt{fast\_align} alignment tool \citep{dyer-etal-2013-simple}. The model is
-trained end to end by minimizing the sum of the reordering and decoder module
-losses.
+% -----------------------------------------------------------------------------
+\paragraph{Glancing Training.} \citet{qian-etal-2021-glancing} propose
+\acf{glat}\glsunset{glat}, a technique for training the \ac{nat} model
+similarly to \acp{cmlm}, but enabling decoding in a single pass instead of an
+iterative process.
+
+During training, the model first generates an intermediate output
+non-autoregressively. Then, a number of positions is masked according to a
+glancing sampling strategy, and the model is trained to predict the masked
+tokens on the selected positions. The sampling strategy randomly selects $S$
+positions, where $S$ is proportional to the number of errors in the
+intermediate prediction.
+
+The decoding is similar to the process proposed by
+\citet{gu2017nonautoregressive}, but instead of the fertility model, the target
+length prediction is done using an artificial token \texttt{LENGTH} and its
+representation to predict the target length (as in the \ac{cmlm} approach of
+\citealp{ghazvininejad-etal-2019-mask})
+
+Very recently, a \ac{glat} model appeared amongst the top-scoring models at the
+\acs{wmt} news translation shared task \citep{qian2021volctrans}. \JH{update
+  bib after WMT}
 
 
 % ------------------------------------------------------------------------------
-\section{Semi-Autoregressive and Iterative Methods}%
+\section{Iterative and Semi-Autoregressive Methods}%
 \label{sec:nat:semi}
 % ------------------------------------------------------------------------------
 
-\JH{some text here, about how there is a constant time of the transformer model
-  executions, and when the constant is one, some people call it fully NAT, and
-  when it is more than one (but constant wrt target length), then we call it
-  semi-autoregressive, or iterative, and that there is not much difference
-  between these two terms. Then a paragraph about the methods presented in this
-  section, that most of them are actually based on the ideas from
-  \citet{lee-etal-2018-deterministic}, and in turn on
-  \citet{ghazvininejad-etal-2019-mask}.}
+The common theme in all of the approaches described so far is that during
+inference, the underlying Transformer model is executed only once.  \Acl{ar}
+models, on the other hand, need $T_y$ executions to generate a sentence of
+$T_y$ tokens. This linear relationship follows from the conditional dependency.
 
+In this section, we look at methods that lie somewhere in between. In these
+approaches, the number of model executions is greater than one, but it is still
+constant with respect to the target length $T_y$. We call these approaches
+\emph{iterative}. We also include approaches which operate in a fraction of
+$T_y$ steps, even though the number of steps is no longer constant. We refer to
+these approaches as \emph{semi-autoregressive}.
+
+Many of the methods described here are based on the ideas of iterative
+refinement first introduced by \citet{lee-etal-2018-deterministic}, which we
+have already reviewed in the introductory section.
+
+% ------------------------------------------------------------------------------
 \paragraph{Iterative Decoding from Masked Language Models.} Recently,
 pre-trained \acp{mlm} such as BERT \citep{devlin-etal-2019-bert} have attracted
 attention from the translation research
-community. \citet{ghazvininejad-etal-2019-mask} introduce \acp{cmlm}, an
-extension to \acp{xlm} for multilingual applications, including \ac{mt}
-\citep{conneau-lample-2019-cross}.
+community. \citet{ghazvininejad-etal-2019-mask} introduce
+\acfp{cmlm}\glsunset{cmlm}, an extension to \acp{xlm} for multilingual
+applications, including \ac{mt} \citep{conneau-lample-2019-cross}.
 
 Conventional \acp{lm} estimate the probability of a word given the preceding
 words.  In contrast, \acp{mlm} are trained on sentences where a number of
@@ -602,6 +650,7 @@ In their generalized framework for sequence generation,
 \citet{mansimov2019generalized} experiment with other masking strategies, such
 as left-to-right, easy-first, or uniform.
 
+% ------------------------------------------------------------------------------
 \paragraph{SMART.} In their follow-up experiments,
 \citet{ghazvininejad-etal-2020-semiautoregressive} address the exposure bias
 issue in context of \acp{cmlm} (although they use the terms autoregressive and
@@ -619,29 +668,31 @@ propose to mix the ground-truth tokens with the model predictions. This
 approach is somewhat similar to scheduled sampling for \aclp{rnn}
 \citep{bengio2015scheduled}.
 
-\paragraph{DisCO.} \textbf{iterative, change to the attention and objective}
-\citep{kasai2020nonautoregressive} -- the authors extend the \ac{cmlm} model
-\citep{ghazvininejad-etal-2019-mask}. Instead of predicting only the tokens
-which are masked-out, the authors propose an architecture that is able for each
-position in the target sequence to predict a subset of the other tokens. They
-achieve this goal by adapting the attention module. First the self-attention
-does not attend to the same position in the previous layer. Second, to prevent
-information leakage between the same positions on different layers, the
-self-attention keys and values are decontextualized, meaning that instead of
-the hidden states from the previous layer, the decoder input embeddings are
-used.
+% ------------------------------------------------------------------------------
+\paragraph{DisCO.} %\textbf{iterative, change to the attention and objective}
+\citet{kasai2020nonautoregressive} extend the \ac{cmlm} model with a few
+additions. Instead of predicting only the masked tokens, the authors propose an
+architecture that is able to predict a subset of the \emph{other} tokens for
+each position in the target sequence. They achieve this goal by adapting the
+attention module. First the self-attention does not attend to the same position
+in the previous layer. Second, to prevent information leakage between the same
+positions on different layers, the self-attention keys and values are
+decontextualized, meaning that instead of the hidden states from the previous
+layer, the decoder input embeddings are used.
 
-\paragraph{JM-NAT} \textbf{iterative, auxiliary objective}
-\citep{guo-etal-2020-jointly} They mask some words in the encoder (as they do
-it in BERT) in each step to achieve a more robust representation in the
-encoder. They introduce an auxiliary loss for the encoder, for predicting the
-masked tokens. They do the same thing for the decoder, but they mask random
-n-grams instead of random tokens. Unlike encoder, they first randomly select
-the number n-grams to mask (to allow for iterative unmasking during
-decoding). They also use an auxiliary n-gram loss function which is tailored to
-help with the problem of repetitive tokens in the translation. They use
-mask-predict \citep{ghazvininejad-etal-2019-mask} for decoding.
+% ------------------------------------------------------------------------------
+\paragraph{JM-NAT} %\textbf{iterative, auxiliary objective}
+Following the practice from training the BERT model
+\citep{devlin-etal-2019-bert}, \citet{guo-etal-2020-jointly} mask source words
+in the encoder in each step to achieve a more robust encoder
+representation. They introduce an auxiliary loss in the encoder, for predicting
+the masked tokens.
 
+Instead of masking out random tokens in the decoder, the authors propose to
+mask whole random n-grams. They also use another auxiliary n-gram loss tailored
+to help with the problem of repetitive tokens in the translation. The
+mask-predict strategy \citep{ghazvininejad-etal-2019-mask} is employed during
+inference.
 
 % ------------------------------------------------------------------------------
 \paragraph{Semi-Autoregressive \acs{nmt}} One of the first attempts to bring
@@ -655,10 +706,10 @@ autoregressive fashion.
 As expected, the authors find that increasing $K$ leads to degraded translation
 quality, but brings improvements in terms of decoding speed.
 
-
+% ------------------------------------------------------------------------------
 \paragraph{Blockwise Parallel Decoding for Deep Autoregressive Models.}
-\citet{stern2018blockwise} propose a semi-autoregressive approach where chunks
-of the target sentence are generated in parallel.
+\citet{stern2018blockwise} propose a similar semi-autoregressive approach where
+chunks of the target sentence are generated in parallel.
 %
 They start with a greedy decoding from an autoregressive model, $p_1$, and
 introduce additional ``look-ahead'' models $p_2, \ldots p_k$. In time step $t$,
@@ -673,20 +724,21 @@ $1 \leq i \leq \hat{k}$ are all considered best by $p_1$. Third, the accepted
 $\hat{k}$ words are generated and the decoding process jumps to time step
 $t + \hat{k}$.
 
+% ------------------------------------------------------------------------------
 \paragraph{Insertion Transformer.} The Insertion Transformer
 \citep{stern-etal-2019-insertion} is an extension of the Transformer model
 which handles sequence generation in an arbitrary order. Instead of predicting
-tokens left-to-right, the model predicts a sequence of insertion operations in
-each step. An insertion operation specifies what tokens to insert, and where to
-insert them. In each steps, the insertion operations are generated in parallel
-and independently, thus we can include this approach in the semi-autoregressive
+tokens left-to-right, the model predicts sequences of insertion operations. An
+insertion operation specifies what tokens to insert, and where to insert
+them. In each step, the insertion operations are generated in parallel and
+independently. Thus, we can include this approach in the semi-autoregressive
 category. The authors experiment with decoding in a balanced binary-tree order,
 which can generate the output sequence in a logarithmic number of steps.
 
-An extension to the Insertion Transformer is
-KERMIT. \citep{chan-etal-2019-kermit} \JH{more about kermit}
+% An extension to the Insertion Transformer is
+% KERMIT. \citep{chan-etal-2019-kermit} \JH{more about kermit}
 
-
+% ------------------------------------------------------------------------------
 \paragraph{Levenshtein Transformer.} An interesting combination of the ideas
 introduced in Insertion Transformer and \acp{cmlm} is the \acl{levt}
 (\acs{levt}\glsunset{levt}; \citealp{gu-etal-2019-levenshtein}). This model
@@ -701,37 +753,59 @@ placeholder symbols are replaced with the selected tokens, resulting in a
 refined version of the input sentence.  Each of the three stages of a
 refinement iteration is performed non-autoregressively.
 
+% ------------------------------------------------------------------------------
+\paragraph{Latent Transformer.} \citet{kaiser2018fast} use discrete latent
+variables in a model called \acf{lt}\glsunset{lt}. The model has three
+components. First, the \emph{autoencoder} takes a sentence pair $(x, y)$ and
+encode the target sentence $y$ into a sequence of discrete latent variables
+$l$. Second, an \acl{ar} \emph{latent prediction} model, which predicts the
+sequence $l$ based on a source sentence $x$. Third, an \acl{nar}
+\emph{decoder}, used to generate $y$ given the source sentence $x$ and the
+hidden sequence $l$.
+
+The autoencoder is used for training in order to condense the longer target
+sequence $y$ into a shorter (usually 8 times) sequence $l$, which is used as an
+itermediate representation of $y$. Unlike perhaps more common autoencoders,
+this autoencoder uses discrete latent variables. The authors propose two
+methods (decomposed vector quantization and latent semantic hashing) for the
+discretization. A stack of convolutions with residual connections is selected
+as the autoencoder architecture. The latent predictor is a stack of Transformer
+layers, and the decoder consists of up-convolutions.
 
 
 % ------------------------------------------------------------------------------
-
-
-% ------------------------------------------------------------------------------
-\section{Fully NAT}%
+\section{Other Methods}%
 \label{sec:nat:misc}
 % ------------------------------------------------------------------------------
+
+\JH{say something at least as vague as the name of this category}
+
 
 % \paragraph{LaNMT} \citep{shu2020latent} -- latent-variable NAR NMT with
 % deterministic inference using a delta posterior \JH{to bych nechal na potom
 % nebo vyhodil}
 
-\paragraph{DCRF} \textbf{CRF decoding on top of vanilla NAT, not really NAT
-  (similar to CTC+beam)} \citet{sun2019fast} propose to use \ac{crf} instead of
-the argmax decoding from the \ac{nat} model, which allows the modeling of
-causal relations within the output sequence. Although this process is not
-\acl{ar} given the nature of the \ac{crf} decoding, the Transformer model needs
-to be run only once and does not need to take into account the tokens as they
-are being generated.
+% -----------------------------------------------------------------------------
+\paragraph{DCRF} %\textbf{CRF decoding on top of vanilla NAT, not really NAT
+                 %(similar to CTC+beam)}
+\citet{sun2019fast} propose to use \ac{crf} instead of the argmax decoding from
+the \ac{nat} model, which allows the modeling of causal relations within the
+output sequence. Although this process is not \acl{ar} given the nature of the
+\ac{crf} decoding, the Transformer model needs to be run only once and does not
+need to take into account the tokens as they are being generated.
 
-\paragraph{Flowseq} \textbf{latent variables} \citep{ma-etal-2019-flowseq} --
-NAR conditional sequence generator with generative flow. The authors use an
-intermediate latent variable $z$, but they argue that the prior distribution
-$p(z|x)$ needs to be complex to model all of the dependency relations. They
-propose to use generative flows \citep{rezende2015variational} for deriving the
-complex distribution from a simple prior using a series of invertible
-transformations. \JH{megacomplex paper}
+% -----------------------------------------------------------------------------
+\paragraph{Flowseq} % \textbf{latent variables}
+\citep{ma-etal-2019-flowseq} -- NAR conditional sequence generator with
+generative flow. The authors use an intermediate latent variable $z$, but they
+argue that the prior distribution $p(z|x)$ needs to be complex to model all of
+the dependency relations. They propose to use generative flows
+\citep{rezende2015variational} for deriving the complex distribution from a
+simple prior using a series of invertible transformations. \JH{megacomplex
+  paper}
 
-\paragraph{EM+ODD} \textbf{iterative knowledge distillation, fully NAT}
+% -----------------------------------------------------------------------------
+\paragraph{EM+ODD} % \textbf{iterative knowledge distillation, fully NAT}
 \citep{sun2020em} -- they start from the multimodality problem, and the common
 way of addressing it -- knowledge distillation using an autoregressive
 teacher. They iterate the knowledge distillation step. They alternate the
@@ -743,27 +817,33 @@ Additionally, the authors propose \acf{odd} which tackles the issue with
 repetitive oputput tokens while preserving the predicted output length and
 finds the optimal sequence without repetition.
 
+% -----------------------------------------------------------------------------
+\paragraph{ReorderNAT.} \citet{ran-etal-2021-guiding} propose a modification to
+the orignal \ac{nat} model \citep{gu2017nonautoregressive}. They introduce an
+intermediate Transformer block to model the sentence in the source language
+after reordering for translation to the target language.
 
-\paragraph{GLAT} \citep{qian2020glancing} -- \textbf{auxiliary objective, fully
-  NAT} The authors propose \acf{glat}, a technique for training the \ac{nat}
-model similarly to \acp{cmlm}, but enabling decoding in a single pass instead
-of an iterative process.
+Formally, the translation model $p(y|x)$ is altered by including a latent
+variable $z$ which is marginalized out, similarly to the refinement process:
+%
+\begin{equation}
+  p(y|x) = \sum_{z} p(z|x) p(y|z,x)
+\end{equation}
+%
+where $p(z|x)$ is the reordering module, and $p(y|z,x)$ is a \ac{nar}
+Transformer decoder (i.e. without the causal mask) which receives the embedded
+sequence $z$ on the input. The authors experiment with both \ac{ar} and
+\ac{nar} variants of the reordering module, concluding that using a
+single-layer autoregressive Transformer decoder performs best while still
+retaining a speed improvement.
 
-During training, the model first generates an intermediate output
-non-autoregressively. Then, a number of positions is masked according to a
-glancing sampling strategy, and the model is trained to predict the masked
-tokens on the selected positions. \JH{equations?} The sampling strategy
-randomly selects $S$ positions, where $S$ is proportional to the number of
-errors in the intermediate prediction.
+The reordering module is trained in supervised fashion using the
+\texttt{fast\_align} alignment tool \citep{dyer-etal-2013-simple}. The model is
+trained end to end by minimizing the sum of the reordering and decoder module
+losses.
 
-The decoding is similar to the process proposed by
-\citet{gu2017nonautoregressive}, but the target length prediction is done as in
-the \ac{cmlm} approach -- an artificial source token \texttt{LENGTH} is
-prepended to the source sentence, and the encoder representation at the first
-position is used to predict the target length.
-
-
-\paragraph{Layer-Wise Prediction with Deep Supervision.}  \textbf{fully NAT}
+% -----------------------------------------------------------------------------
+\paragraph{Layer-Wise Prediction with Deep Supervision.}  %\textbf{fully NAT}
 \JH{although looks like iterative with many shallow decoder steps} A recent
 approach by \citet{huang-etal-2021-nonautoregressive} uses grounding of the
 Transformer hidden states in all layers to the target sentence.  In every
@@ -777,24 +857,6 @@ to the target sequence. The objective function is extended to include the cross
 entropies of the layer-wise softmax predictions on all Transformer layers in
 the decoder stack.
 
-
-\paragraph{Latent Transformer.} \citet{kaiser2018fast} use discrete latent
-variables in a model called \acf{lt}\glsunset{lt}. The model has three
-components. First, the \emph{autoencoder} takes a sentence pair $(x, y)$ and
-encode the target sentence $y$ into a sequence of discrete latent variables
-$l$. Second, an \acl{ar} \emph{latent prediction} model, which predicts the
-sequence $l$ based on a source sentence $x$. Third, an \acs{nar}
-\emph{decoder}, used to generate $y$ given the source sentence $x$ and the
-hidden sequence $l$.
-
-The autoencoder is used for training in order to condense the longer target
-sequence $y$ into a shorter (usually 8 times) sequence $l$, which is used as an
-itermediate representation of $y$. Unlike perhaps more common autoencoders,
-this autoencoder uses discrete latent variables. The authors propose two
-methods (decomposed vector quantization and latent semantic hashing) for the
-discretization. A stack of convolutions with residucl connections is selected
-as the autoencoder architecture. The latent predictor is a stack of Transformer
-layers, and the decoder consists of up-convolutions.
 
 % ------------------------------------------------------------------------------
 \section{Discussion}%
@@ -895,7 +957,7 @@ shows that these conditions vary wildly within the literature.
     \citet{shao2020minimizing} &  TITAN X & \xmark  & 1   \\
     \citet{guo-etal-2020-jointly} & GTX 1080 Ti & \xmark & 1    \\
     \citet{kasai2020nonautoregressive} & V100 & \xmark & 1    \\
-    \citet{qian2020glancing} & GTX 1080 Ti & \xmark  & 1?  \\
+    \citet{qian-etal-2021-glancing} & GTX 1080 Ti & \xmark  & 1?  \\
     \citet{ran-etal-2021-guiding} & P40 & \xmark & 1   \\
     \citet{gu-kong-2021-fully} & V100 & \cmark  & 1   \\
     \citet{du2021orderagnostic} & Not reported & \xmark  & 1   \\
@@ -979,7 +1041,7 @@ is also diminished.
     \quad FlowSeq-large & 1 & 23.72 & 28.39 \\
     \quad FlowSeq-large + top-30 \acs{npd} rescoring & 31 & 25.31 & 30.68 \\
 
-    \citet{shao2020minimizing}, BoN-Joint+FT & \JH{1} & 20.90 & 24.61 \\
+    \citet{shao2020minimizing}, \acs{bon}-Joint+FT & \JH{1} & 20.90 & 24.61 \\
 
     \citet{ghazvininejad2020aligned}, \acs{axe} \acs{cmlm} & 1 & 23.53 & 27.90 \\
 
@@ -997,7 +1059,7 @@ is also diminished.
 
     \citet{sun2020em}, \acs{emodd} & \JH{??} & 24.54 & 27.93 \\
 
-    \citet{qian2020glancing} & & & \\
+    \citet{qian-etal-2021-glancing} & & & \\
     \quad \acs{glat} + \acs{ctc} & 1 & 26.39 & 29.54 \\
     \quad \acs{glat} + \acs{ctc} + top-7 \acs{npd} rescoring & \JH{discuss} & 26.55 & 31.02 \\
 

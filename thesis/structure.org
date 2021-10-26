@@ -71,61 +71,120 @@
 - describe BLEU, mention other metrics exist
 - say that human evaluation still main method, but expensive
 
-
-* NAR NMT
-  Main topic of the theis
-  Introdcution contains the description of main concepts and problems:
-  - neautoregresivita
-  - length estimation
-  - multimodality problem
-  - teacher forcing
-  - knowledge distillation
-
-  - survey of methods for non-autoregressive NMT.
-  - leave at the beginning, despite forward references
-
-  - Categorization of the methods:
-    - fully NAT (Gu, CTC, AXE, Hint-NAT, Reorder-NAT (w/nar RM))
-    - iterative (Lee, Imputer)
-    - alignment-based (CTC, AXE, Imputer)
-    - Auxiliary objective (Bag of ngrams, hint-nat, )
-    - semi-autoregressive
-    - shallow autoregressive ?
-    - insertion based
-    - masked language models
-
 * NAT
-   - efficiency of MT is important
+   - efficiency of MT is important in applications
    - local MT models have advantages
    - optimizations speed up the models
    - NAR models are an alternative
    - we analyze NAT models with the optimization techniques
    - structure of the chapter is as follows
 
-** Related work (to be renamed)
-   - the key concepts are:
-   - Conditional independence
-     - a defining feature of NAT models (+equations)
-     - RNNs can't do that, transformer can
-     - even transformer need to be changed
-   - Target length estimation
-     - eq 3.1 work with length implicitly using a special token
-     - we can factorize 3.1 to get the target lenght estimation
-     - ?
-   - Multimodality problem
-     - popisuje to gu
-     - more words with high prob - more modes
-     - vielen dank danke dank example
-   - Fertility model
-     - NAR transformer decoder does not have outputs on input
-     - gu copies encoder words to decoder using a fertility model
+** NAR models
+   - describes the main concepts and problems
+   - conditional independence
+     - RNN-based models cannot be NAR easily
+     - conditional independence means we cannot put the prefix on the input
+     - the decoder cannot get the usual inputs (decoded prefix)
+   - multimodality problem
+     - a probability distribution can have multiple modes
+     - well known example is danke shon vielen dank
+   - length estimation
+     - AR models use EOS symbol
+     - length can be factorized out from the joint distribution
+     - it is handy with multimodality problem and with creating inputs for
+       decoder
+   - NAT with fertility model (proposed by gu)
+     - there are modifications
+     - gu solves multimodality by latent fetility variables
+     - during decoding this is approximated by argmax, average, or NPD
+   - knowledge distillation
+     - tackles multimodality problem
+     - it is crucial for NAT models to work
+   - iterative refinement
+     - L latent variables
+     - initial sequence is stretched or squished
+     - trained by minimizing log-likelihood in every step
+     - also, use DAE objective
+     - train by mixing the two
 
+** Alignment-based methods
+   - AR use XENT loss, which is aligned one-to-one
+   - alignment maps positions between target and output, a(i)=i is AR-XENT
+   - we were the first to propose this, let's describe others
+   - AXE
+     - xent penalizes for misaligned words
+     - axe is an objective function that takes this into account
+     - alignments are monotonic and can skip
+     - cmlm is base arch, upsample source length
+     - we use ctc which is similar but sum
+   - OaXE
+     - axe can do only monotonic alignments
+     - dynamic algorithm here cannot be used
+   - Imputer
+     - another alignment aproach
+     - model architecture is typical for a NAT model
+     - training takes into account partial outputs potentially decoded and
+       minimizes lower bound
 
-   - sun2020em to strukturuje jako better training objectives, regularization,
-     complex structures, direct modeling with latent variables, and iterative
-     refinement.
+** Auxiliary objective methods
+   - aux objectives are regularizations
+   - here the methods use auxiliary objectives
+   - NAT-REG
+     - wang analyze and find two errors - repetitions and incomplete
+       translations
+     - for repetitions, they increase dissimilarity of neighboring states when
+       outputs are different
+     - for incompletes, they use reverse translation model
+     - objectives in final nat reg model are mixed-in with XENT
+   - Hint-NAT
+     - KD is used quite often
+     - propose two types of hints from the teacher model
+   - Bag-of-ngrams Difference
+     - address misalingment
+     - based on l1 distance
+   - Glancing training
+     - by qian
+     - first generate non-autoregressive output, then mask something and sample
+       what to unmask
+     - decoding as usual, length predict as cmlm
+     - won WMT
 
+** Semi-autoregressive and iterative methods
+   - those before do it in one step
+   - these are in between
+   - many are based on ideas of refinement
+   - CMLMs
+     - recently, mlms have attracted research
+     - lm estimate word prob given preceding words, mlms predict masked tokens
+     - cmlms originate in pretrained XLMs but here are differences
+     - target length estimation from an artificial token representation
+     - decoding by iterative masking and predicting in a constant number of
+       steps
+     - generalized frameword do different masking strategies
+   - SMART
+     - follow-up to CMLM for exposure bias
+     - recall exposure bias
+     - to tackle, they propose to mix-in grond-truth tokens with predictions
+   - Disco
+     - kasai adds few additions
+   - JM-nat
+     - guo mask also encoder source words
+     - mask also ngrams instead of tokens in decoder, battles repetition
+   - Semi-autoregressive
+     - attempt to best of both worlds
+     - the less AR the worse
+   - Blockwise parallel decoding
+     - by stern, similar to semi-autoregressive
+     - predict block, then verify
+   - Insertion transformer
+   - Levenshtein transformer
+   - Latent Transformer
+     - use discreet latent variables
+     - how it works..
 
+** Other methods
+
+** Discussion
 
 
 * NAR NMT with CTC
@@ -202,7 +261,6 @@
      - urcite nejaky learning curves se hodí
      - popsat jak jsem to trenoval.
 
-
 ** Results
    v tyhle sekci budou vysledky.
 
@@ -214,3 +272,13 @@
    - s kým porovnávat?
      - předchozí kapitola
      - zjistit přesnej setting (myslim že to byla batch size 1 ale nejsem si jist)
+
+
+   - výsledky časový v různých settinzích na tom milionu vět
+     - CPU batch 1, 36 CPU batch
+     - GPU batch 1, GPU batch
+
+   - čas pro různý počty CPU jader a pro různý batch size
+   - autoregresivní časy jakbysmet
+
+   - BLEU, chrf a COMET na WMT21 na referencích A, C a D
