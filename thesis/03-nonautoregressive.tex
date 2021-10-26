@@ -29,7 +29,7 @@ per second on a CPU, for a modest drop in the translation quality. Following
 this submission, \citet{bogoychev-etal-2020-edinburghs} reported further
 improvements with attention head pruning \citep{voita-etal-2019-analyzing}. The
 work has been a part of the Bergamot research project, which aims to bring
-offline translation models into a browser.\footnote{https://browser.mt/}
+offline translation models into a browser.\footnote{\url{https://browser.mt/}}
 
 \Ac{nar} models present an alternative approach to model optimization, using a
 different architecture and decoding algorithm which has lower time complexity.
@@ -553,7 +553,7 @@ the cross-entropy objective. The authors also show that fine-tuning with the
 similarly to \acp{cmlm}, but enabling decoding in a single pass instead of an
 iterative process.
 
-During training, the model first generates an intermediate output
+During training, the model first generates an intermediate output sentence
 non-autoregressively. Then, a number of positions is masked according to a
 glancing sampling strategy, and the model is trained to predict the masked
 tokens on the selected positions. The sampling strategy randomly selects $S$
@@ -873,7 +873,7 @@ has in common, as well as some issues regarding the evaluation and comparison
 to meaningful baselines.
 
 % -----------------------------------------------------------------------------
-\paragraph{Results.} Table \ref{tab:related-models} shows selected results of
+\paragraph{Results.} Table \ref{tab:related:wmt14} shows selected results of
 the described approaches measured on the \acs{wmt}~14 test set. From each
 paper, we select the best result in terms of \acs{bleu}, and a result of a
 purely \acl{nar} variant (i.e. without rescoring or additional iterations), if
@@ -885,80 +885,97 @@ decoding speed is gained. \JH{There should be a table with the decoding speeds,
   and there should be a figure showing the pareto-frontier. The thing is, no
   such graph would make much sense given the arguments presented below.}
 
+
 \begin{table}
   \centering
 
-  \begin{tabular}{l>{\ignorecolumn}r@{}cc}
+  \begin{adjustbox}{totalheight=\textheight-3\baselineskip}
+  \begin{tabular}{cl>{\ignorecolumn}r@{}cc}
     \toprule
-    Method & Steps & En $\rightarrow$ De & De $\rightarrow$ En \\
+    \multicolumn{2}{l}{Method}
+    & Steps & En $\rightarrow$ De & De $\rightarrow$ En \\
     \midrule
-    \citet{gu2017nonautoregressive} & & & \\
-    \quad \acs{nat} + FT & 1 & 17.69 & 21.47 \\
-    \quad \acs{nat} + FT + top-100 \acs{npd} rescoring & 101 & 19.17 & 23.20 \\
 
-    \citet{lee-etal-2018-deterministic} & & \\
-    \quad 1 iteration & 1 & 13.91 & 16.77 \\
-    \quad 10 iterations & 10 & 21.61 & 25.48 \\
+    & \citet{gu2017nonautoregressive} & & & \\
+    & \quad \acs{nat} + FT & 1 & 17.69 & 21.47 \\
+    & \quad \acs{nat} + FT + top-100 \acs{npd} rescoring & 101 & 19.17 & 23.20 \\
 
-    \citet{kaiser2018fast} & & \\
-    \quad \acs{lt}, no rescoring & 1 & 19.80 & -- \\
-    \quad \acs{lt}, top-100 rescoring & 101 & 22.50 & -- \\
+    & \citet{lee-etal-2018-deterministic} & & \\
+    & \quad 1 iteration & 1 & 13.91 & 16.77 \\
+    & \quad 10 iterations & 10 & 21.61 & 25.48 \\
 
-    \citet{ghazvininejad-etal-2019-mask} & & \\
-    \quad \acs{cmlm} + Mask-Predict, 1 iteration & 1 & 18.05 & 21.83 \\
-    \quad \acs{cmlm} + Mask-Predict, 10 iterations & 10 & 27.03 & 30.53 \\
+    \midrule
+    \multirow{6}{*}{\rotatebox{90}{Alignment}}
 
-    \citet{sun2019fast} & & & \\
-    \quad \acs{nat} + \acs{dcrf}, no rescoring & 1 & 23.44 & 27.22 \\
-    \quad \acs{nat} + \acs{dcrf}, top-19 rescoring & 20 & 26.80 & 30.04 \\
+    & \citet{ghazvininejad2020aligned}, \acs{axe} \acs{cmlm} & 1 & 23.53 & 27.90 \\
 
-    \citet{wang-etal-2019-nonautoregressive} & & & \\
-    \quad \acs{natreg}, no rescoring & 1 &  20.65 & 24.77 \\
-    \quad \acs{natreg}, top-9 rescoring & 10 & 20.65 & 24.77 \\
-
-    \citet{li-etal-2019-hint} & & & \\
-    \quad \acs{hintnat}, no rescoring & 1 & 21.11  & 25.24 \\
-    \quad \acs{hintnat}, top-9 rescoring & 10 & 25.20  & 29.52 \\
-
-    \citet{ma-etal-2019-flowseq} & & & \\
-    \quad FlowSeq-large & 1 & 23.72 & 28.39 \\
-    \quad FlowSeq-large + top-30 \acs{npd} rescoring & 31 & 25.31 & 30.68 \\
-
-    \citet{shao2020minimizing}, \acs{bon}-Joint+FT & \JH{1} & 20.90 & 24.61 \\
-
-    \citet{ghazvininejad2020aligned}, \acs{axe} \acs{cmlm} & 1 & 23.53 & 27.90 \\
-
-    \citet{guo-etal-2020-jointly} & & & \\
-    \quad \acs{jmnat}, 4 iterations & 4 & 27.05 & 31.51 \\
-    \quad \acs{jmnat}, 10 iterations & 10 & 27.69 & 32.24 \\
-
-    \citet{saharia-etal-2020-non} & & & \\
-    \quad \acs{ctc} & 1 & 25.70 & 28.10 \\
-    %\quad Imputer  &  1 & 25.80 & 28.40 \\
-    \quad Imputer & 8 & 28.20 & 31.80 \\
-
-    \citet{kasai2020nonautoregressive}, DisCo + Easy-First
-           & \JH{??} & 27.34 & 31.31 \\
-
-    \citet{sun2020em}, \acs{emodd} & \JH{??} & 24.54 & 27.93 \\
-
-    \citet{qian-etal-2021-glancing} & & & \\
-    \quad \acs{glat} + \acs{ctc} & 1 & 26.39 & 29.54 \\
-    \quad \acs{glat} + \acs{ctc} + top-7 \acs{npd} rescoring & \JH{discuss} & 26.55 & 31.02 \\
-
-    \citet{ran-etal-2021-guiding} & & &  \\
-    \quad \acs{ar} reordering & N & 26.49 & 31.13  \\
-    \quad \acs{nar} reordering & 1\footnotemark\JH{..} & 22.79 & 27.28 \\
-
-    \citet{gu-kong-2021-fully}, \acs{nat} + \acs{ctc} + \acs{glat}
-           & 1\JH{?} & 27.20 & 31.39 \\
-
-    \citet{du2021orderagnostic}, \acs{cmlm} + \acs{oaxe}
+    & \citet{du2021orderagnostic}, \acs{cmlm} + \acs{oaxe}
            & \JH{1?} & 26.10 & 30.20 \\
 
-    \citet{huang-etal-2021-nonautoregressive}, CTC + DSLP &\JH{?} & 27.02  &  31.61 \\
+    & \citet{saharia-etal-2020-non} & & & \\
+    & \quad \acs{ctc} & 1 & 25.70 & 28.10 \\
+    %& \quad Imputer  &  1 & 25.80 & 28.40 \\
+    & \quad Imputer & 8 & 28.20 & 31.80 \\
+
+    & \citet{gu-kong-2021-fully}, \acs{nat} + \acs{ctc} + \acs{glat}
+           & 1\JH{?} & 27.20 & 31.39 \\
+
+    \midrule
+    \multirow{10}{*}{\rotatebox{90}{Auxiliary Objectives}}
+
+    & \citet{wang-etal-2019-nonautoregressive} & & & \\
+    & \quad \acs{natreg}, no rescoring & 1 &  20.65 & 24.77 \\
+    & \quad \acs{natreg}, top-9 rescoring & 10 & 20.65 & 24.77 \\
+
+    & \citet{li-etal-2019-hint} & & & \\
+    & \quad \acs{hintnat}, no rescoring & 1 & 21.11  & 25.24 \\
+    & \quad \acs{hintnat}, top-9 rescoring & 10 & 25.20  & 29.52 \\
+
+    & \citet{shao2020minimizing}, \acs{bon}-Joint+FT & \JH{1} & 20.90 & 24.61 \\
+
+    & \citet{qian-etal-2021-glancing} & & & \\
+    & \quad \acs{glat} + \acs{ctc} & 1 & 26.39 & 29.54 \\
+    & \quad \acs{glat} + \acs{ctc} + top-7 \acs{npd} rescoring & \JH{discuss} & 26.55 & 31.02 \\
+
+    \midrule
+    \multirow{10}{*}{\rotatebox{90}{Iterative}}
+
+    & \citet{ghazvininejad-etal-2019-mask} & & \\
+    & \quad \acs{cmlm} + Mask-Predict, 1 iteration & 1 & 18.05 & 21.83 \\
+    & \quad \acs{cmlm} + Mask-Predict, 10 iterations & 10 & 27.03 & 30.53 \\
+
+    & \citet{kasai2020nonautoregressive}, DisCo + Easy-First
+           & \JH{??} & 27.34 & 31.31 \\
+
+    & \citet{guo-etal-2020-jointly} & & & \\
+    & \quad \acs{jmnat}, 4 iterations & 4 & 27.05 & 31.51 \\
+    & \quad \acs{jmnat}, 10 iterations & 10 & 27.69 & 32.24 \\
+
+    & \citet{kaiser2018fast} & & \\
+    & \quad \acs{lt}, no rescoring & 1 & 19.80 & -- \\
+    & \quad \acs{lt}, top-100 rescoring & 101 & 22.50 & -- \\
+
+    \midrule
+    \multirow{11}{*}{\rotatebox{90}{Other}}
+
+    & \citet{sun2019fast} & & & \\
+    & \quad \acs{nat} + \acs{dcrf}, no rescoring & 1 & 23.44 & 27.22 \\
+    & \quad \acs{nat} + \acs{dcrf}, top-19 rescoring & 20 & 26.80 & 30.04 \\
+
+    & \citet{ma-etal-2019-flowseq} & & & \\
+    & \quad FlowSeq-large & 1 & 23.72 & 28.39 \\
+    & \quad FlowSeq-large + top-30 \acs{npd} rescoring & 31 & 25.31 & 30.68 \\
+
+    & \citet{sun2020em}, \acs{emodd} & \JH{??} & 24.54 & 27.93 \\
+
+    & \citet{ran-etal-2021-guiding} & & &  \\
+    & \quad \acs{ar} reordering & N & 26.49 & 31.13  \\
+    & \quad \acs{nar} reordering & 1\footnotemark\JH{..} & 22.79 & 27.28 \\
+
+    & \citet{huang-etal-2021-nonautoregressive}, CTC + DSLP &\JH{?} & 27.02  &  31.61 \\
     \bottomrule
   \end{tabular}
+  \end{adjustbox}
   \caption{The results (in terms of \acs{bleu}) of the described models
     measured on the \acs{wmt}~14 test set, as reported by the authors.}%
   \label{tab:related:wmt14}
@@ -1094,22 +1111,22 @@ is also diminished.
 
 
 
-\JH{perhaps add something about time complexity and how it is not constant?}
+%\JH{perhaps add something about time complexity and how it is not constant?}
 
-\begin{table}
-  \centering
+% \begin{table}
+%   \centering
 
-  \begin{tabular}{lll}
-    \toprule
-    Method & Steps & \acs{bleu} \\
-    \midrule
+%   \begin{tabular}{lll}
+%     \toprule
+%     Method & Steps & \acs{bleu} \\
+%     \midrule
 
-    \bottomrule
-  \end{tabular}
+%     \bottomrule
+%   \end{tabular}
 
-  \caption{An overview of the \ac{nat} models in the literature.}%
-  \label{tab:related-models}
-\end{table}
+%   \caption{An overview of the \ac{nat} models in the literature.}%
+%   \label{tab:related-models}
+% \end{table}
 
 %%% Local Variables:
 %%% mode: latex
