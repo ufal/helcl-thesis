@@ -566,7 +566,7 @@ length prediction is done using an artificial token \texttt{LENGTH} and its
 representation to predict the target length (as in the \ac{cmlm} approach of
 \citealp{ghazvininejad-etal-2019-mask})
 
-Very recently, a \ac{glat} model appeared amongst the top-scoring models at the
+Very recently, a \ac{glat} model appeared among the top-scoring models at the
 \acs{wmt} news translation shared task \citep{qian2021volctrans}. \JH{update
   bib after WMT}
 
@@ -778,50 +778,55 @@ layers, and the decoder consists of up-convolutions.
 \label{sec:nat:misc}
 % ------------------------------------------------------------------------------
 
-\JH{say something at least as vague as the name of this category}
-
+In this section, we summarize the related work that does not fall clearly
+within any of the three categories from the sections above.
 
 % \paragraph{LaNMT} \citep{shu2020latent} -- latent-variable NAR NMT with
 % deterministic inference using a delta posterior \JH{to bych nechal na potom
 % nebo vyhodil}
 
 % -----------------------------------------------------------------------------
-\paragraph{DCRF} %\textbf{CRF decoding on top of vanilla NAT, not really NAT
-                 %(similar to CTC+beam)}
-\citet{sun2019fast} propose to use \ac{crf} instead of the argmax decoding from
-the \ac{nat} model, which allows the modeling of causal relations within the
-output sequence. Although this process is not \acl{ar} given the nature of the
-\ac{crf} decoding, the Transformer model needs to be run only once and does not
-need to take into account the tokens as they are being generated.
+\paragraph{DCRF.} %\textbf{CRF decoding on top of vanilla NAT, not really NAT
+% (similar to CTC+beam)}
+In the original \ac{nat} model, the generation of the output sentence is done
+by selecting the tokens with the highest probability in each time step. Instead
+of the argmax decoding, \citet{sun2019fast} propose to use \acp{crf}, which
+allows the modeling of causal relations within the output sequence. Although
+this process is not \acl{ar} given the nature of the \ac{crf} decoding, the
+Transformer model needs to be run only once and does not need to take into
+account the tokens as they are being generated.
+
+In Section \ref{sec:ctc:fluency} we present a similar idea based on a
+\ac{ctc}-based model, using rescoring with an n-gram \acl{lm}.
 
 % -----------------------------------------------------------------------------
-\paragraph{Flowseq} % \textbf{latent variables}
-\citep{ma-etal-2019-flowseq} -- NAR conditional sequence generator with
-generative flow. The authors use an intermediate latent variable $z$, but they
-argue that the prior distribution $p(z|x)$ needs to be complex to model all of
-the dependency relations. They propose to use generative flows
-\citep{rezende2015variational} for deriving the complex distribution from a
-simple prior using a series of invertible transformations. \JH{megacomplex
-  paper}
+\paragraph{Flowseq.} % \textbf{latent variables}
+\citet{ma-etal-2019-flowseq} propose to incorporate an intermediate latent
+variable $z$ into the model. The authors argue that the prior distribution
+$p(z|x)$ needs to be complex to model all dependency relations among the target
+tokens. They propose to use generative flow \citep{rezende2015variational} for
+deriving the complex distribution from a simple prior using a series of
+invertible transformations.
+% \JH{megacomplex paper}
 
 % -----------------------------------------------------------------------------
-\paragraph{EM+ODD} % \textbf{iterative knowledge distillation, fully NAT}
-\citep{sun2020em} -- they start from the multimodality problem, and the common
-way of addressing it -- knowledge distillation using an autoregressive
-teacher. They iterate the knowledge distillation step. They alternate the
-training of the \ac{ar} teacher model and the \ac{nar} student model, where the
-sellection of samples for the \ac{ar} training dataset is informed by the log
-likelihood as modeled by the \ac{nar} model.
+\paragraph{EM+ODD.} % \textbf{iterative knowledge distillation, fully NAT}
+The common way of adressing the multimodality problem in knowledge distillation
+using an \acl{ar} teacher. \citet{sun2020em} propose to iterate the knowledge
+distillation step. They alternate the training of the \ac{ar} teacher model and
+the \ac{nar} student model, where the selection of samples for the \ac{ar}
+training dataset is informed by the log-likelihood as modeled by the \ac{nar}
+model.
 
-Additionally, the authors propose \acf{odd} which tackles the issue with
-repetitive oputput tokens while preserving the predicted output length and
-finds the optimal sequence without repetition.
+Additionally, the authors propose \acf{odd} which tackles the issue of
+repetitive outputs while preserving the predicted output length and finds the
+optimal sequence without repetition.
 
 % -----------------------------------------------------------------------------
 \paragraph{ReorderNAT.} \citet{ran-etal-2021-guiding} propose a modification to
 the orignal \ac{nat} model \citep{gu2017nonautoregressive}. They introduce an
-intermediate Transformer block to model the sentence in the source language
-after reordering for translation to the target language.
+intermediate Transformer block to model reoredered source sentence for
+translation to the target language.
 
 Formally, the translation model $p(y|x)$ is altered by including a latent
 variable $z$ which is marginalized out, similarly to the refinement process:
@@ -835,7 +840,7 @@ Transformer decoder (i.e. without the causal mask) which receives the embedded
 sequence $z$ on the input. The authors experiment with both \ac{ar} and
 \ac{nar} variants of the reordering module, concluding that using a
 single-layer autoregressive Transformer decoder performs best while still
-retaining a speed improvement.
+retaining speed improvements.
 
 The reordering module is trained in supervised fashion using the
 \texttt{fast\_align} alignment tool \citep{dyer-etal-2013-simple}. The model is
@@ -844,18 +849,17 @@ losses.
 
 % -----------------------------------------------------------------------------
 \paragraph{Layer-Wise Prediction with Deep Supervision.}  %\textbf{fully NAT}
-\JH{although looks like iterative with many shallow decoder steps} A recent
-approach by \citet{huang-etal-2021-nonautoregressive} uses grounding of the
-Transformer hidden states in all layers to the target sentence.  In every
-decoder layer, the model generates the intermediate sequence from the hidden
-states using a linear projection and a softmax layer. The embeddings of the
-decoded tokens are added to the input to the next layer along with the hidden
-state values.
+A recent approach by \citet{huang-etal-2021-nonautoregressive} uses grounding
+of the Transformer hidden states in all layers to the target sentence.  In
+every decoder layer, the model generates the intermediate target sequence from
+the hidden states using a linear projection and a softmax layer. The embeddings
+of the decoded tokens are added to the input to the next layer along with the
+hidden state values.
 
 The deep supervision grounds the states of all layers, not just the last one,
-to the target sequence. The objective function is extended to include the cross
-entropies of the layer-wise softmax predictions on all Transformer layers in
-the decoder stack.
+to the ground-truth target sequence. The objective function is extended to
+include the cross entropies of the layer-wise softmax predictions on all
+Transformer layers in the decoder stack.
 
 
 % ------------------------------------------------------------------------------
@@ -865,142 +869,21 @@ the decoder stack.
 
 In the conclusion to this chapter, we take a high-level view on the approaches
 we have presented here. We point out a few aspects that most of the literature
-has in common, as well as some issues regarding evaluation and comparison to
-meaningful baselines.
+has in common, as well as some issues regarding the evaluation and comparison
+to meaningful baselines.
 
+% -----------------------------------------------------------------------------
 \paragraph{Results.} Table \ref{tab:related-models} shows selected results of
-the described approaches measured on the \acs{wmt}~14 test set. We can see that
-rescoring using an \acl{ar} teacher consistently helps the translation
-performance. However, the more rescoring steps is taken, the less decoding
-speed is gained. \JH{There should be a table with the decoding speeds, and
-  there should be a figure showing the pareto-frontier.}
+the described approaches measured on the \acs{wmt}~14 test set. From each
+paper, we select the best result in terms of \acs{bleu}, and a result of a
+purely \acl{nar} variant (i.e. without rescoring or additional iterations), if
+applicable.
 
-\paragraph{Capturing Reordering.} Many papers referenced in this section claim
-that non-autoregressive models cannot capture reordering, which is seen as the
-main culprit of the low translation quality of the vanilla \acs{nat} model
-\citep{gu-kong-2021-fully, ran-etal-2021-guiding}.  While this might be true,
-we see the multimodality problem as the root cause.  We argue that reordering
-itself can be modeled by stacks of self-attentive layers, and if the space of
-possible target sentences is less multimodal, reordering is not a big problem
-for a \acs{nat} model, as illustrated in \citet{du2021orderagnostic}.
-
-However, the effect of reordering on data complexity is intuitive.
-\citet{zhou-etal-2020-understanding} view the amount of reordering in a dataset
-as a predictor of its complexity and show that knowledge distillation reduces
-the reordering score, leading to a simpler dataset, and thus reducing the
-multimodality.
-
-\paragraph{Translation Quality.} Weak \acl{ar} baseline models are a common
-element in the \acl{nar} literature. In most cases, the Transformer base model
-is used as baseline (and most of the hyperparameters are used for the \ac{nat}
-model as well), arguing that the similar numbers of parameters makes the
-baseline and the \ac{nat} model comparable. Having comparable model size is a
-valid point, but on the other hand, it allows for doubts whether the difference
-between large \ac{ar} and \ac{nar} model variants will be the same or not.
-
-Another point is that even a Transformer base model can be trained in a better
-way than as reported by \citet{vaswani2017attention} and as referenced by many
-\ac{nat} papers as their baseline, achieving a better translation quality
-\citep{popel-bojar-2018-training}.
-
-\paragraph{Decoding Speed.} Similarly to the previous paragraph, the baselines
-that appear in the literature are usually weak also in terms of decoding speed.
-For example, \citet{gu2017nonautoregressive} report latency of 408 ms for their
-\ac{ar} model (a Transformer base), measured on a single Nvidia P100 GPU,
-without batching. In contrast, our implementation achieves latency of around
-100 ms with the same model under the same hardware and hyper-parameter settings
-and no optimizations. Additionally, most papers cite baseline \ac{ar} latency
-of 607 ms, which is the result of \citet{gu2017nonautoregressive} with beam
-search, even though mostly there is no beam search decoding hapenning in the
-\ac{nar} models.
-
-% \JH{this is regarding the baseline decoding speeds
-%   reported by NAT literature. This paragraph should look into WNGT 20 or 21 and
-%   check the speeds of best AR results and compare to the autoregressive speeds
-%   reported in the NAT literature. What do we find is, that the AR baselines in
-%   NAT models are actually much slower. Often, which is another issue, the
-%   decoding speeds are not reported at all.  }
-
-% \JH{dalsi vec je ze setup GPU batch 1 hodne zvyhodnuje neautoregresivni modely}
-
-
-\paragraph{Evaluation Methodology.} Another aspect we need to address is the
-evaluation methodology itself. Setting aside the fact that automatic quality
-evaluation using \acs{bleu} is the only reported metric, perhaps complemented
-by a cursory manual evaluation on a small sample, the evaluation of the speed
-improvements is inconsistent and sometimes the interpretation of the results is
-outright wrong.
-
-The main problem is that the actual decoding speed depends on lots of factors
-that are not easily reproducible. The most obvious factor is perhaps the
-hardware on which the decoding speed is measured, being followed by the
-implementation. The average decoding time per sentence is also influenced
-heavily by the batch size in batched decoding. Table \ref{tab:related:hardware}
-shows that these conditions vary wildly within the literature.
-
-\begin{table}
-  \centering
-
-  \begin{tabular}{llcr}
-    \toprule
-    Publication & GPU type & CPU? & Batch \\
-    \midrule
-    \citet{gu2017nonautoregressive} & P100 & \xmark & 1 \\
-    \citet{lee-etal-2018-deterministic} & P100 or P40 & \cmark & 1  \\
-    \citet{kaiser2018fast} & GeForce GTX 1080 & \xmark  & 1, 64  \\
-    \citet{ghazvininejad-etal-2019-mask} & Possibly V100 & \xmark  & 10 \\
-    \citet{sun2019fast} & P100 & \xmark & 1    \\
-    \citet{wang-etal-2019-nonautoregressive} & P100 & \xmark & 1    \\
-    \citet{li-etal-2019-hint} & Possibly M40 & \xmark  & 1   \\
-    \citet{ma-etal-2019-flowseq} &  TITAN X & \xmark &  various    \\
-    \citet{ghazvininejad2020aligned} & Not reported & \xmark  & unknown  \\
-    \citet{shao2020minimizing} &  TITAN X & \xmark  & 1   \\
-    \citet{guo-etal-2020-jointly} & GTX 1080 Ti & \xmark & 1    \\
-    \citet{kasai2020nonautoregressive} & V100 & \xmark & 1    \\
-    \citet{qian-etal-2021-glancing} & GTX 1080 Ti & \xmark  & 1?  \\
-    \citet{ran-etal-2021-guiding} & P40 & \xmark & 1   \\
-    \citet{gu-kong-2021-fully} & V100 & \cmark  & 1   \\
-    \citet{du2021orderagnostic} & Not reported & \xmark  & 1   \\
-    \citet{huang-etal-2021-nonautoregressive} & V100 & \xmark & 1   \\
-    \bottomrule
-  \end{tabular}
-
-  \caption{The hardware setting and decoding batch size for measuring the
-    decoding speed as reported in a sample of papers described in this
-    section.}%
-  \label{tab:related:hardware}
-\end{table}
-
-A popular solution that takes into account the varying conditions for
-evaluating decoding speed is to report the relative speed-up measured between
-experiments within a single study. However, comparing these relative speed-up
-ratios between different papers disregards the actual decoding times.
-
-
-\JH{This paragraph will discuss the
-  evalutaion in general. Reporting relative speed-up OK, but citing
-  autoregressive latency by others and then measure speed up relative to that
-  is not OK, as well as citing and comparing to relative speed-ups of others.
-  Most papers report GPU latency, but it is not a rule. The speed should be
-  reported under multiple settings, best would be to report it as they do in
-  WNGT, i.e. latency and throughput (batching and no-batching), and both on CPU
-  and on GPU. Also, they should always say how many cores they used.}
-
-% \JH{We could also have a table with autoregressive baselines reported by each
-%   study, and get some details on that.}
-
-Our final observation is that measuring the latency on a single GPU without
-batching is a setup that favorizes \ac{nar} models, even though other scenarios
-should also be considered for real-world applications. In batched GPU decoding,
-the differences between \ac{ar} and \ac{nar} models fade, because the
-batch-parallelization of \ac{ar} models makes up for the time-parallelization
-of \ac{nar} models. On the other hand, in an online decoding scenario on a CPU,
-there is little parallelization possible, so the advantage of \ac{nar} models
-is also diminished.
-
-
-
-\JH{perhaps add something about time complexity and how it is not constant?}
+We can see that rescoring using an \acl{ar} teacher consistently helps the
+translation performance. However, the more rescoring steps are taken, the less
+decoding speed is gained. \JH{There should be a table with the decoding speeds,
+  and there should be a figure showing the pareto-frontier. The thing is, no
+  such graph would make much sense given the arguments presented below.}
 
 \begin{table}
   \centering
@@ -1081,9 +964,137 @@ is also diminished.
   \label{tab:related:wmt14}
 \end{table}
 
+% -----------------------------------------------------------------------------
+\paragraph{Capturing Reordering.} Many papers referenced in this section claim
+that non-autoregressive models cannot capture reordering, which is seen as the
+main culprit of the low translation quality of the vanilla \acs{nat} model
+\citep{gu-kong-2021-fully, ran-etal-2021-guiding}.  While this might be true,
+we see the multimodality problem as the root cause.  We argue that reordering
+itself can be modeled by stacks of self-attentive layers, and if the space of
+possible target sentences is less multimodal, reordering is not a big problem
+for a \acs{nat} model, as illustrated in \citet{du2021orderagnostic}.
 
-\JH{the step numbers in table \ref{tab:related:wmt14} are false and do not say
-  much anyway.}
+However, the effect of reordering on data complexity is intuitive.
+\citet{zhou-etal-2020-understanding} view the amount of reordering in a dataset
+as a predictor of its complexity and show that knowledge distillation reduces
+the reordering score, leading to a simpler dataset, and thus reducing the
+multimodality.
+
+% -----------------------------------------------------------------------------
+\paragraph{Translation Quality.} Weak \acl{ar} baseline models are a common
+element in the \acl{nar} literature. In most cases, the Transformer base model
+is used as baseline (and most of the hyperparameters are used for the \ac{nat}
+model as well), arguing that the similar numbers of parameters makes the
+baseline and the \ac{nat} model comparable. Having comparable model size is a
+valid point, but on the other hand, it allows for doubts about scalability of
+the proposed approaches -- the difference between large \ac{ar} and \ac{nar}
+model variants might not be proportional.
+
+Another point is that even the Transformer base model can be trained in a
+better way than as reported by \citet{vaswani2017attention} and as referenced
+by many \ac{nat} papers as their baseline, achieving a better translation
+quality \citep{popel-bojar-2018-training}.
+
+% -----------------------------------------------------------------------------
+\paragraph{Decoding Speed.} Similarly to the previous paragraph, the baselines
+that appear in the literature are usually weak also in terms of decoding speed.
+For example, \citet{gu2017nonautoregressive} report latency of 408 ms for their
+\ac{ar} model (a Transformer base), measured on a single Nvidia P100 GPU,
+without batching. In contrast, our implementation achieves latency of around
+100 ms with the same model under the same hardware and hyperparameter settings
+and no optimizations. Additionally, most papers cite baseline \ac{ar} latency
+of 607 ms, which is the result of \citet{gu2017nonautoregressive} with beam
+search, even though mostly there is no beam search decoding hapenning in the
+\ac{nar} models.
+
+% \JH{this is regarding the baseline decoding speeds
+%   reported by NAT literature. This paragraph should look into WNGT 20 or 21 and
+%   check the speeds of best AR results and compare to the autoregressive speeds
+%   reported in the NAT literature. What do we find is, that the AR baselines in
+%   NAT models are actually much slower. Often, which is another issue, the
+%   decoding speeds are not reported at all.  }
+
+% \JH{dalsi vec je ze setup GPU batch 1 hodne zvyhodnuje neautoregresivni modely}
+
+
+% -----------------------------------------------------------------------------
+\paragraph{Evaluation Methodology.} Another aspect we need to address is the
+evaluation methodology itself. Setting aside the fact that automatic quality
+evaluation using \acs{bleu} is the only reported metric, perhaps complemented
+by a cursory manual evaluation on a small sample, the evaluation of the speed
+improvements is inconsistent and sometimes the interpretation of the results is
+outright wrong.
+
+The main problem is that the actual decoding speed depends on lots of factors
+that are not easily reproducible. The most obvious factor is perhaps the
+hardware on which the decoding speed is measured, being followed by the
+implementation. The average decoding time per sentence is also influenced
+heavily by the batch size in batched decoding. Table \ref{tab:related:hardware}
+shows that these conditions vary wildly within the literature.
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{llcr}
+    \toprule
+    Publication & GPU type & CPU? & Batch \\
+    \midrule
+    \citet{gu2017nonautoregressive} & P100 & \xmark & 1 \\
+    \citet{lee-etal-2018-deterministic} & P100 or P40 & \cmark & 1  \\
+    \citet{kaiser2018fast} & GeForce GTX 1080 & \xmark  & 1, 64  \\
+    \citet{ghazvininejad-etal-2019-mask} & Possibly V100 & \xmark  & 10 \\
+    \citet{sun2019fast} & P100 & \xmark & 1    \\
+    \citet{wang-etal-2019-nonautoregressive} & P100 & \xmark & 1    \\
+    \citet{li-etal-2019-hint} & Possibly M40 & \xmark  & 1   \\
+    \citet{ma-etal-2019-flowseq} &  TITAN X & \xmark &  various    \\
+    \citet{ghazvininejad2020aligned} & Not reported & \xmark  & unknown  \\
+    \citet{shao2020minimizing} &  TITAN X & \xmark  & 1   \\
+    \citet{guo-etal-2020-jointly} & GTX 1080 Ti & \xmark & 1    \\
+    \citet{kasai2020nonautoregressive} & V100 & \xmark & 1    \\
+    \citet{qian-etal-2021-glancing} & GTX 1080 Ti & \xmark  & 1?  \\
+    \citet{ran-etal-2021-guiding} & P40 & \xmark & 1   \\
+    \citet{gu-kong-2021-fully} & V100 & \cmark  & 1   \\
+    \citet{du2021orderagnostic} & Not reported & \xmark  & 1   \\
+    \citet{huang-etal-2021-nonautoregressive} & V100 & \xmark & 1   \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{The hardware setting and decoding batch size for measuring the
+    decoding speed as reported in a sample of papers described in this
+    section.}%
+  \label{tab:related:hardware}
+\end{table}
+
+A popular solution that takes into account the varying conditions for
+evaluating decoding speed is to report the relative speed-up measured between
+experiments within a single study. However, comparing these relative speed-up
+ratios between different papers disregards the actual decoding times.
+
+
+\JH{This paragraph will discuss the
+  evalutaion in general. Reporting relative speed-up OK, but citing
+  autoregressive latency by others and then measure speed up relative to that
+  is not OK, as well as citing and comparing to relative speed-ups of others.
+  Most papers report GPU latency, but it is not a rule. The speed should be
+  reported under multiple settings, best would be to report it as they do in
+  WNGT, i.e. latency and throughput (batching and no-batching), and both on CPU
+  and on GPU. Also, they should always say how many cores they used.}
+
+% \JH{We could also have a table with autoregressive baselines reported by each
+%   study, and get some details on that.}
+
+Our final observation is that measuring the latency on a single GPU without
+batching is a setup that favorizes \ac{nar} models, even though other scenarios
+should also be considered for real-world applications. In batched GPU decoding,
+the differences between \ac{ar} and \ac{nar} models fade, because the
+batch-parallelization of \ac{ar} models makes up for the time-parallelization
+of \ac{nar} models. On the other hand, in an online decoding scenario on a CPU,
+there is little parallelization possible, so the advantage of \ac{nar} models
+is also diminished.
+
+
+
+\JH{perhaps add something about time complexity and how it is not constant?}
 
 \begin{table}
   \centering
