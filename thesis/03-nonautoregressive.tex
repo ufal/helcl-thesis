@@ -1085,17 +1085,33 @@ shows that these conditions vary wildly within the literature.
 A popular solution that takes into account the varying conditions for
 evaluating decoding speed is to report the relative speed-up measured between
 experiments within a single study. However, comparing these relative speed-up
-ratios between different papers disregards the actual decoding times.
+ratios between different papers disregards the actual decoding times -- it is
+easier to achieve 20 times speed-up over a slow baseline than over a baseline
+which is faster.
 
+It is, however, challenging to find a way how to compare the contributions of
+different reserch groups objectively. One such effort is made by the organizers
+of the efficient translation task, now organized as a shared task on \acl{wmt}
+(\acs{wmt}\glsunset{wmt}, \citealp{heafield-etal-2020-findings,
+  heafield-etal-2021-findings}).\JH{update bib when ready}
 
-\JH{This paragraph will discuss the
-  evalutaion in general. Reporting relative speed-up OK, but citing
-  autoregressive latency by others and then measure speed up relative to that
-  is not OK, as well as citing and comparing to relative speed-ups of others.
-  Most papers report GPU latency, but it is not a rule. The speed should be
-  reported under multiple settings, best would be to report it as they do in
-  WNGT, i.e. latency and throughput (batching and no-batching), and both on CPU
-  and on GPU. Also, they should always say how many cores they used.}
+In the efficient translation task, the submissions are evaluated both in terms
+of translation quality and the decoding speed under various settings. All
+submissions are evaluated on the same hardware, hosted by Amazon Web Services.
+To amortize the effects of data and model loading, the decoding time is
+measured on a dataset which contains one million sentences. The speed is
+measured in five different scenarios: GPU latency (decoding without batching)
+and throughput (decoding with optimal batch size), latency and throughput on a
+single CPU, and throughput on a multi-core CPU.
+
+% \JH{This paragraph will discuss the
+%   evalutaion in general. Reporting relative speed-up OK, but citing
+%   autoregressive latency by others and then measure speed up relative to that
+%   is not OK, as well as citing and comparing to relative speed-ups of others.
+%   Most papers report GPU latency, but it is not a rule. The speed should be
+%   reported under multiple settings, best would be to report it as they do in
+%   WNGT, i.e. latency and throughput (batching and no-batching), and both on CPU
+%   and on GPU. Also, they should always say how many cores they used.}
 
 % \JH{We could also have a table with autoregressive baselines reported by each
 %   study, and get some details on that.}
