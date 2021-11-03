@@ -231,7 +231,7 @@
   This chapter describes the experiments I am doing now.
   Fair comparison.
 
-** Autoregressive Teacher Models
+** Autoregressive Txoeacher Models
    This section is based on the EN-DE models from UEDIN submission.
 
    - we use the models from UEDIN submission as strong autoregressive baselines
@@ -273,6 +273,10 @@
      - předchozí kapitola
      - zjistit přesnej setting (myslim že to byla batch size 1 ale nejsem si jist)
 
+   - ukázat weight averaging, říct že to moc nepomáhá
+
+   - COMET score je dost nízký - možná říct že humánní evaluace by těm NAT
+     modelům moc nefandila a že je možný že ujížděj na BLEU
 
    - výsledky časový v různých settinzích na tom milionu vět
      - CPU batch 1, 36 CPU batch
@@ -282,3 +286,5 @@
    - autoregresivní časy jakbysmet
 
    - BLEU, chrf a COMET na WMT21 na referencích A, C a D
+
+   - Taky mám AR base studenta

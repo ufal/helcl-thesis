@@ -334,11 +334,107 @@ of parameter updates.
 \label{sec:results}
 % ------------------------------------------------------------------------------
 
+Tables \ref{tab:wmt21-scores-ende} and \ref{tab:wmt21-scores-deen} show the
+results of automatic evaluation with \acs{bleu}, \acs{chrf}, and \acs{comet}
+scores on the \acs{wmt}~21 news translation test set. In the English
+$\rightarrow$ German direction, the test set consists of 1,002 sentences along
+with three different reference translations. In the German $\rightarrow$
+English directions, there are 1,000 sentences with two reference translations
+each. We measure multi-reference \acs{bleu} score using Sacrebleu
+\citep{post-2018-call}, computing confidence intervals with bootstrap
+resampling. We report the Sacrebleu signatures for English $\rightarrow$
+German%
+\footnote{En$\rightarrow$De: {\scriptsize
+    \texttt{nrefs:3|bs:1000|seed:12345|case:mixed|eff:no|tok:13a|smooth:exp|version:2.0.0}}}
+and German $\rightarrow$ English%
+\footnote{De$\rightarrow$En: {\scriptsize
+    \texttt{nrefs:2|bs:1000|seed:12345|case:mixed|eff:no|tok:13a|smooth:exp|version:2.0.0}}}
+directions. We use Sacrebleu to compute the \acs{chrf} score separately for
+each reference translation set, and we report the average.\footnote{\acs{chrf};
+  En$\leftrightarrow$De: {\scriptsize
+    \texttt{nrefs:1|case:mixed|eff:yes|nc:6|nw:0|space:no|version:2.0.0}}}
+Finally, the \acs{comet} scores are computed with \acs{comet} version
+\texttt{dd2298} (1.0.0rc9) using the \texttt{wmt20-comet-da} model.
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{lrrr@{}>{\small \enspace \textpm}l}
+    \toprule
+    Model & \acs{chrf} & \acs{comet} & \multicolumn{2}{c}{\acs{bleu}} \\
+    \midrule
+    Single greedy \acs{ar} \\
+    Large & 59.2 & 0.4110  & 50.5  & 1.3 \\
+    Base & 58.1 & 0.3881 & 47.9 & 1.3 \\
+    \addlinespace
+    Single beam \acs{ar} \\
+    Large & 58.8 & 0.4053 & 50.8 & 1.3  \\
+    Base & 57.9 & 0.3873 & 48.0 & 1.3 \\
+    \addlinespace
+    Ensemble beam \acs{ar} \\
+    Large & 59.5 & 0.4332 & 52.2 & 1.3 \\
+    \midrule
+    \Acl{nar} models \\
+    Large & 58.6 & 0.0909 & 47.4 & 1.1 \\
+    Base & 56.2 & -0.0914 & 41.4 & 1.1 \\
+    Small & 56.2 & -0.0957 & 41.7 & 1.1 \\
+    Micro & 57.2 & -0.0631 & 43.2 & 1.1 \\
+    Tiny & 53.6 & -0.3971 & 34.5 & 1.0  \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{Quantitative results of the English $\rightarrow$ German translation
+    models on the \acs{wmt}~21 test set using three different automatic
+    evalutation metrics.}%
+  \label{tab:wmt21-scores-ende}
+\end{table}
+
+
+
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{lrrr@{}>{\small \enspace \textpm}l}
+    \toprule
+    Model & \acs{chrf} & \acs{comet} & \multicolumn{2}{c}{\acs{bleu}} \\
+    \midrule
+    Single greedy \acs{ar} \\
+    Large & 61.9 & 0.5868 & 48.4 & 1.3 \\
+    Base & 61.0 & 0.5532 & 47.0 & 1.3 \\
+    \addlinespace
+    Single beam \acs{ar} \\
+    Large & 61.5 & 0.5885 & 49.2 & 1.2 \\
+    Base & 60.7 & 0.5535 & 47.4 & 1.3 \\
+    \addlinespace
+    Ensemble beam \acs{ar} \\
+    Large & 62.1 & 0.5954 & 50.6 & 1.3 \\
+    \midrule
+    \Acl{nar} models \\
+    Large & 61.6 &  0.3120 & 45.3 & 1.3 \\
+    Base  & 61.3 &  0.2706 & 44.9 & 1.2 \\
+    Small & 61.0 &  0.2194 & 43.9 & 1.2 \\
+    Micro & 59.6 &  0.1169 & 41.8 & 1.3 \\
+    Tiny  & 55.8 & -0.1800 & 34.2 & 1.3 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{Quantitative results of the German $\rightarrow$ English translation
+    models on the \acs{wmt}~21 test set using three different automatic
+    evalutation metrics.}%
+  \label{tab:wmt21-scores-deen}
+\end{table}
+
+
 Table \ref{tab:wmt14-bleu-scores} shows the \acs{bleu} scores measured on the
 \acs{wmt}~14 test set.\footnote{Sacrebleu tag: {\scriptsize
     \texttt{BLEU+case.mixed+lang.en-de+numrefs.1+smooth.exp+test.wmt14/full+tok.13a+version.1.5.1}}}
 We also show the scores reached after the first 300 thousand updates, to
 compare better with some of the results in the related work.
+
+
+
+
 
 \begin{table}
   \centering
@@ -363,9 +459,6 @@ compare better with some of the results in the related work.
     after 300k updates and at the end of the training.}
   \label{tab:wmt14-bleu-scores}
 \end{table}
-
-
-
 
 %%% Local Variables:
 %%% mode: latex

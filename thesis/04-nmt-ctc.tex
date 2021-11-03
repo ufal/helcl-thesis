@@ -86,20 +86,23 @@ loss is defined as the sum of cross-entropy losses of all of the output
 sequences equivalent to the given target sequence:
 %
 \begin{equation}
-  J_{\theta}^{\text{CTC}} = - \sum_{(x, y) \in D} \sum_{y' \sim y}  \log p(y' | x, \theta)
+  \mathcal{L}_{\text{CTC}}({\theta}) = - \sum_{(x, y) \in D} \sum_{y' \sim y}  \log p(y' | x, \theta)
   \label{eq:ctc-loss}
 \end{equation}
 %
-where $\sim$ denotes the equivalence relation.  \JH{$J_{\theta}$ should perhaps
-  be $J(\theta)$. Also, consider the $\sim$ sign.}
+where $\sim$ denotes the equivalence relation. % \JH{$J_{\theta}$ should perhaps
+%  be $J(\theta)$. Also, consider the $\sim$ sign.}
 
 The inner summation in Equation \ref{eq:ctc-loss} is computed over all possible
 sequences equivalent to the label sequence. For technical purposes, the label
 sequences are limited to a fixed length, which greatly reduces the number of
 acceptable hypotheses. However, the number of equivalent hypotheses of a given
 length still grows exponentially with the sequence length -- in \ac{ctc}, the
-fixed length is always set to be longer than the label sequence. \JH{confirm
-  the exponential claim}
+fixed length is always set to be longer than the label sequence.
+
+\JH{explain the difference with AXE -- this is sum over all, in contrast to
+  just taking the one with the minimum cross entropy. Also, we don't allow
+  skipping ground truth posiitons.}
 
 The summation over the large set of equivalent sequences can be
 implemented using dynamic programming. When both the length of the output and
