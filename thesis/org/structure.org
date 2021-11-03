@@ -266,17 +266,20 @@
 
    vysledkama se mysli:
    - bleu score na nějakým rozumným datasetu (wmt21) pro teachers a pro students.
+     - hotovo
+     - COMET score je dost nízký - možná říct že humánní evaluace by těm NAT
+       modelům moc nefandila a že je možný že ujížděj na BLEU
+     - BLEU, chrf a COMET na WMT21 na referencích A, C a D
+
    - bleu score na WMT14 (pro porovnani s predchozi kapitolou)
+     - hotovo
+     - ukázat weight averaging, říct že to moc nepomáhá
+     - to se přidá do table tab:wmt14-bleu-scores
 
    - časy v různých setupech, plus porovnání.
    - s kým porovnávat?
      - předchozí kapitola
      - zjistit přesnej setting (myslim že to byla batch size 1 ale nejsem si jist)
-
-   - ukázat weight averaging, říct že to moc nepomáhá
-
-   - COMET score je dost nízký - možná říct že humánní evaluace by těm NAT
-     modelům moc nefandila a že je možný že ujížděj na BLEU
 
    - výsledky časový v různých settinzích na tom milionu vět
      - CPU batch 1, 36 CPU batch
@@ -285,6 +288,5 @@
    - čas pro různý počty CPU jader a pro různý batch size
    - autoregresivní časy jakbysmet
 
-   - BLEU, chrf a COMET na WMT21 na referencích A, C a D
 
    - Taky mám AR base studenta

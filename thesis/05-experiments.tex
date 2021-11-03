@@ -356,6 +356,17 @@ each reference translation set, and we report the average.\footnote{\acs{chrf};
 Finally, the \acs{comet} scores are computed with \acs{comet} version
 \texttt{dd2298} (1.0.0rc9) using the \texttt{wmt20-comet-da} model.
 
+\JH{We observe... gaps everywhere, AR clearly better in translation. relatively
+  small gaps in ChrF scores, moderate gaps in bleu, large gaps in COMET which
+  could suggest that NAR systems will rank poorly in human evaluation even
+  though they achieve high BLEU scores.}
+
+\JH{We also see the same ranking of the NAR models, the larger student model,
+  the better, with the exception of the Micro En-De model, which is better than
+  the base model (this follows the situation during validation). In experiments
+  with tied embeddings, the micro model scored in the expected position between
+  the small and tiny models (todo: confirm this) }
+
 \begin{table}
   \centering
 
@@ -388,9 +399,6 @@ Finally, the \acs{comet} scores are computed with \acs{comet} version
     evalutation metrics.}%
   \label{tab:wmt21-scores-ende}
 \end{table}
-
-
-
 
 \begin{table}
   \centering
@@ -432,6 +440,10 @@ Table \ref{tab:wmt14-bleu-scores} shows the \acs{bleu} scores measured on the
 We also show the scores reached after the first 300 thousand updates, to
 compare better with some of the results in the related work.
 
+\JH{Unlike our previous study in Chapter \ref{chap:nar-nmt-ctc}, we found
+  checkpoint averaging does not have a significant effect on the translation
+  quality (in terms of BLEU), and that the effect is even lower for fully
+  converged models.}
 
 
 
@@ -456,7 +468,8 @@ compare better with some of the results in the related work.
   \end{tabular}
 
   \caption{The \acs{bleu} scores of the best models on the WMT~14 test set
-    after 300k updates and at the end of the training.}
+    after 300k updates and at the end of the training. \JH{Add scores with
+      checkpoint averaging, add one related work to compare.}}
   \label{tab:wmt14-bleu-scores}
 \end{table}
 
