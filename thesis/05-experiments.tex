@@ -334,6 +334,16 @@ of parameter updates.
 \label{sec:results}
 % ------------------------------------------------------------------------------
 
+In this section we analyze the results both in terms of translation quality
+(Subsection \ref{subsec:results:quality}) and decoding speed (Subsection
+\ref{subsec:results:time}).
+
+
+% ------------------------------------------------------------------------------
+\subsection{Translation Quality}%
+\label{subsec:results:quality}
+% ------------------------------------------------------------------------------
+
 Tables \ref{tab:wmt21-scores-ende} and \ref{tab:wmt21-scores-deen} show the
 results of automatic evaluation with \acs{bleu}, \acs{chrf}, and \acs{comet}
 scores on the \acs{wmt}~21 news translation test set. In the English
@@ -386,11 +396,16 @@ Finally, the \acs{comet} scores are computed with \acs{comet} version
     Large & 59.5 & 0.4332 & 52.2 & 1.3 \\
     \midrule
     \Acl{nar} models \\
-    Large & 58.6 & 0.0909 & 47.4 & 1.1 \\
-    Base & 56.2 & -0.0914 & 41.4 & 1.1 \\
-    Small & 56.2 & -0.0957 & 41.7 & 1.1 \\
-    Micro & 57.2 & -0.0631 & 43.2 & 1.1 \\
-    Tiny & 53.6 & -0.3971 & 34.5 & 1.0  \\
+    Large & 58.6 & 0.1485 & 47.8 & 1.2\\
+    Base & 56.3 & -0.0521 & 41.8 & 1.1\\
+    Small & 56.2 & -0.0752 & 41.9 & 1.1\\
+    Micro & 57.3 & -0.0083 & 43.5 & 1.1\\
+    Tiny & 53.6 & -0.3333 & 34.7 & 1.0\\
+    % Large & 58.6 & 0.0909 & 47.4 & 1.1 \\
+    % Base & 56.2 & -0.0914 & 41.4 & 1.1 \\
+    % Small & 56.2 & -0.0957 & 41.7 & 1.1 \\
+    % Micro & 57.2 & -0.0631 & 43.2 & 1.1 \\
+    % Tiny & 53.6 & -0.3971 & 34.5 & 1.0  \\
     \bottomrule
   \end{tabular}
 
@@ -419,11 +434,16 @@ Finally, the \acs{comet} scores are computed with \acs{comet} version
     Large & 62.1 & 0.5954 & 50.6 & 1.3 \\
     \midrule
     \Acl{nar} models \\
-    Large & 61.6 &  0.3120 & 45.3 & 1.3 \\
-    Base  & 61.3 &  0.2706 & 44.9 & 1.2 \\
-    Small & 61.0 &  0.2194 & 43.9 & 1.2 \\
-    Micro & 59.6 &  0.1169 & 41.8 & 1.3 \\
-    Tiny  & 55.8 & -0.1800 & 34.2 & 1.3 \\
+    Large & 61.6 & 0.3296 & 46.4 & 1.4\\
+    Base & 61.4 & 0.2957 & 45.8 & 1.3\\
+    Small & 61.0 & 0.2462 & 44.6 & 1.3\\
+    Micro & 59.6 & 0.1475 & 42.3 & 1.4\\
+    Tiny & 55.9 & -0.1558 & 34.4 & 1.3\\
+    % Large & 61.6 &  0.3120 & 45.3 & 1.3 \\
+    % Base  & 61.3 &  0.2706 & 44.9 & 1.2 \\
+    % Small & 61.0 &  0.2194 & 43.9 & 1.2 \\
+    % Micro & 59.6 &  0.1169 & 41.8 & 1.3 \\
+    % Tiny  & 55.8 & -0.1800 & 34.2 & 1.3 \\
     \bottomrule
   \end{tabular}
 
@@ -472,6 +492,98 @@ compare better with some of the results in the related work.
       checkpoint averaging, add one related work to compare.}}
   \label{tab:wmt14-bleu-scores}
 \end{table}
+
+% ------------------------------------------------------------------------------
+\subsection{Decoding Time}%
+\label{subsec:results:time}
+% ------------------------------------------------------------------------------
+
+In this section we analyze the decoding speed of the English $\rightarrow$
+German \ac{nar} models. We aim at recreating the evaluation conditions
+following the \acs{wmt}~21 shared task on efficiency
+\citep{heafield-etal-2021-findings}. We measure the decoding latency and
+throughput in different hardware environments.
+
+The decoding time is measured on a dataset containing one million sentences to
+minimize the effect of the model loading overhead.
+
+For measuring the CPU times, we use the same environment as the \acs{wmt}~21
+shared task organizers which is a dual-socket Intel Xeon Gold 6354 from Oracle
+Cloud, a 36-core CPU server. For GPU efficiency, we also use a Nvidia A100 GPU,
+albeit on a slightly different server architecture. \JH{TODO: For better
+  comparison, we also report the GPU decoding times on other GPU types.}
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{lrr}
+    \toprule
+    Model & 1 CPU Core & 36 CPU Cores \\
+    \midrule
+    \acs{ar} -- Large & & 9,626 \\
+    \acs{ar} -- Base & & \\
+    \midrule
+    \Acl{nar} models \\
+    Large & & 8,126 \\
+    Base  & & 2,880 \\
+    Small & & 1,890 \\
+    Micro & & 1,558 \\
+    Tiny  & &   673 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{}%
+  \label{tab:}
+\end{table}
+
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{l*{6}r}
+    \toprule
+    Model & $b=8$ & $b=16$ & $b=32$ & $b=64$ & $b=128$ & $b=256$ \\
+    \midrule
+    \acs{ar} -- Base \\
+    \acs{nar} -- Base \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{}%
+  \label{tab:}
+\end{table}
+
+
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{lrr}
+    \toprule
+    Model & GPU Latency -- P100 & GPU Latency -- A100 \\
+    \midrule
+    \acs{ar} -- Large & & \\
+    \acs{ar} -- Base & & \\
+    \midrule
+    \Acl{nar} models \\
+    Large & & \\
+    Base  & & \\
+    Small & & \\
+    Micro & & \\
+    Tiny  & & \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{}%
+  \label{tab:}
+\end{table}
+
+% ------------------------------------------------------------------------------
+\subsection{Discussion}%
+\label{subsec:results:discussion}
+% ------------------------------------------------------------------------------
+
+
 
 %%% Local Variables:
 %%% mode: latex

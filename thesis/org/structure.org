@@ -288,5 +288,8 @@
    - čas pro různý počty CPU jader a pro různý batch size
    - autoregresivní časy jakbysmet
 
+   - mam možnost zkusit srovnat různý GPU
 
    - Taky mám AR base studenta
+
+   - SHORTLIST SHORTLIST SHORTLIST
