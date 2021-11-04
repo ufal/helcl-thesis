@@ -3,42 +3,43 @@
 \label{chap:nat}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The efficiency of \ac{mt} models is often crucial in real-world applications.
-Most commercial \ac{nmt} models are available through a cloud-based service,
-such as Microsoft Translator\footnote{\url{https://microsoft.com/translator/}}
-or Google Translate.\footnote{\url{https://translate.google.com/}} Scaling
+In real-world applications of \ac{mt}, efficiency is often crucial.  Most
+commercial \ac{nmt} models are available through a cloud-based service, such as
+Microsoft Translator\footnote{\url{https://microsoft.com/translator/}} or
+Google Translate.\footnote{\url{https://translate.google.com/}} Scaling
 cloud-based solutions for large user bases is simple but costly. Even with a
 large pool of computational resources, it is worthwhile to implement
-optimizations which decrease the model latency and improve the user experience.
+optimizations which decrease model latency and improve user experience.
 
-Locally-deployed \ac{nmt} models provide a number of advantages over
+Locally deployed \ac{nmt} models provide a number of advantages over
 cloud-based solutions. First, the service does not rely on internet
-connection. Second, the data is not being sent to a 3rd party server, and
+connection. Second, the data is not being sent to a third party server, and
 therefore it is suitable for translating private or confidential data.
 However, without optimization, running state-of-the-art translation models
-locally often requires specialized hardware, such as one or more GPU
-cards. Otherwise, the time for translating a single sentence can easily reach
-more than a second on a standard CPU.
+locally often requires specialized hardware, such as one or more
+GPUs. Otherwise, the time to translate a single sentence can easily exceed one
+second on a standard CPU.
 
 Higher decoding speeds can be achieved by model optimization. In their 2019
 submission to the \ac{wngt} shared task on efficiency,
 \citet{kim-etal-2019-research} successfully employed knowledge distillation,
 quantization, shortlisting \citep{jean-etal-2015-using} and a simpler recurrent
-unit design to bring the throughput of the translation model up to 3,600 words
-per second on a CPU, for a modest drop in the translation quality. Following
-this submission, \citet{bogoychev-etal-2020-edinburghs} reported further
-improvements with attention head pruning \citep{voita-etal-2019-analyzing}. The
-work has been a part of the Bergamot research project, which aims to bring
-offline translation models into a browser.\footnote{\url{https://browser.mt/}}
+unit design to bring the throughput of a translation model up to 3,600 words
+per second on a CPU, with a modest drop in the translation quality. Following
+this work, \citet{bogoychev-etal-2020-edinburghs} reported further improvements
+with attention head pruning \citep{voita-etal-2019-analyzing}. Their work has
+been a part of the Bergamot research project, which aims to bring offline
+translation models into a browser.\footnote{\url{https://browser.mt/}}
 
-\Ac{nar} models present an alternative approach to model optimization, using a
-different architecture and decoding algorithm which has lower time complexity.
-In \ac{nmt}, a non-autoregressive decoding algorithm does not access the
-previously decoded outputs, imposing conditional independence assumption on the
-output token probability distributions. This assumption allows parallelization
-of the decoding which can significantly reduce the latency of the translation
-system. On the other hand, it also presents a challenge to the language model,
-which usually leads to poorer translation quality.
+\Ac{nar} models present an alternative approach to model optimization, using
+different architecture and a different decoding algorithm which has lower time
+complexity.  In \ac{nmt}, a non-autoregressive decoding algorithm does not
+access previously decoded outputs, imposing conditional independence
+assumption on the output token probability distributions. This assumption
+allows to parallelize of the decoding, which can significantly reduce the
+latency of the translation system. On the other hand, it also presents a
+challenge to the language model, which usually leads to poorer translation
+quality.
 
 The research presented in this thesis is focused on the usefulness of \ac{nar}
 models for translation (\acs{nat}\glsunset{nat}) in the quest for faster
@@ -46,23 +47,26 @@ translation models. We first analyze the \ac{nat} models alone and assess the
 necessary techniques needed to match the quality of \ac{ar} models.  Then, we
 adapt the optimizations successfully used in \ac{ar} models for \ac{nar} models
 and evaluate the additional speed gains. \JH{This is currently not in the
-  thesis. We'll have shortlisting with a fast implementation.}
+  thesis. We'll have shortlisting with a fast implementation. Add reference to
+  Chapter \ref{chap:experiments} when ready.}
 
 In this chapter, we present an overview of the current state of the research
 and the key concepts in non-autoregressive \ac{nmt}. We begin with the
-description of the principles that most of the literature on this topic has in
-common in Section \ref{sec:nat:principles}. Then, we provide a survey of
-notable approaches to \ac{nat}. We categorize the studied methods into four
-groups, each of which is described in separate section. The methods most
-similar to our work are based on a relaxed alignment between the output and
-target sequences (Section \ref{sec:nat:alignment}). Methods that improve the
-training process using auxiliary objectives are described in Section
-\ref{sec:nat:aux}. Section \ref{sec:nat:semi} introduce approaches based on
-iterative decoding. Natually, the groups are not mutually exclusive and there
-is an overlap. Relevant methods not falling clearly into any of the categories
-above are summarized in Section \ref{sec:nat:misc}.  We conclude this chapter
-with a discussion of the limitations of the presented literature, mostly
-concerning the evaluation methodology.
+description of the general, commonly used principles of \ac{nat} in Section
+\ref{sec:nat:principles}. Then, we provide a survey of notable approaches to
+\ac{nat}, focusing on extensions to the basic models that improve output
+quality. We categorize them into four groups, each of which is described in
+separate section: First, the methods based on relaxing the alignment between
+the output and target sequences, which are most similar to our work in Chapters
+\ref{chap:nar-nmt-ctc} and \ref{chap:experiments}, are described in Section
+\ref{sec:nat:alignment}. Methods that improve the training process using
+auxiliary objectives are described in Section \ref{sec:nat:aux}. Section
+\ref{sec:nat:semi} introduces approaches based on iterative decoding. Relevant
+methods not falling clearly into any of the categories above are summarized in
+Section \ref{sec:nat:misc}. Natually, the groups are not mutually exclusive and
+there is an overlap. We conclude this chapter with a discussion of the
+limitations of the presented literature, mostly concerning the evaluation
+methodology.
 
 
 % ------------------------------------------------------------------------------
@@ -70,62 +74,63 @@ concerning the evaluation methodology.
 \label{sec:nat:principles}
 % ------------------------------------------------------------------------------
 
-This section summarizes the main features of \ac{nar} models and some of the
-basic concepts and the research problems in this field. The \ac{nar} variant of
-the Transformer model was first described by \citet{gu2017nonautoregressive}
-and \citet{lee-etal-2018-deterministic}. Each of these two foundational papers
+This section summarizes the main features of \ac{nar} models, some of the basic
+concepts and research problems in this field. The \ac{nar} variant of the
+Transformer model was first described by \citet{gu2017nonautoregressive} and
+\citet{lee-etal-2018-deterministic}. Each of these two foundational papers
 provides different (complementary) grounds for further research discussed later
-in this chapter -- using latent variables, and iterative decoding.
+in this chapter -- latent variables, and iterative decoding.
 
 % ------------------------------------------------------------------------------
 \paragraph{Conditional Independence.} The defining feature of a
 non-autoregressive model is the assumption of conditional independence between
 the output distributions across time steps. Recall Equation
-\ref{eq:output-distribution} which defines the output distribution for
+\ref{eq:output-distribution}, which defines the output distribution for
 autoregressive models:
 %
 \begin{equation*}
-  p(y|x) = \prod_{t=1}^{T_y}p(y_t|y_{<t},x,\theta).
+  p(y|x) = \prod_{t=1}^{T_y}p(y_t|y_{<t},x,\theta)
   \tag{\ref{eq:output-distribution}}
 \end{equation*}
 %
 Unlike Equation \ref{eq:output-distribution}, \Ac{nat} models do not condition
-the output token probabilities on the previously decoded outputs $y_{<t}$.  The
+the output token probabilities on previously decoded outputs $y_{<t}$.  The
 probability of an output sentence $y$ given an input sequence $x$ can then be
 modeled as:
 %
 \begin{equation}
-  p(y|x) = \prod_{t=1}^{T_y}p(y_t|x,\theta).
+  p(y|x) = \prod_{t=1}^{T_y}p(y_t|x,\theta)
   \label{eq:nat-output-distribution}
 \end{equation}
 
 Although technically possible, making the outputs in \acs{rnn}-based models
 conditionally independent does not reduce the time complexity because in
 \acsp{rnn}, the value of each hidden state depends on the value of the
-preceding state. However, in the Transformer model, hidden states in one layer
-depend only on the states from the previous layer. This allows for
-parallelization of the computation on the layer level.
+preceding state (see Section \ref{sec:encdec:rnn}). However, in the Transformer
+model (see Section \ref{sec:encdec:transformer}), hidden states in each layer
+depend only on the states from the previous layer. This allows for parallel
+computation on the level of layers.
 
-Since the outputs are conditionally independent, we cannot feed the previously
-decoded outputs into the Transformer decoder. In the following paragraphs, we
-discuss the necessary alterations to the Transformer architecture. We need to
-provide the decoder inputs and estimate the target length. The causal mask in
-the decoder self-attention is now unnecessary. We also address the main issue
-and the reason \ac{ar} models are still superior in modeling language.
+In the following paragraphs, we discuss the necessary alterations to the
+Transformer architecture. Since the outputs are conditionally independent, we
+cannot feed the previously decoded outputs into the Transformer decoder. We
+need to provide the decoder inputs and estimate the target length. The causal
+mask over decoder self-attention is now unnecessary. We also address the main
+issue and the reason \ac{ar} models are still superior in modeling language.
 
 % ------------------------------------------------------------------------------
 \paragraph{Multimodality Problem.} In one of the first applications of a
 non-autoregressive model to \ac{nmt}, \citet{gu2017nonautoregressive} describe
-the \emph{multimodality problem} which arise when the outputs are conditionally
-independent.
+the \emph{multimodality problem} which arises when the outputs are
+conditionally independent.
 
 When estimating the probability of a word on a given position, there may be
 multiple words which get a high probability. These words are the so called
 \emph{modes} of the distribution. In autoregressive models, once a word gets
 selected, other modes are ignored in the following time steps. However, a
-non-autoregressive model does not base the decisions on the preceding ones, so
-when multiple positions have multiple modes, the model has no means to
-coordinate the selection of modes across different time steps.
+non-autoregressive model does not base its decision for a given position on the
+preceding ones, so when multiple positions have multiple modes, the model has
+no means of coordinating the selection of modes across different time steps.
 
 % This issue is illustrated in Figure \ref{fig:multimodality-problem}.
 % \begin{figure}
@@ -159,13 +164,13 @@ tokens ``dank'' and ``schön'' are the modes on the second position. If an
 ``dank'' on the second position will no longer receive high probability by the
 model. However, when a \acl{nar} model assigns high probabilities to the
 correct translations, it also has to assign high probabilities to the other
-(incorrect) two combinations, ``danke dank'' and ``vielen schön''. \JH{Come up
-  with a different example.}
+(incorrect) two combinations, ``danke dank'' and ``vielen schön''
+\citep{gu2017nonautoregressive}.
 
 % ------------------------------------------------------------------------------
-\paragraph{Target Length Estimation.} In a standard NMT model such as the
-Transformer or an \acs{rnn}-based model with attention, the length of the
-output sentence is modeled implicitly by using the special end-of-sentence
+\paragraph{Target Length Estimation.} In a standard \ac{ar} \ac{nmt} model such
+as the Transformer or an \acs{rnn}-based model with attention, the length of
+the output sentence is modeled implicitly by using the special end-of-sentence
 (\eos{}) token. Equations \ref{eq:output-distribution} and
 \ref{eq:nat-output-distribution} work with the sentence length implicitly,
 assuming that the last token $y_{T_y}$ is the \eos{} token and that \eos{} does
@@ -180,11 +185,11 @@ explicitly: %leaving out the \eos{} symbol from the mathematical model:
 \end{equation}
 
 The explicit target length estimation is a useful technique of moderating the
-multimodality problem. It also helps with the problem of supplying the inputs
-for the decoder, as seen in many of the approaches described here.
+multimodality problem. \JH{Clarify how.} It also helps with the problem of
+supplying inputs for the decoder.
 
 % ------------------------------------------------------------------------------
-\paragraph{\Ac{nat} with Fertility Model.} \Acs{nar} Transformer decoder cannot
+\paragraph{Decoder Inputs.} A \acs{nar} Transformer decoder cannot
 receive the previously decoded tokens on the input. A solution proposed by
 \citet{gu2017nonautoregressive} is to use a simple fertility model, which also
 serves as the explicit target length estimator.
@@ -195,15 +200,15 @@ encoder inputs, either uniformly stretched to the predicted target sentence
 length, or copied using a fertility model. Second, the decoder self-attention
 does not use the causal mask since all states can now attend to all other
 states in both directions. Third, \emph{positional attention} is added to every
-decoder layer where the positional encoding is used as queries and keys, and
-the decoder states as values.
+decoder layer, where the positional encoding is used as queries and keys and
+the decoder states as values. \JH{Explain.}
 
 In \citet{gu2017nonautoregressive}, the multimodality problem (and the length
-estimation) is addressed by introducing a latent fertility variables
+estimation) is addressed by introducing latent fertility variables
 $F = f_1, \ldots, f_{T_x}$ sampled from a prior distribution. Each
 $f_i \in \mathbb{N}_0$ denotes the number of times to copy $x_i$ to the decoder
 input (summing up to the target length $T_y$). The output probability is then
-conditioned on the latent variable $F$, which is marginalized out:
+conditioned on the latent vector $F$, which is marginalized out:
 %
 \begin{equation}
   p(y|x, \theta) = \sum_{F \in \mathcal{F}} p(F|x, \theta) \cdot p(y|x, F, \theta)
@@ -228,12 +233,14 @@ $\mathcal{H}$ is a constant and the expectation is also deterministic. \JH{I
   ignore the rest.}
 %
 The fertility model depends on an external module which is not trained together
-with the model. The authors fine-tune the trained model using reinforcement
-learning \citep{williams1992simple}.
+with the model. The authors fine-tune the trained translation model using
+reinforcement learning \citep{williams1992simple} to estimate the gradients of
+the fertility model.
 
-During decoding, the marginalizing over all possible fertility values is
-intractable. Therefore, the authors experiment with three approximation methods
--- argmax and average decoding, and \ac{npd}.
+During decoding, marginalizing over all possible fertility values is
+intractable. Therefore, \citet{gu2017nonautoregressive} experiment with three
+approximation methods -- argmax, average decoding, and \ac{npd}. \JH{Explain
+  the three methods, diff to LPD} \JH{There is another comment in the PDF.}
 
 % ------------------------------------------------------------------------------
 \paragraph{Autoregressive Rescoring.} A usual technique in the \ac{nat}
@@ -241,13 +248,13 @@ literature is to use some form of rescoring of the outputs of the \acl{nar}
 model by an \acl{ar} model. The nature of the Transformer model allows to score
 a sentence in a single step (as opposed to generating one), which means that
 the additional rescoring computation increases the decoding complexity only
-linearly with respect to the number of the candidate hypoteheses for rescoring.
+linearly with respect to the number of the candidates for rescoring.
 
 The choice of the rescoring candidates varies. \citet{gu2017nonautoregressive}
 use \ac{npd} which first samples the decoder input sequences from the fertility
-distribution, compute the best candidate for each input, and then rescore the
-results using the \ac{ar} teacher model. A closely related method is \ac{lpd}
-which generates and scores sentences of different lengths.
+distribution, computes the best candidate for each input, and then rescores the
+results using an \ac{ar} model. A closely related method is \ac{lpd} which
+generates and scores sentences of different lengths.
 
 Note that in contrast to \ac{ar} models, the highest-scoring sequence in an
 \acs{nar} model can be found simply by taking the highest-scoring token in each
@@ -257,15 +264,16 @@ step, because of the conditional independence assumption.
 \paragraph{Knowledge Distillation.} To tackle the multimodality problem from
 another angle, \citet{gu2017nonautoregressive} propose to use sequence-level
 knowledge distillation to create artificial training data
-\citep{kim-rush-2016-sequence}. The main idea is that outputs of a teacher
-model will have a simpler structure than natural language, limiting the number
-of the distribution modes.
+\citep{kim-rush-2016-sequence}. \JH{One or two sentences of what is happening
+  here.} The main idea is that outputs of a teacher model will have a simpler
+structure than natural language, limiting the number of the distribution modes.
 
 According to an ablation study published by \citet{gu-kong-2021-fully}, using
 knowledge distillation is a crucial element in training non-autoregressive
 translation models, regardless the actual method used.
 \citet{zhou-etal-2020-understanding} further study the effects of knowledge
-distillation strategies on the translation quality of \ac{nar} models.
+distillation strategies on the translation quality of \ac{nar} models. \JH{One
+  sentence to summarize main finding.}
 
 % ------------------------------------------------------------------------------
 \paragraph{Iterative Refinement.} Another attempt to introduce latent variables
