@@ -24,12 +24,13 @@ the principal differences between \acl{ar} and \acl{nar} models, what issues
 arise when using the latter, and how we can solve them. We provide a
 comprehensive survey of the literature, owing to the fact that the whole domain
 of \ac{nat} resarch is fairly new. We describe efforts to keep the most
-important feature of \ac{nat} models -- high decoding speed -- intact by
+important feature of \ac{nat} models -- the high decoding speed -- intact by
 introducing constraints on the training process, or other efforts that
 partially sacrifice the higher decoding speed for better translation quality by
-iterative refinement. \JH{At the end of the chapter, we discuss some of the
-  weaknesses which are prevalent in a large part of the literature on this
-  topic. }
+iterative refinement. At the end of the chapter, we identify weaknesses
+prevalent in a large part of the literature on this topic. One of the main
+problems lies in the evaluation methodology adopted by the \ac{nat} research
+community.
 
 We present a method for training \acl{nar} models for \ac{nmt} with \ac{ctc} in
 Chapter \ref{chap:nar-nmt-ctc}. We first describe the \ac{ctc} algorithm for
@@ -43,7 +44,16 @@ translations, which is in line with the conclusions of other \ac{nat} studies.
 We briefly mention our attempt to improve the translation fluency using a
 \acl{lm} rescoring.
 
-\JH{text about chapter \ref{chap:experiments}}
+In Chapter \ref{chap:experiments}, we document our recent efforts to address
+the flaws in the evaluation methodology discussed in Chapter \ref{chap:nat}
+with our \acs{ctc}-based model from Chapter \ref{chap:nar-nmt-ctc}. We compare
+our results to methods published in the context of \ac{nat}, as well as methods
+that focus directly on improving the efficiency of translation systems.  We
+find that despite achieving a high performance among \ac{nat} models, using
+efficient \acl{ar} translation models leads to better results, both in terms of
+speed and translation quality. We argue that for better estimation of the
+benefits of \acl{nar} methods, the future research should take into account the
+methods employed in production-ready systems.
 
 \JH{refer to conclusions in chapter \ref{chap:conclusions} and conclude the
   introduction}

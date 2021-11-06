@@ -7,6 +7,7 @@ set output "de-en.curves.tex"
 ### WARNING, THIS GENERATES E.G. 800.0k, WHICH I CHANGED MANUALLY IN THE
 ### GENERATED TEX FILE
 ### ALSO I MOVED THE X AXIS LABEL BY .250 UP
+### ALSO I REMOVED THE DOLLAR SIGNS AROUND BLEU SCORES AT X AXIS
 
 set bmargin -1
 # set rmargin 1
@@ -24,8 +25,8 @@ set format x "%.1s%c"
 
 set key inside right bottom vertical spacing 1.5 sample 1
 
-plot "de-en.scores.tsv" using 1:2 title "large" with lines lw 2.5 lt rgb "#cc0000",\
-     "de-en.scores.tsv" using 1:3 title "base" with lines lw 2.5 lt rgb "#ffcc00", \
-     "de-en.scores.tsv" using 1:4 title "small" with lines lw 2.5 lt rgb "#cc00ff", \
-     "de-en.scores.tsv" using 1:5 title "micro" with lines lw 2.5 lt rgb "#0000cc", \
-     "de-en.scores.tsv" using 1:6 title "tiny" with lines lw 2.5 lt rgb "#00cc00",
+plot "de-en.scores.tsv" using 1:2 title "Large" with lines lw 2.5 lt rgb "#cc0000",\
+     "de-en.scores.tsv" using 1:3 title "Base" with lines lw 2.5 lt rgb "#ffcc00", \
+     "de-en.scores.tsv" using 1:4 title "Small" with lines lw 2.5 lt rgb "#cc00ff", \
+     "de-en.scores.tsv" using 1:5 title "Micro" with lines lw 2.5 lt rgb "#0000cc", \
+     "de-en.scores.tsv" using 1:6 title "Tiny" with lines lw 2.5 lt rgb "#00cc00",

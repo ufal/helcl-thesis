@@ -1,22 +1,48 @@
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Experiments}
+\chapter{Experiments}%
 \label{chap:experiments}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-In this chapter, we present further experiments with \ac{nat} models trained
-with \ac{ctc}. We focus on fair comparison with other non-autoregressive
-approaches as well as state-of-the-art optimized autoregressive methods.
 
-We performed experiments on English-German translation. As stated in previous
-sections, knowledge distillation \citep{kim-rush-2016-sequence} is a crucial
-element that brings the performance of non-autoregressive methods closer to
-that of autoregressive methods. We use strong autoregressive teachers as both
-our baseline models, and as the source of the artificial target side data for
-training of the distilled models.
+As we discussed in Section \ref{sec:nat:discussion}, the flaws in the
+evaluation methodology adopted by current research of \ac{nat} models make it
+difficult to identify approaches suitable in production-ready conditions.  In
+this chapter, we present further experiments with \ac{nat} models trained with
+\ac{ctc}. We focus on fair comparison with other non-autoregressive approaches
+as well as state-of-the-art optimized autoregressive methods.  In line with our
+previous experiments (see Chapter \ref{chap:nar-nmt-ctc}) and also with the
+rest of the related work, we conduct experiments on English-German translation.
+
+As previously stated (see Section \ref{sec:nat:principles}), knowledge
+distillation \citep{kim-rush-2016-sequence} is a crucial element that brings
+the performance of \ac{nar} methods closer to that of \ac{ar} methods. We use
+strong \ac{ar} teachers as both our baseline models, and as the source of the
+artificial target side data for training of the distilled models. We describe
+our teacher models in detail in Section \ref{sec:exp:teachers}
+
+In Section \ref{sec:exp:students}, we describe the training of the \ac{nar}
+student models. We follow the approach described in Chapter
+\ref{chap:nar-nmt-ctc}. The key changes to the \acs{ctc}-based models include
+training the student models on distilled data and using a faster implementation
+of the translation system.
+
+In the analysis of the results presented in Section \ref{sec:exp:results}, we
+try to connect the separate worlds of \ac{nat} research and the bids to improve
+the efficiency of translation models. Our student models outperform all of the
+\ac{nar} models in terms of BLEU on the standard \acs{wmt}~14 translation
+benchmark. However, at the same time the models score relatively poorly in
+comparison to the current state-of-the-art \ac{ar} translation models, which
+suggests that the gap in translation quality between \ac{ar} and \ac{nar}
+models is still a problem, contrary to some of the claims in the literature
+\citep{gu-kong-2021-fully,saharia-etal-2020-non}. We also present an extensive
+analysis of the decoding speed under different conditions and conclude that
+without future advancements in this field, optimized \ac{ar} models will
+continue to achieve superior results over \ac{nar} models.
+
 
 % ------------------------------------------------------------------------------
-\section{Autoregressive Teacher Models}
-\label{sec:exp:autoregressive}
+\section{Autoregressive Teacher Models}%
+\label{sec:exp:teachers}
 % ------------------------------------------------------------------------------
 
 \paperdisclaim{This section is based on ``The University of Edinburgh's
@@ -249,7 +275,7 @@ forward-translating backtranslated data.
 
 % ------------------------------------------------------------------------------
 \section{Student Models}%
-\label{sec:students}
+\label{sec:exp:students}
 % ------------------------------------------------------------------------------
 \footnotetext{We did not use gradient clipping because of issues in the Marian
   toolkit implementation.  \JH{is there an issue? Also, put this on the right
@@ -331,7 +357,7 @@ of parameter updates.
 
 % ------------------------------------------------------------------------------
 \section{Results}%
-\label{sec:results}
+\label{sec:exp:results}
 % ------------------------------------------------------------------------------
 
 In this section we analyze the results both in terms of translation quality
@@ -560,7 +586,7 @@ albeit on a slightly different server architecture. \JH{TODO: For better
 
   \begin{tabular}{lrr}
     \toprule
-    Model & GPU Latency -- P100 & GPU Latency -- A100 \\
+    GPU & Nvidia P100 & Nvidia A100 \\
     \midrule
     \acs{ar} -- Large & & \\
     \acs{ar} -- Base & & \\
@@ -577,6 +603,40 @@ albeit on a slightly different server architecture. \JH{TODO: For better
   \caption{}%
   \label{tab:}
 \end{table}
+
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{lrrrrrrr}
+    \toprule
+    Batch size & 1 & 4 & 8 & 16 & 32 & 64 & 128\\
+    \midrule
+    \acs{ar} Base &  &  &  &  &  &  & \\
+    \midrule
+    Large & 14,157 & 8,079 & 7,003 & 6,452 & 6,056 & 5,767 & 5,581 \\
+    Base  &  8,720 & 3,875 & 3,146 & 2,769 & 2,535 & 2,394 & 2,303 \\
+    Small &  5,017 & 2,376 & 1,977 & 1,748 & 1,635 & 1,564 & 1,512 \\
+    Micro &  3,781 & 1,871 & 1,579 & 1,418 & 1,343 & 1,282 & 1,248 \\
+    Tiny  &  1,916 &   960 &   803 &   730 &   687 &   666 &   652 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{Wall times to translate one million sentences (in seconds) on a
+    single Nvidia P100 GPU with different batch size settings.}
+  \label{tab:throughput:p100}
+
+\end{table}
+
+
+\begin{figure}
+  \centering
+  \input{./img/throughputs/p100.tex}
+
+  \caption{Wall times to translate one million sentences (in seconds) on a
+    single Nvidia P100 GPU with different batch size settings.}%
+  \label{fig:throughput:p100}
+\end{figure}
 
 % ------------------------------------------------------------------------------
 \subsection{Discussion}%
