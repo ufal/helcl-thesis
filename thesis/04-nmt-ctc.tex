@@ -573,7 +573,7 @@ which we mix with upsampled parallel data so that the ratio of the synthetic
 and parallel data in the training dataset is approximately 1:1. We train the
 \ac{ar} baselines and the \ac{nat} model on this dataset, so that the models
 with \ac{lm} scorer have access to the same data.  Instead of the wordpiece
-vocabulary, we use Sentencepiece \citep{kudo-richardson-2018-sentencepiece}
+vocabulary, we use SentencePiece \citep{kudo-richardson-2018-sentencepiece}
 with 50k tokens in the vocabulary.  We train a 5-gram language model on the
 monolingual data using KenLM.\footnote{\url{https://github.com/kpu/kenlm/}}
 We use structured perceptron \citep{huang-etal-2012-structured} to learn the

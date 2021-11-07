@@ -14,13 +14,13 @@ inputs and the outputs to a neural network are real-valued vectors, the
 training objective is a differentiable function, and the space of the
 parameters needs to have a continuous gradient with respect to the loss
 function. Specific to neural networks is the computation of the gradient by the
-\emph{backpropagation} algorithm, and the large portfolio of optimization
+\emph{backpropagation} algorithm, and the large variety of optimization
 methods.
 
 In Section \ref{sec:text-processing}, we explain how to adapt neural networks
 to the discrete nature of the textual data. Perhaps the most common way is to
 assign a real-valued vector to each word in the vocabulary. These
-representations are usually trained along with the whole network, end to end.
+representations are usually trained along with the whole network end to end.
 
 In \acs{nlp} tasks like sentence classification or language modeling, there is
 only a single sequence on the input. In \ac{mt}, we have a source sentence on
@@ -71,9 +71,9 @@ evaluation. This chapter concludes with a brief overview of the evaluation of
 
 % Text are not numbers, NNs work with numbers
 There are a number of problems that arise when we want to use neural networks
-for text processing. Foremost, neural networks are a mathematical model that
-deals with real numbers. In contrast, language is discreet and has a complex
-structure. Thus, we need to find ways of expressing textual data
+for text processing. First and foremost, neural networks are a mathematical
+model that deals with real numbers whereas language is discrete and has a
+complex structure. Thus, we need to find ways of expressing textual data
 numerically. Second, since language units (such as words, sentences, or
 documents) come in various lengths, we need to use neural network models
 designed for processing sequential data.
@@ -81,9 +81,9 @@ designed for processing sequential data.
 % One-hot representation are straightforward.
 In this section, we begin with the representation of words. The most
 straightforward, and also the most common way to represent words in neural
-networks is by having a list (a \emph{vocabulary}) of words $\mathcal{V}$, where each
-word has a corresponding integer index $j$ pointing at it. Each word $w$ at
-index $j$ in this list can be represented by a vector
+networks is by having a list (a \emph{vocabulary}) of words $\mathcal{V}$ of
+size $N$, where each word has a corresponding integer index $j$ pointing at
+it. Each word $w$ at index $j$ in this list can be represented by a vector
 $x \in \{0,1\}^N$ where
 %
 \begin{equation} x_i =
@@ -94,7 +94,7 @@ $x \in \{0,1\}^N$ where
 We call this vector the \emph{one-hot representation} of $w$.
 
 % One-hot representation do not capture word roles in language.
-Using one-hot representation help us convert discreet words to numbers, but it
+Using one-hot representation help us convert discrete words to numbers, but it
 does not capture anything about the underlying linguistic structure.  For this
 purpose, \emph{learned distributed feature vectors}, or \emph{word embeddings}
 are used \citep{bengio2003neural, collobert-weston-2007-fast}. The idea is to
@@ -106,7 +106,7 @@ that the resulting embeddings have interesting properties. For example,
 arithmetic operations on embeddings can express word analogy.  In some \ac{nlp}
 tasks, pre-trained embeddings can be used to greatly improve the model
 performance on the end task. In contemporary \ac{nmt} research, the most
-prevalent approach is to train the word embeddings end-to-end along with the
+prevalent approach is to train the word embeddings end to end along with the
 translation model.
 
 % Word embedding layer is inserted to help.
@@ -203,15 +203,15 @@ information. \JH{They say they take the pair that maximizes the likelihood of
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{SentencePiece.} More recently,
-\citet{kudo-richardson-2018-sentencepiece} implemented Sentencepiece, a toolkit
+\citet{kudo-richardson-2018-sentencepiece} implemented SentencePiece, a toolkit
 for subword segmentation using either \ac{bpe}, or a unigram language model
 \citep{kudo-2018-subword}. It supports a number of features, such as sampling
 and regularization by introducing noise on the source side. As opposed to BPEs
-and wordpieces, Sentencepiece does not require prior tokenization of the input
+and wordpieces, SentencePiece does not require prior tokenization of the input
 text, and unlike other methods its pre-tokenization allows to fully reconstruct
 the original string. The Marian toolkit
 \citep{junczys-dowmunt-etal-2018-marian} used in our experiments described in
-Chapter \ref{chap:experiments} has a built-in support for Sentencepiece
+Chapter \ref{chap:experiments} has a built-in support for SentencePiece
 tokenization and segmentation.
 
 % ------------------------------------------------------------------------------
@@ -246,7 +246,7 @@ The decoder is initialized with the state $s_0$ and runs the second \ac{rnn}:
 \end{equation}
 %
 where $y_{i-1}$ is the preceding word in the reference output sentence (during
-training), with $s_0$ being a special symbol which expresses the start of a
+training), with $y_0$ being a special symbol which expresses the start of a
 sequence (denoted \texttt{<s>}).
 
 While recurrent neural networks are not used as the underlying model in the most
@@ -299,12 +299,13 @@ The most prevailing types of \ac{rnn} architectures in \ac{nmt} are \ac{lstm}
 networks and \ac{gru} networks.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{\acs{lstm}.} \acl{lstm} networks \citep{hochreiter1997long}
-introduce gating mechanisms and a concept of \emph{information highway}, which
-ensures that only linear operations are applied on the states in the recurrent
-chain. A gating mechanism is an operation which computes a number between 0 and
-1, which we refer to as \emph{gate value}.  The output of the operation is the
-input multiplied by the gate value.
+\paragraph{\acs{lstm}.} \acl{lstm} networks
+\citep{hochreiter1997long,gers2000learning} introduce gating mechanisms and a
+concept of \emph{information highway}, which ensures that only linear
+operations are applied on the states in the recurrent chain. A gating mechanism
+is an operation which computes a number between 0 and 1, which we refer to as
+\emph{gate value}.  The output of the operation is the input multiplied by the
+gate value.
 
 Given a current time step $t$, input $x_t \in \mathbb{R}^m$, and previous
 hidden states $h_{t-1}, C_{t-1} \in \mathbb{R}^n$, \ac{lstm} networks proceed
@@ -319,16 +320,16 @@ as follows:
   h_t &= o_t \odot \tanh C_t \label{eq:lstm-hidden-state}
 \end{align}
 %
-where $W_f, W_i, W_o, W_c \in \mathbb{R}^{m \times n}, U_f, U_i, U_o, U_c \in
+where $W_f, W_i, W_o, W_c \in \mathbb{R}^{n \times m}, U_f, U_i, U_o, U_c \in
 \mathbb{R}^{n \times n}, b_f, b_i, b_o, b_c \in \mathbb{R}^n$ are trainable
 parameters, $\sigma$ is the logistic function, and $\odot$ represents
 element-wise multiplication. The states $h_t$ and $C_t$ are also called public
-and private hidden states respectively. The intermediate value $\tilde{C}_t$ is
+and private hidden states, respectively. The intermediate value $\tilde{C}_t$ is
 called the candidate state.
 
 The three gates in the \ac{lstm} network are called \emph{forget gate},
 \emph{input gate}, and \emph{output gate}. The forget gate (Eq.
-\ref{eq:lstm-forget-gate}) controls how much of the information from the
+\ref{eq:lstm-forget-gate}) controls how much of the information flows from the
 previous private hidden state $C_{t-1}$ to the current private state (Eq.
 \ref{eq:lstm-information-highway}). The input gate (Eq.
 \ref{eq:lstm-input-gate}) controls the amount of information received from the
@@ -355,7 +356,7 @@ an alternative to \acp{lstm}. Instead of four sets of parameter matrices,
 relations.
 
 Given the time step $t$, input $x_t \in \mathbb{R}^m$, and previous hidden
-state $h_{t-1}$, one \ac{gru} step is defined as follows:
+state $h_{t-1} \in \mathbb{R}^n$, one \ac{gru} step is defined as follows:
 %
 \begin{align}
   r_t &= \sigma\left(W_r x_t + U_r h_{t-1} + b_r\right) \label{eq:gru-reset-gate} \\
@@ -364,7 +365,7 @@ state $h_{t-1}$, one \ac{gru} step is defined as follows:
   h_t &= (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t \label{eq:gru-hidden-state}
 \end{align}
 %
-where $W, W_z, W_r \in \mathbb{R}^{m\times n}$,
+where $W, W_z, W_r \in \mathbb{R}^{n\times m}$,
 $U, U_z, U_r \in \mathbb{R}^{n \times n}$, and $b, b_z, b_r \in \mathbb{R}^n$
 are trainable parameters.
 
@@ -418,13 +419,13 @@ states:
 %
 In the first step, the \emph{attention energies} are computed for every encoder
 hidden state using a single-hidden-layer feed-forward network parameterized by
-$W_a \in \mathbb{R}^{n' \times n}$, $U_a \in \mathbb{R}^{n' \times 2n}$,
-$b_a \in \mathbb{R}^{n'}$, $v_a \in \mathbb{R}^{n'}$, and $b' \in \mathbb{R}$
-where $n'$ is the dimension of the hidden layer. Next, the attention energies
-are normalized using the softmax function into the \emph{attention
-  distribution}.  Finally, the context vector is computed as a weighted sum of
-the encoder states $h_0,\ldots, h_{T_x}$, using the attention distribution
-values as weights.
+$W_a \in \mathbb{R}^{n' \times n}$, $U_a \in \mathbb{R}^{n' \times 2n}$ (in a
+bidirectional network), $b_a \in \mathbb{R}^{n'}$, $v_a \in \mathbb{R}^{n'}$,
+and $b' \in \mathbb{R}$ where $n'$ is the dimension of the hidden layer. Next,
+the attention energies are normalized using the softmax function into the
+\emph{attention distribution}.  Finally, the context vector is computed as a
+weighted sum of the encoder states $h_0,\ldots, h_{T_x}$, using the attention
+distribution values as weights.
 
 The concept of attention can be viewed as a soft-lookup function over an
 associative memory. Given a \emph{query}, which is the decoder state in a given
@@ -441,7 +442,8 @@ RNNs, each layer is a recurrent network. The inputs of the second and each
 layer onwards are the outputs of the preceding layer. The output of the whole
 deep RNN is the output of the last layer.
 
-In deep \acp{rnn}, there are a few settings to consider. \JH{tell me more}
+In deep \acp{rnn}, there are a few settings to consider. \JH{tell me more -- if
+  not more, make this a layernorm paragraph}
 
 \JH{first layer norm paragraph should give better motivation, last paragraph
   should provide some insight to the formulas.}  To improve the convergence
@@ -460,7 +462,8 @@ where $\mu^l$ and $\sigma^l$ are the mean and standard deviation of the output
 state values, $\gamma^l, \beta^l \in \mathbb{R}^{T_x \times n}$ are learnable
 \emph{gain} and \emph{bias} parameters, and $\odot$ denotes element-wise
 multiplication. The normalized states $\bar{\mathbf{h}}^l$ are then used as the
-input to the $l+1$-th layer of the network instead.
+input to the $l+1$-th layer of the network instead. \JH{$\mu^l$ probably has
+  different dim than $\mathbf{h}^l$?}
 
 
 
@@ -471,9 +474,9 @@ input to the $l+1$-th layer of the network instead.
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 One of the disadvantages of the RNN-based models is the sequential nature of
-the recurrence relation. Few models have been proposed to remove the recurrence
-and thus allowing for simultaneous computation across time steps, at least at
-the training time. Most notably, these models include convolutional
+the recurrence relation. A few models have been proposed to remove the
+recurrence and thus allowing for simultaneous computation across time steps, at
+least at the training time. Most notably, these models include convolutional
 architectures \citep{gehring2017convolutional}, and the current
 state-of-the-art architecture, the \emph{Transformer} model
 \citep{vaswani2017attention}.
@@ -526,8 +529,8 @@ the positional encodings are added to the word embeddings:
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Self-Attention.} The key component of the Transformer model is the
 self-attention. As the name suggests, self-attention is run with the same set
-of states used as both queries, keys, and values. Scaled dot-product is used as
-the similarity metric, so the attention itself does not use any trainable
+of states used as queries, keys, and values. Scaled dot-product is used as the
+similarity metric, so the attention itself does not use any trainable
 parameters. Formally, self-attention is defined as function:
 %
 \begin{equation}
@@ -598,9 +601,10 @@ is the dimension of the hidden state.
 \paragraph{Residual Connections and Layer Normalization.} As a post-processing
 step, the output of each sub-layer is connected with the output of the previous
 sub-layer with residual connections. \JH{zkontrolovat jestli se to definovalo v
-  Deep Architectures, stejně jako Layer Norm.} Similarly to the \acs{rnn}-based
-deep architectures, layer normalization is used in combination, which ties all
-states in the sub-layer stack into a shared vector space.
+  Deep Architectures, stejně jako Layer Norm. Also, zvážit přidat dropout sem
+  někam} Similarly to the \acs{rnn}-based deep architectures, layer
+normalization is used in combination, which ties all states in the sub-layer
+stack into a shared vector space.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Output Projection.} The states from the last decoder layer are
@@ -672,9 +676,9 @@ hyperparameter values for these two settings.
 
 Training of \ac{nmt} models is usually done under \emph{supervised} conditions,
 using a dataset of parallel sentences. The size of the available data varies a
-lot with different language pairs. Although there is no formal definition, when
-there is less than a million sentence pairs available, the language pair is
-reffered to as being \emph{low-resource}. For many languages, even a million
+lot with different language pairs. Although there is no formal definition, a
+language pair for which less then a million sentence pairs is avaiable is
+usually reffered to as \emph{low-resource}. For many languages, even a million
 sentences is a very large number compared to what is actually available. The
 data quality is also a factor. For example, when the only available data is
 crawled from the web, data cleaning can filter out a major part of the
@@ -684,10 +688,10 @@ is not a major issue.
 
 Translation models are trained by minimizing the loss function, usually
 expressed by cross-entropy between the output distribution and the one-hot
-distribution which assigns the probability of one to the correct target word,
-and zero probabilities to the other words. Assuming $y_i$ is the correct target
-word at position $i$, $p_{\text{ref}}$ is the one-hot distribution, and $p$ is
-the distribution predicted by the model, we have:
+distribution assigning zero probabilities to all but the correct target
+word. Assuming $y_i$ is the correct target word at position $i$,
+$p_{\text{ref}}$ is the one-hot distribution, and $p$ is the distribution
+predicted by the model, we have:
 %
 \begin{equation}
   \begin{split}
@@ -739,9 +743,9 @@ learning approach which gradually replaces teacher forcing with the model
 predictions \citep{bengio2015scheduled}. Other methods focus on sequence-level
 training or beam search optimization methods, mostly based on reinforcement
 learning \citep{williams1992simple, wiseman-rush-2016-sequence,
-  ranzato2016sequence}. However, none of these methods was widely adopted, and
-current models are believed to be capable of recover from their errors despite
-being explicitly trained to do so.
+  daume2009search, ranzato2016sequence}. However, none of these methods was
+widely adopted, and current models are believed to be capable of recover from
+their errors despite being explicitly trained to do so.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 %\paragraph{RNNs vs Transformer Training.} A significant difference in training
@@ -810,11 +814,11 @@ translation direction, we first translate the monolingual data from the target
 language to the source language using a previously trained model. Then, we mix
 the synthetic source-language data along with the authentic target-language
 data into our training corpus. When the parallel-to-monolingual data size ratio
-not balanced, one can consider oversampling the smaller part of the corpus to
-mitigate this. Recently, \citet{caswell-etal-2019-tagged} showed that labeling
-the synthetic data with a special token improves the translation quality. As
-pointed out by \citet{marie-etal-2020-tagged}, this helps because the model is
-less prone to overfitting to this type of data.
+is not balanced, one can consider oversampling the smaller part of the corpus
+to mitigate this. Recently, \citet{caswell-etal-2019-tagged} showed that
+labeling the synthetic data with a special token improves the translation
+quality. As pointed out by \citet{marie-etal-2020-tagged}, this helps because
+the model is less prone to overfitting to this type of data.
 
 \emph{Knowledge distillation} \citep{kim-rush-2016-sequence} is another data
 augmentation technique. Unlike backtranslation, knowledge distillation is used
@@ -830,13 +834,15 @@ the models in a limited environment, such as a mobile device.
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Batching.} In Equation \ref{eq:loss}, the loss function $J(\theta)$
 is defined as a sum of sequence-level losses over dataset $D$. We use gradient
-descent to find parameters $\theta^*$ which minimize the loss value. However, the
-exact computation of the gradient is inefficient because it requires one pass
-through the whole dataset. Therefore, we estimate the gradient on a small
-sample of the training data, called a \emph{mini batch}, or simply a
-batch. This method is called \emph{\ac{sgd}}.\footnote{Some sources use the
-  term \emph{mini-batch gradient descent}, to distinguish from methods that
-  perform the update for each example.}
+descent algorithm to find the parameters $\theta^*$ with the minimum loss
+value. The algorithm proceeds in iterations, updating the parameters using the
+current gradients.  However, the exact computation of the gradient is
+inefficient because it requires a pass through the whole dataset. Therefore, we
+estimate the gradient on a small sample of the training data, called a
+\emph{mini batch}, or simply a batch. This method is called
+\emph{\ac{sgd}}.\footnote{Some sources use the term \emph{mini-batch gradient
+    descent}, to distinguish from methods that perform the update for each
+  example.}
 
 The size of a mini batch is an important parameter and its value can have a
 large impact on the training convergence. Bigger batches provide better
@@ -846,8 +852,8 @@ GPU.
 Because the data gets split into batches which serve as random samples of the
 data, a suitable data shuffling strategy should be considered. If we regard the
 dataset as a collection of sentences (as opposed to documents, for example),
-shuffling the sentences in the whole dataset before training is in most cases
-sufficient.
+shuffling the sentences in the whole dataset before training (or before each
+\emph{epoch}, i.e. a pass over the training data) is in most cases sufficient.
 
 Another aspect of batching is how efficiently do we use the memory allocated
 for the batch with respect to the maximum sentence length. The batches are
@@ -860,11 +866,11 @@ possible implementation is to load a number of batches beforehand, sort the
 sentences by length and then re-batch the sorted list of sentences. In
 literature, this technique is reffered to as \emph{bucketing}.
 
-In some cases, it is not necessary to perform the parameter update after each
-batch. For example, large models tend to fit in a GPU memory only with a small
-batch size. In such cases, we might choose to aggregate the gradients over
-multiple batches to simulate a bigger batch size. A similar strategy can be
-applied when the training uses multiple GPUs.
+In some cases, it is possible to delay the parameter update for a number of
+batches. For example, large models tend to fit in a GPU memory only with a
+small batch size. In such cases, we might choose to aggregate the gradients
+over multiple batches to simulate a bigger batch size. A similar strategy can
+be applied when the training uses multiple GPUs.
 
 \paragraph{Curriculum Training.} The ordering of the batches in training -- the
 \emph{curriculum} -- influences both the training process (see bucketing above)
@@ -952,7 +958,7 @@ metric, such as BLEU. An alternative early stopping method is to save the
 parameters of the best performing model on validation.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{Hardware.} Since the advent of deep learning methods for \ac{nmt},
+\paragraph{Hardware.} Since the advent of deep learning methods for \ac{mt},
 the neural network architectures began to grow. However, this breakthrough
 could not have happened if there was not the hardware to allow it. Graphics
 cards (GPUs) are now the most widely used hardware for training neural
@@ -971,15 +977,16 @@ There is also the option of training (and/or decoding) the models on multiple
 GPUs, which greatly speeds up the process. Perhaps most common scenario is
 \emph{synchronous training.} At the beginning the model is copied across all
 the available devices, the gradients are computed for a batch of data on each
-device, then summed and the update is performed on all copies. On the other
-hand, in \emph{asynchronous training}, the process does not wait for the
-computation to finish on all devices, but rather perform the updates as the
-gradients are computed. Synchronous training has the advantage of being
+device, then averaged (weighted by the batch size on each device, if different)
+and the update is performed on all copies. On the other hand, in
+\emph{asynchronous training}, the process does not wait for the computation to
+finish on all devices, but rather perform the updates of the shared parameters
+as the gradients are computed. Synchronous training has the advantage of being
 accurate and deterministic, whereas asynchronous training converges slower
 (more steps are needed) but the computational resources are used more
-efficiently (no need to wait for slower devices).  The delayed optimizer
-update, discussed in the batching paragraph above, serves as a simulation of
-training on multiple devices.
+efficiently (no need to wait for slower devices).  The delayed update,
+discussed in the batching paragraph above, serves as a simulation of training
+on multiple devices.
 
 % ------------------------------------------------------------------------------
 \section{Autoregressive Decoding}
@@ -1039,15 +1046,16 @@ automatic evaluation metric such as \acs{bleu} or cross-entropy.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Training vs. Inference.}
-The models we described in the sections above are \emph{autoregressive} -- the
-output tokens are predicted left-to-right, while every decision is conditioned
-on the previously generated outputs. With this property, there comes an
-important distinction in behavior between training and decoding. Whereas during
-training, the ground-truth data are used to simulate the previous decisions,
-during decoding, the ground truth is unknown and therefore the model needs to
-rely solely on its own decisions. This constitutes a theoretical problem,
-called \emph{exposure bias} -- the model is never exposed to its own errors
-during training.
+The models we described in Sections \ref{sec:encdec:rnn} and
+\ref{sec:encdec:transformer} are \emph{autoregressive} -- the output tokens are
+predicted left-to-right, while every decision is conditioned on the previously
+generated outputs. With this property, there comes an important distinction in
+behavior between training and decoding. Whereas during training, the
+ground-truth data are used to simulate the previous decisions, during decoding,
+the ground truth is unknown and therefore the model needs to rely solely on its
+own decisions. As we discuss in Section \ref{sec:training}, this constitutes a
+theoretical problem, called \emph{exposure bias} -- the model is never exposed
+to its own errors during training.
 
 In the RNN-based models, the difference between training and decoding is
 minimal. The model execution is done the same way, with the one exception of
@@ -1060,7 +1068,8 @@ The Transformer models are quite different in this aspect. Since there is no
 recurrence operation which requires accumulation of information in a hidden
 state, the network can be trained on a whole ground-truth sentence in one step.
 The only requirement is to prevent the decoder self-attention from attending to
-the future positions which is achieved by the causal attention mask.
+the future positions which is achieved by the causal attention mask. However,
+the decoding process remains autoregressive.
 
 \section{Evaluation}
 \label{sec:evaluation}
@@ -1074,13 +1083,14 @@ be validated several times during training.
 
 Perhaps the best-known automatic \ac{mt} metric is BLEU
 \citep{papineni-etal-2002-bleu}.  Despite a long term effort led by the
-organizers of the WMT Metrics shared task to create an automatic evaluation
-metric that would be better correlated with scores assigned by humans, BLEU
-continues to be the most widely used metric in the contemporary
+organizers of the Metrics Shared Task on the \ac{wmt} to create an automatic
+evaluation metric that would be better correlated with scores assigned by
+humans, BLEU continues to be the most widely used metric in the contemporary
 literature. However, over the nearly two decades of using BLEU, it has been
 criticized for being prone to errors due to outliers or being too inaccurate
-when the score itself is low.
-\citep{callison-burch-etal-2006-evaluating,bojar-etal-2010-tackling,reiter2018structured,mathur-etal-2020-tangled}
+when the score itself is low \citep{callison-burch-etal-2006-evaluating,
+  bojar-etal-2010-tackling, reiter2018structured, mathur-etal-2020-tangled,
+  kocmi2021ship}.
 
 \JH{Add details about Character F-score and COMET! \citep{rei-etal-2020-comet,
     popovic-2015-chrf}}
@@ -1090,7 +1100,7 @@ efficiency. The decoding speed is usually measured in two dimensions:
 \emph{latency} and \emph{throughput}. Latency is the time to decode a single
 sentence in online mode (i.e. with batch size of 1). Throughput is the maximum
 number of sentences the model can translate in a unit of time (with any batch
-size). In the \ac{wmt} efficiency shared task, model size and RAM usage is also
+size). In the \ac{wmt} Efficiency Shared Task, model size and RAM usage is also
 reported.
 
 
