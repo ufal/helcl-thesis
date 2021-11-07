@@ -41,7 +41,7 @@ output labels are weakly or not at all aligned, for example in situations where
 the observed input sequence is considerably longer than the target output
 sequence -- hence the application to \ac{asr}, where the number of extracted
 features per second is higher than the number of phonemes uttered per second.
-\JH{Confirm this.}
+%\JH{Confirm this.}
 
 Training neural networks with \ac{ctc} is independent on the actual neural
 network architecture. The \ac{ctc} loss function can be applied on any network
@@ -175,8 +175,8 @@ sequence, the model will not be able to generate the whole target sequence.
   \input{./img/non-autoregressive.tex}
 
   \caption{The scheme of the non-autoregressive architecture with
-    state-splitting and CTC. The image is taken from
-    \citet{libovicky-helcl-2018-end}, Figure 1.}%
+    state-splitting and CTC. Image source: \citet{libovicky-helcl-2018-end},
+    Figure 1.}%
   \label{fig:state-splitting}
 \end{figure}
 
@@ -352,11 +352,11 @@ outputs.
 
 The first model of \citet{gu2017nonautoregressive} represents the \ac{nat}
 model with fine-tuning, which minimizes the KL divergence between the output
-distributions of the teacher and student models. In the second row, \ac{npd}
-with 100 samples is used. \JH{This should be described in Related work.} Using
-\ac{npd} can slow down the decoding, because an additional scoring step by an
-autoregressive model is needed. In theory, if enough parallelism is available,
-this doubles the latency.
+distributions of the teacher and student models. In the second row, \acl{npd}
+(\acs{npd};\glsunset{npd} see Section \ref{sec:nat:principles}) with 100
+samples is used. Using \ac{npd} can slow down the decoding, because an
+additional scoring step by an autoregressive model is needed. In theory, if
+enough parallelism is available, this doubles the latency.
 
 The approach of \citet{lee-etal-2018-deterministic} is iterative. We show the
 performance of this method with 1 iteration and with 10 iterations. Note that
@@ -367,8 +367,8 @@ When compared to the single-pass models, the performance of the English--German
 English--Romanian models is poor. This is likely because of issues with
 Romanian diacritics in the data, as suggested also by the poorer performance of
 our autoregressive baseline. Also, the enhanced techniques (\ac{npd} and
-iterative refiniment) outperform our method in all scenarios, but at a
-computational cost.
+iterative refiniment) outperform our
+method in all scenarios, but at a computational cost.
 
 \JH{Description of weight averaging and the beam search.}
 
@@ -468,7 +468,8 @@ and we describe these experiments in the following section.
     \bottomrule
   \end{tabular}
 
-  \caption{An error analysis. \JH{todo}}%
+  \caption{Results of a cursory manual analysis of the most frequent types of
+    errors in English $\leftrightarrow$ German translation models.}%
   \label{tab:end-to-end:error-analysis}
 
 \end{table}
@@ -488,7 +489,7 @@ and we describe these experiments in the following section.
 \noindent
 In this section, we describe our effort to improve the language modeling
 capabilities of the \acs{ctc}-based \ac{nat} model. As described in the
-previous sections, frequent errors \acl{nar} models make include missing verbs
+previous section, frequent errors \acl{nar} models make include missing verbs
 or bad composition of words from multiple subwords. The literature on \ac{nar}
 models also points out that token repetition is also a frequent issue. \JH{but
   not so much in alignment based models which often collapse the repetition
@@ -505,9 +506,9 @@ By imposing the conditional independence assumption in non-autoregressive
 models (Equation \ref{eq:nat-output-distribution}) we impair the implicit
 language model, which leads to the lower fluency of the translations.
 
-In this study, we proposed to enhance the beam search algorithm described in
-the previous sections \JH{(check ref)} by a number of fluency-oriented
-features, which we include in the hypothesis scoring model:
+In this study, we propose to enhance the beam search algorithm (see Section
+\ref{sec:decoding}) by a number of fluency-oriented features, which we include
+in the hypothesis scoring model:
 %
 \begin{equation}
   \text{score}(y|x) = \log p(y|x) + \sum{i=1}^n w_i \cdot \Phi_i(y)
@@ -682,13 +683,34 @@ set and we show them in Table \ref{tab:ngrams:examples}.
 \end{table}
 
 
-
+% -----------------------------------------------------------------------------
 \section{Limitations}
+\label{sec:ctc:limitations}
+% -----------------------------------------------------------------------------
 
-The proposed approaches and the experimental evaluation have their
-limitations. \JH{List all the limitations here: namely, no knowledge
-  distillation, the autoregressive baselines are not comparable, etc.}
+The proposed approaches described in this chapter and their experimental
+evaluation have certain limitations, related to the discussion in Section
+\ref{sec:nat:discussion}. We list the most relevant drawbacks in the following
+paragraphs and we attempt to address all of them in the experiments presented
+in the next chapter.
 
+One of the main weaknesses of the preliminary experiments is the relatively low
+translation quality of both the \acl{ar} baseline and the \acs{ctc}-based
+models compared to the other approaches. The main cause of the poor \ac{nat}
+model performance is that the models were trained without knowledge
+distillation. The causes of the poor translation quality of the \ac{ar}
+baseline models include not using backtranslation (see the \ac{ar} results
+without and with backtranslation in Tables \ref{tab:end-to-end:bleu} and
+\ref{tab:ngrams:bleu} in Sections \ref{sec:ctc:experiments} and
+\ref{sec:ctc:fluency} respectively), and using smaller and perhaps a noisier
+dataset than what can be obtained.
+
+Another weakness of the models from the previous sections is the relatively low
+decoding speed in absolute numbers. Although we achieve reasonable speed-up
+compared to an \ac{ar} baseline, the latency can be substantially lower than we
+measured, both on CPU and on a GPU.
+
+\JH{co dodat? conclude the chapter somehow, or ignore this.}
 
 
 %%% Local Variables:
