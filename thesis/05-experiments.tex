@@ -52,44 +52,46 @@ continue to achieve superior results over \ac{nar} models.
   and Kenneth Heafield, published at WMT 2021.}
 
 \noindent
-In this section, we describe the experimental settings for training the
-autoregressive teacher models, which we used for knowledge distillation of data
-for training our non-autoregressive student models.
+In this section, we describe the experimental settings for training the \ac{ar}
+teacher models, which we use for knowledge distillation to prepare training
+data for our \ac{nar} student models.
 
 In our English-German experiments, we use autoregressive models from our
 submission to the \ac{wmt} 2021 News Translation Shared Task
-\citep{chen-etal-2021-university}. We use these models both as a strong
-autoregressive baseline, and as teacher models for generating distilled data
-for the non-autoregressive student models, described in the next section.  The
-models were trained on cleaned parallel data augmented with backtranslated
-monolingual data.
+\citep{chen-etal-2021-university}. We use these models both as strong \ac{ar}
+baselines, and as teacher models for generating distilled data for the \ac{nar}
+student models, described in Section \ref{sec:exp:students}. The models were
+trained on cleaned parallel data augmented with backtranslated monolingual
+data, using Marian, a C++ toolkit for training and decoding from \ac{nmt}
+models \citep{junczys-dowmunt-etal-2018-marian}.
 
 % ------------------------------------------------------------------------------
 \paragraph{Data Cleaning.} We prepare the training dataset consisting of the
-following parts. First, we used clean parallel data from the Europarl corpus
+following parts: First, we use clean parallel data from the Europarl corpus
 \citep{koehn-2005-europarl}, the Tilde MODEL -- RAPID corpus
 \citep{rozis-skadins-2017-tilde}, and News Commentary corpus from OPUS
-\citep{tiedemann-2012-parallel}. Next, we included sources of crawled parallel
+\citep{tiedemann-2012-parallel}. Next, we include sources of crawled parallel
 data from the web, which are considered noisy. These include Paracrawl
 \citep{espla-etal-2019-paracrawl}, Common
-Crawl\footnote{\url{https://commoncrawl.org/}}, and WikiMatrix
+Crawl\footnote{\url{https://commoncrawl.org/}}, WikiMatrix
 \citep{schwenk2019wikimatrix}, and the Wikipedia Parallel Titles
 Corpus\footnote{\url{https://linguatools.org/tools/corpora/wikipedia-parallel-titles-corpora/}}. Finally,
-we used backtranslation \citep{sennrich-etal-2016-improving} of monolingual
-data obtained from News Crawl. We trained our own models for generating the
-backtranslations, trained on cleaned parallel data, as described below.
+we use backtranslation \citep{sennrich-etal-2016-improving} of monolingual data
+obtained from News Crawl.  We train our own models for generating the
+backtranslations on cleaned parallel data, as described below.
 
-On the gathered data (both clean and noisy), we applied filtering techniques to
-improve the overall quality of the parallel data. First, we applied a
-deterministic rule-based filtering%
+We perform the following filtering techniques on the gathered data (both clean
+and noisy) to improve the overall parallel data quality.
+
+We start with a deterministic rule-based filtering%
 \footnote{\url{https://github.com/browsermt/students/blob/master/train-student/clean/}}
-and deduplication. We removed all sentence pairs containing non-printing
+and deduplication. We remove all sentence pairs containing non-printing
 characters, empty sentences, and sentences longer than 120 words; we also
-removed all sentence pairs with length ratio of less than 0.6 (0.4 for
-Wikititles), sentences in which over 40\% of characters did not constitute
+remove all sentence pairs with length ratio of less than 0.6 (0.4 for
+Wikititles), sentences in which over 40\% of characters do not constitute
 tokens, and sentences in which more than 50\% was non-alphabetic characters. We
-ran language identification using fastText
-\citep{joulin-etal-2017-bag,joulin2016fasttext} and removed all sentence pairs
+run language identification using fastText
+\citep{joulin-etal-2017-bag,joulin2016fasttext} and remove all sentence pairs
 classified as not English-German.
 
 The data sizes before and after the rule-based filtering are shown in Table
@@ -120,24 +122,27 @@ consists of data from noisy sources.
   \label{tab:ende-data-sizes}
 \end{table}
 
-To further clean the data, we applied dual cross-entropy filtering, as proposed
+To further clean the data, we apply dual cross-entropy filtering, as proposed
 by \citet{junczys-dowmunt-2018-dual} and described in the data cleaning
-paragraph in Section \ref{sec:training:methodology}.  We trained two
-Transformer base models for dual cross-entropy filtering using the clean part
-of the data after the rule-based cleaning step.  \JH{Add more details on these
-  models, perhaps include the hyperparameters somewhere in an appendix, plus
-  add the dev scores}
+paragraph in Section \ref{sec:training:methodology}.  We train two Transformer
+base models (one for each translation direction) for dual cross-entropy
+filtering using the clean part of the data after the rule-based cleaning
+step.
+% \JH{Add more details on these models, perhaps include the hyperparameters
+% somewhere in an appendix, plus add the dev scores}
 
 We score the crawled part of the parallel data using the trained models, and we
 sort the sentence pairs according to the score. To estimate how many of the
-sentence pairs in the crawled we can consider clean, we train translation
-models in both directions on different amounts of the scored data. We used
-25\%, 50\%, 75\%, and 100\% of the crawled data, taking the highest-scoring
-sentence pairs for training. Based on the score on the development data (the
-\ac{wmt} 2019 test set, \citealp{barrault-etal-2019-findings}), we select the
-75\% highest-scoring sentence pairs from the crawled data. \JH{rephrase this a
-  bit + add details about the models} The develoment scores achieved by the
-trained models are shown in Table \ref{tab:dual-cross-entropy-selection}.
+crawled sentence pairs can we consider clean, we train the big variant of the
+Transformer translation models in both directions on different amounts of the
+scored data (following the teacher model hyperparameter settings in
+\ref{tab:trafo-big-hparams}). We use 25\%, 50\%, 75\%, and 100\% of the data,
+taking the highest-scoring sentence pairs for training. Based on the \acs{bleu}
+scores achieved by the Transformer big models on the development data (the
+\ac{wmt} 2019 test set, \citealp{barrault-etal-2019-findings}), we set down the
+75\% as the ``clean'' portion of the crawled data. The develoment scores
+achieved by the trained models are shown in Table
+\ref{tab:dual-cross-entropy-selection}.
 % \JH{Add the data sizes after this cleaning step.}
 
 \begin{table}
@@ -665,22 +670,6 @@ Table \ref{tab:exp:cpu} shows
 \end{table}
 
 
-\begin{table}
-  \centering
-
-  \begin{tabular}{l*{6}r}
-    \toprule
-    Model & $b=8$ & $b=16$ & $b=32$ & $b=64$ & $b=128$ & $b=256$ \\
-    \midrule
-    \acs{ar} -- Base \\
-    \acs{nar} -- Base \\
-    \bottomrule
-  \end{tabular}
-
-  \caption{}%
-  \label{tab:}
-\end{table}
-
 
 \begin{figure}
   \centering
@@ -720,7 +709,7 @@ Table \ref{tab:exp:cpu} shows
     Batch size & 1 & 2 & 4 & 8 & 16 & 32 & 64 & 128 \\
     \midrule
     \acs{ar} -- Large &&  &  &  &  &  & 3,090 & 1,918 \\
-    \acs{ar} -- Base  &&  &  & 13,836 & 7,498 & 3,997 & 2,371 & 1,465 \\
+    \acs{ar} -- Base  &&  & 25,745 & 13,836 & 7,498 & 3,997 & 2,371 & 1,465 \\
     \midrule
     Large & 7,020 & 3,874 & 2,292 & 1,547 & 1,179 & 973 & 850 & 782 \\
     Base  & 6,289 & 3,400 & 1,854 & 1,166 &   816 & 635 & 542 & 485 \\

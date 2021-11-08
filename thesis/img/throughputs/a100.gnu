@@ -19,7 +19,7 @@ set xrange [1:128]
 set decimal locale
 set format "%'.0f"
 set ylabel "Decoding time (seconds)" offset -1.5
-set yrange [0:30000]
+set yrange [0:15000]
 
 plot path using 1:2 with linespoints lw 2.5 lt rgb "#333333", \
      path using 1:3 with linespoints lw 2.5 lt rgb "#cccccc", \
