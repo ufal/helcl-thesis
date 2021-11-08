@@ -354,6 +354,34 @@ of parameter updates.
   \label{fig:deen-learning-curves}
 \end{figure}
 
+% ------------------------------------------------------------------------------
+\subsection{Lexical Shortlist}
+\label{subsec:exp:shortlist}
+% ------------------------------------------------------------------------------
+
+\JH{in this subsection, describe what lexical shortlists are (link to cahpter 2
+  if there is a mention). Then, say how we created the shortlist and how big it
+  is and stuff like that.}
+
+\JH{shoftlisting is an optimization method used for speeding up the decoding
+  out of a translation mdoel, previously only employed in autoregressive models
+  \citep{jean, bogoychev}. The idea of using a lexical shortlist is to reduce
+  the size of the large output projection matrix (recall the dimension of the
+  ouptut matrix is $d \times |V|$), and thus save time on the matrix
+  multiplication operation. The size reduction is realized by leaving out
+  columns corresponding to words which are not likely to appear on the output.}
+
+\JH{For a batch of source sentences, the lexical shortlist is a list of tokens
+  from the vocabulary which are considered as potential target words based on
+  an bilingual lexicon. The words which are not in the shortlist are not
+  generated. In our experiments, we include 100 most frequent target tokens and
+  100 most probable translations for each source token in the batch.}
+
+
+
+
+
+
 
 % ------------------------------------------------------------------------------
 \section{Results}%
@@ -370,12 +398,26 @@ In this section we analyze the results both in terms of translation quality
 \label{subsec:results:quality}
 % ------------------------------------------------------------------------------
 
+We compare the results of our models to both related work on \ac{nat} and to
+the results of the \ac{wmt}~21 Efficiency Shared Task which features
+highly-optimized \ac{ar} translation models.  In the \ac{nar} literature, the
+\acs{wmt}~14 test set \citep{bojar-etal-2014-findings} is used as a standard
+benchmark. On the other hand, the efficiency task uses the recent test set from
+\acs{wmt}~21 \JH{cite findings}.
+
+\paragraph{Results on the \acs{wmt}~21 test set.}
+As argued in Section \ref{sec:evaluation}, \acs{bleu} alone is not necessarily
+a reliable automatic metric. In line with the evaluation methodology of the
+efficiency task, we also measure \acs{comet} \citep{rei-etal-2020-comet} and
+\acs{chrf} \citep{popovic-2015-chrf}. We do not perform human evaluation.
+
 Tables \ref{tab:wmt21-scores-ende} and \ref{tab:wmt21-scores-deen} show the
-results of automatic evaluation with \acs{bleu}, \acs{chrf}, and \acs{comet}
-scores on the \acs{wmt}~21 news translation test set. In the English
+results of automatic evaluation
+% with \acs{bleu}, \acs{chrf}, and \acs{comet}% scores
+on the \acs{wmt}~21 news translation test set. In the English
 $\rightarrow$ German direction, the test set consists of 1,002 sentences along
 with three different reference translations. In the German $\rightarrow$
-English directions, there are 1,000 sentences with two reference translations
+English direction, there are 1,000 sentences with two reference translations
 each. We measure multi-reference \acs{bleu} score using Sacrebleu
 \citep{post-2018-call}, computing confidence intervals with bootstrap
 resampling. We report the Sacrebleu signatures for English $\rightarrow$
@@ -394,13 +436,12 @@ Finally, the \acs{comet} scores are computed with \acs{comet} version
 
 We observe that in both translation directions, the \ac{ar} models outperform
 the \ac{nar} models. The performance gap between the models grows futher with
-beam search and ensembling. We can also see that knowledge distillation has
+beam search and ensembling. We can also see that knowledge distillation has a
 positive effect on both \ac{ar} and \ac{nar} models, with the student \ac{ar}
-model matching the performance of the ensemble of the large teacher models.
+model matching the performance of the ensemble of four large teacher models.
 We also note that the difference in the \acs{comet} score is bigger than in
 \acs{bleu}, which might suggest that \acs{nar} models would rank poorly in
 human evaluation, despite achieving reasonable \acs{bleu} scores.
-\JH{say somewhere that they do not use distillation for the ar baselines}
 
 % \JH{We observe... gaps everywhere, AR clearly better in translation. relatively
 %   small gaps in ChrF scores, moderate gaps in bleu, large gaps in COMET which
@@ -409,11 +450,11 @@ human evaluation, despite achieving reasonable \acs{bleu} scores.
 
 The results on the test set confirm the ranking of the \acs{nar} models
 apparent from the learning curves (see Figures \ref{fig:ende-learning-curves}
-and \ref{fig:deen-learning-curves}). With the interesting exception of the
-English $\rightarrow$ German Micro model, the larger the student model, the
-better scores it achieves.
-\JH{we have experiments with tied embeddings but I would keep them out because
-  the results were the same.}
+and \ref{fig:deen-learning-curves}), with the interesting exception of the
+English $\rightarrow$ German Micro model. Otherwise, the larger the student
+model is, the better scores it achieves.
+% \JH{we have experiments with tied embeddings but I would keep them out
+% because the results were the same.}
 
 \begin{table}
   \centering
@@ -498,19 +539,49 @@ better scores it achieves.
 \end{table}
 
 
-Table \ref{tab:wmt14-bleu-scores} shows the \acs{bleu} scores measured on the
-\acs{wmt}~14 test set.\footnote{Sacrebleu tag: {\scriptsize
-    \texttt{BLEU+case.mixed+lang.en-de+numrefs.1+smooth.exp+test.wmt14/full+tok.13a+version.1.5.1}}}
-We also show the scores reached after the first 300 thousand updates, to
-compare better with some of the results in the related work.
+\paragraph{Results on the \acs{wmt}~14 test set.}
+We present automatic evaluation results measured on the \acs{wmt}~14 test set
+to provide comparison to the related work on \acl{nar} models (see Table
+\ref{tab:related:wmt14} in Section \ref{sec:nat:discussion} for reference).  In
+Table \ref{tab:wmt14-bleu-scores} we show the \acs{bleu} scores achieved by our
+\ac{nar} student models on this test set.
 
-\JH{Unlike our previous study in Chapter \ref{chap:nar-nmt-ctc}, we found
-  checkpoint averaging does not have a significant effect on the translation
-  quality (in terms of BLEU), and that the effect is even lower for fully
-  converged models.}
+Since many of the related approaches stop the training early after 300 thousand
+updates \citep{gu2017nonautoregressive, gu-kong-2021-fully}, we report the
+scores of our models both at this point in training, and after the training
+reached convergence.
 
+Table \ref{tab:wmt14-weight-avg} shows the \acs{wmt}~14 \acs{bleu} scores with
+checkpoint averaging. In each variant, we take the average parameters of the
+five best scoring models as measured on the validation set (either before the
+300,000th update or overall). In contrast to our previous experiments in
+Chapter \ref{chap:nar-nmt-ctc} (see Table \ref{tab:end-to-end:bleu}), we found
+chekpoint averaging does only have a small effect on the translation quality in
+terms of \acs{bleu}.
 
+\begin{table}
+  \centering
+  \begin{tabular}{lrrrr}
+    \toprule
+    & \multicolumn{2}{c}{En $\rightarrow$ De}
+    & \multicolumn{2}{c}{De $\rightarrow$ En} \\
+    Model
+    & 300k & Final & 300k &  Final \\
+    \midrule
 
+    Large & 27.6 & 28.1 & 29.5 & 30.9 \\
+    Base  & 22.4 & 23.7 & 27.7 & 29.8 \\
+    Small & 22.4 & 23.7 & 26.5 & 28.7 \\
+    Micro & 23.6 & 25.1 & 25.5 & 27.2 \\
+    Tiny  & 19.0 & 20.3 & 19.5 & 21.5 \\
+
+    \bottomrule
+  \end{tabular}
+
+  \caption{The \acs{bleu} scores of the \emph{single best} models on the
+    \acs{wmt}~14 test set after 300k updates and at the end of the training.}%
+  \label{tab:wmt14-bleu-scores}
+\end{table}
 
 \begin{table}
   \centering
@@ -520,22 +591,24 @@ compare better with some of the results in the related work.
     & \multicolumn{2}{c}{En $\rightarrow$ De}
     & \multicolumn{2}{c}{De $\rightarrow$ En} \\
     Model
-    & 300k & Final & 300k & Final \\
+    & 300k & Final & 300k &  Final \\
     \midrule
 
-    Large & 26.5 & 27.0 & 29.8 & 30.9 \\
-    Base & 21.6 & 22.8 & 27.9 & 29.7 \\
-    Small & 22.2 & 23.1 & 26.7 & 28.7 \\
-    Micro & 22.9 & 24.1 & 25.2 & 27.1 \\
-    Tiny & 18.4 & 19.4 & 19.9 & 21.5 \\
+    Large & 27.7 & 28.4 & 30.0 & 31.3 \\
+    Base  & 22.4 & 23.7 & 28.1 & 30.3 \\
+    Small & 22.5 & 23.6 & 26.7 & 29.1 \\
+    Micro & 23.7 & 25.0 & 25.1 & 27.5 \\
+    Tiny  & 19.0 & 20.3 & 19.6 & 21.7 \\
+
     \bottomrule
   \end{tabular}
 
-  \caption{The \acs{bleu} scores of the best models on the WMT~14 test set
-    after 300k updates and at the end of the training. \JH{Add scores with
-      checkpoint averaging, add one related work to compare.}}
-  \label{tab:wmt14-bleu-scores}
+  \caption{The \acs{bleu} scores of the \emph{averaged} models on the
+    \acs{wmt}~14 test set after 300k updates and at the end of the training.}%
+  \label{tab:wmt14-weight-avg}
+
 \end{table}
+
 
 % ------------------------------------------------------------------------------
 \subsection{Decoding Time}%
@@ -553,9 +626,20 @@ minimize the effect of the model loading overhead.
 
 For measuring the CPU times, we use the same environment as the \acs{wmt}~21
 shared task organizers which is a dual-socket Intel Xeon Gold 6354 from Oracle
-Cloud, a 36-core CPU server. For GPU efficiency, we also use a Nvidia A100 GPU,
-albeit on a slightly different server architecture. \JH{TODO: For better
-  comparison, we also report the GPU decoding times on other GPU types.}
+Cloud, a 36-core CPU server. For GPU efficiency, we use an Nvidia A100 GPU.
+% albeit on a slightly different server architecture. \JH{what arch exactly?}
+We also include our results on an Nvidia P100 GPU which has been used often in
+the literature (see Table \ref{tab:related:hardware} in Section
+\ref{sec:nat:discussion}).
+
+\paragraph{GPU Latency and Throughput.}
+
+
+
+\paragraph{CPU Latency and Throughput.}
+Table \ref{tab:exp:cpu} shows
+
+
 
 \begin{table}
   \centering
@@ -577,7 +661,7 @@ albeit on a slightly different server architecture. \JH{TODO: For better
   \end{tabular}
 
   \caption{}%
-  \label{tab:}
+  \label{tab:exp:cpu}
 \end{table}
 
 
@@ -598,63 +682,61 @@ albeit on a slightly different server architecture. \JH{TODO: For better
 \end{table}
 
 
-
-\begin{table}
+\begin{figure}
   \centering
 
-  \begin{tabular}{lrr}
+  \input{./img/throughputs/p100.tex}
+  \vspace{1\baselineskip}
+
+  \begin{tabular}{lrrrrrrrr}
     \toprule
-    GPU & Nvidia P100 & Nvidia A100 \\
+    Batch size & 1 & 2 & 4 & 8 & 16 & 32 & 64 & 128\\
     \midrule
-    \acs{ar} -- Large & & \\
-    \acs{ar} -- Base & & \\
+    \acs{ar} -- Large &&        & 44,838 & 26,231 & 16,741 & 11,266 & 8,926 & 7,449 \\
+    \acs{ar} -- Base  && 61,965 & 33,957 & 18,503 & 11,087 &  6,677 & 4,503 & 3,409 \\
     \midrule
-    \Acl{nar} models \\
-    Large & & \\
-    Base  & & \\
-    Small & & \\
-    Micro & & \\
-    Tiny  & & \\
-    \bottomrule
-  \end{tabular}
-
-  \caption{}%
-  \label{tab:}
-\end{table}
-
-
-\begin{table}
-  \centering
-
-  \begin{tabular}{lrrrrrrr}
-    \toprule
-    Batch size & 1 & 4 & 8 & 16 & 32 & 64 & 128\\
-    \midrule
-    \acs{ar} Base &  &  &  &  &  &  & \\
-    \midrule
-    Large & 14,157 & 8,079 & 7,003 & 6,452 & 6,056 & 5,767 & 5,581 \\
-    Base  &  8,720 & 3,875 & 3,146 & 2,769 & 2,535 & 2,394 & 2,303 \\
-    Small &  5,017 & 2,376 & 1,977 & 1,748 & 1,635 & 1,564 & 1,512 \\
-    Micro &  3,781 & 1,871 & 1,579 & 1,418 & 1,343 & 1,282 & 1,248 \\
-    Tiny  &  1,916 &   960 &   803 &   730 &   687 &   666 &   652 \\
+    Large & 14,157 & 10,285 & 8,079 & 7,003 & 6,452 & 6,056 & 5,767 & 5,581 \\
+    Base  &  8,720 &  5,532 & 3,875 & 3,146 & 2,769 & 2,535 & 2,394 & 2,303 \\
+    Small &  5,017 &  3,270 & 2,376 & 1,977 & 1,748 & 1,635 & 1,564 & 1,512 \\
+    Micro &  3,781 &  2,462 & 1,871 & 1,579 & 1,418 & 1,343 & 1,282 & 1,248 \\
+    Tiny  &  1,916 &  1,295 &   960 &   803 &   730 &   687 &   666 &   652 \\
     \bottomrule
   \end{tabular}
 
   \caption{Wall times to translate one million sentences (in seconds) on a
-    single Nvidia P100 GPU with different batch size settings.}
-  \label{tab:throughput:p100}
-
-\end{table}
+    single Nvidia \emph{Pascal} P100 GPU with different batch size settings.}%
+  \label{fig:throughput:p100}
+\end{figure}
 
 
 \begin{figure}
   \centering
-  \input{./img/throughputs/p100.tex}
+
+  \input{./img/throughputs/a100.tex}
+  \vspace{1\baselineskip}
+
+  \begin{tabular}{lrrrrrrrr}
+    \toprule
+    Batch size & 1 & 2 & 4 & 8 & 16 & 32 & 64 & 128 \\
+    \midrule
+    \acs{ar} -- Large &&  &  &  &  &  & 3,090 & 1,918 \\
+    \acs{ar} -- Base  &&  &  & 13,836 & 7,498 & 3,997 & 2,371 & 1,465 \\
+    \midrule
+    Large & 7,020 & 3,874 & 2,292 & 1,547 & 1,179 & 973 & 850 & 782 \\
+    Base  & 6,289 & 3,400 & 1,854 & 1,166 &   816 & 635 & 542 & 485 \\
+    Small & 3,300 & 1,860 & 1,051 &   717 &   526 & 434 & 380 & 357 \\
+    Micro & 2,322 & 1,345 &   833 &   544 &   433 & 367 & 332 & 311 \\
+    Tiny  & 1,360 &   780 &   503 &   367 &   301 & 273 & 252 & 243 \\
+    \bottomrule
+  \end{tabular}
 
   \caption{Wall times to translate one million sentences (in seconds) on a
-    single Nvidia P100 GPU with different batch size settings.}%
-  \label{fig:throughput:p100}
+    single Nvidia \emph{Ampere} A100 GPU with different batch size settings.}%
+  \label{fig:throughput:a100}
 \end{figure}
+
+
+
 
 % ------------------------------------------------------------------------------
 \subsection{Discussion}%

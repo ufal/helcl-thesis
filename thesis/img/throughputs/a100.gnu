@@ -1,13 +1,13 @@
 #set term png
 set term lua tikz latex size 13.5,8
-set output "p100.tex"
+set output "a100.tex"
 
 # set bmargin 3.2
 # set lmargin 4
 # set rmargin 1
 # set tmargin 0
 
-path = "p100.tsv"
+path = "a100.tsv"
 set datafile separator "\t"
 set key inside right top vertical spacing 1.5 sample 1 autotitle columnhead
 set logscale x 2
