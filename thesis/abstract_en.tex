@@ -11,11 +11,11 @@ This dependency allows the model to keep track of the state of the decoding
 process, which improve the fluency of the output.
 %
 On the other hand, it requires the neural network computation to be run
-sequentially, and thus cannot be paralelized.
+sequentially, and thus cannot be parallelized.
 %
 Non-autoregressive models impose conditional independence on the output
 probability distributions, which means that the decoding process is
-paralelizable and hence the decoding speed improves.
+parallelizable and hence the decoding speed improves.
 %
 The goal of non-autoregressive machine translation is to match the translation
 quality of autoregressive models, while at the same time reducing the decoding
