@@ -463,7 +463,9 @@ model is, the better scores it achieves.
 % \JH{we have experiments with tied embeddings but I would keep them out
 % because the results were the same.}
 
-\JH{zakomponovat kvalitu modelu se shortlistem.}
+Finally, we see that using a lexical shortlist does not have an effect on the
+translation quality in all model variants. \JH{distill vs non-distill?}
+
 
 
 \begin{table}
@@ -654,7 +656,23 @@ the literature (see Table \ref{tab:related:hardware} in Section
 \ref{sec:nat:discussion}).
 
 \paragraph{GPU Latency and Throughput.}
+Figures \ref{fig:throughput:p100} and \ref{fig:throughput:a100} plot the times
+to translate the test set on P100 and A100 GPUs, respectively. Each figure
+shows the relationship between the batch size and the decoding time in seconds,
+and includes a table with the measured data. The runs corresponding to the
+missing entries in the table did not finish in 24 hours.
 
+We see similar trends in both GPU settings. For \ac{ar} models, increasing the
+batch size heavily reduces the overall decoding speed and eventually surpasses
+the large \ac{nar} models. Increasing the batch size on a GPU increases the
+decoding speed of \ac{nar} models as well, but the effect is diminished for
+larger batch sizes.
+
+From this point of view, the optimal scenario for \ac{nar} models are
+situations in which the system runs in online mode, i.e. with a batch size of
+1, or with a batch size of a few sentences. Using a faster GPU with more
+threads increases the batch size when \ac{ar} models meet the speed of \ac{nar}
+models.
 
 
 \paragraph{CPU Latency and Throughput.}
@@ -766,7 +784,7 @@ Table \ref{tab:exp:cpu} shows
 
   \caption{Wall times to translate one million sentences (in seconds) on 36 CPU
     cores using lexical shortlist with different batch size settings.}%
-  \label{fig:throughput:a100}
+  \label{fig:throughput:cpu36}
 \end{figure}
 
 
