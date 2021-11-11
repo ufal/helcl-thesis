@@ -4,29 +4,29 @@
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \Ac{mt} has always been the holy grail of computational linguistics. The first
-attemtps to use algorithms for translation date back to before the field of
-computational linguistics was even established. By 1950s, researchers began to
-develop automatic translation systems on computers. During the following
+attempts to use algorithms for translation date back to before the field of
+computational linguistics was even established. By the 1950s, researchers began
+to develop automatic translation systems on computers. During the following
 decades, using rule-based translation backed up by a linguistic theory has been
 the mainstream paradigm. Even in the early days, \ac{mt} systems were used in a
 number of applications, such as translation of technical manuals and similar
 texts with a simple structure and low language variety.
 
-In the late 1980s and early 1990s, the technological progress enabled computers
-to work with larger textual data, and the first statistical methods for \ac{mt}
-were concieved. Instead of having roots in linguistics, statistical \ac{mt} is
+In the late 1980s and early 1990s, technological progress enabled computers to
+work with larger textual data, and the first statistical methods for \ac{mt}
+were conceived. Instead of having roots in linguistics, statistical \ac{mt} is
 founded on the information theory. This paradigm shift made it possible to use
 the same methods for different language pairs without additional costs for
 hand-crafting the rules for translation systems. As the computational power of
-computers and size of the available data and the computational power of the
-grew bigger throughout 1990s and 2000s, statistical methods became the standard
-approach to \ac{mt}. Those days, automatic \ac{mt} started to attract a wide
-interest from the public with the first general-purpose translation systems
-available on the Internet.
+computers and the size of the available data and the computational power of the
+grew bigger throughout the 1990s and 2000s, statistical methods became the
+standard approach to \ac{mt}. Those days, automatic \ac{mt} started to attract
+wide interest from the public with the first general-purpose translation
+systems available on the Internet.
 
 In parallel with \ac{mt} research, the field of \ac{ai} has written its own
 history. From the first neurology-inspired algorithms in the 1950s and the
-formulation of the Turing test, through the so called \ac{ai} winter periods
+formulation of the Turing test, through the so-called \ac{ai} winter periods
 and the development of artificial neural networks and the backpropagation
 algorithm, culminating during the last decade in the advent of deep learning.
 Not unlike \ac{mt}, the research advancements in \ac{ai} owe their existence to
@@ -34,7 +34,7 @@ faster and more powerful computers.
 
 In the past decade, the fields of \ac{ai} and \ac{mt} fused together, resulting
 in a new paradigm of \emph{\acl{nmt}} (\acs{nmt}\glsunset{nmt}). Soon after
-\ac{nmt} was established as the new state of the art approach to translation,
+\ac{nmt} was established as the new state-of-the-art approach to translation,
 high-performing systems became available online for the general public and the
 whole field of \ac{mt} started growing rapidly. Whereas in the early stages,
 \ac{mt} development was focused on a few selected languages, mostly translating
@@ -62,47 +62,46 @@ models for \ac{nmt} process textual data, and how they deal with the large
 number of different words they need to understand. We introduce the concept of
 encoder-decoder architectures, which are the backbone of nearly every \ac{nmt}
 system there is, and their two types, \acs{rnn}-based models and the
-Transformer. We give an overview of how to train these models, including a
-number of practical aspects of training, such as what methods do we use for
-data cleaning, or what training algorithms do we use and how to configure
-them. We briefly talk about methods for decoding applied once the model has
-been trained. We conclude the chapter by discussing the evaluation, which tells
-us how good or how bad our translation models are.
+Transformer. We give an overview of how to train these models, including some
+practical aspects of training, such as what methods do we use for data
+cleaning, or what training algorithms do we use, and how to configure them. We
+briefly talk about methods for decoding applied once the model has been
+trained. We conclude the chapter by discussing the evaluation, which tells us
+how good or how bad our translation models are.
 
 Chapter \ref{chap:nat} walks us through the research on \ac{nat}. We explain
 the principal differences between \acl{ar} and \acl{nar} models, what issues
-arise when using the latter, and how we can solve them. We provide a
-comprehensive survey of the literature, owing to the fact that the whole domain
-of \ac{nat} resarch is fairly new. We describe efforts to keep the most
-important feature of \ac{nat} models -- the high decoding speed -- intact by
-introducing constraints on the training process, or other efforts that
-partially sacrifice the higher decoding speed for better translation quality by
-iterative refinement. At the end of the chapter, we identify weaknesses
-prevalent in a large part of the literature on this topic. One of the main
-problems lies in the evaluation methodology adopted by the \ac{nat} research
-community.
+arise when using the latter, and how we can solve them.  Since the whole domain
+of \ac{nat} research is fairly new, we provide a comprehensive survey of the
+literature. We describe efforts to keep the most important feature of \ac{nat}
+models -- the high decoding speed -- intact by introducing constraints on the
+training process, or other efforts that partially sacrifice the higher decoding
+speed for better translation quality by iterative refinement. At the end of the
+chapter, we identify weaknesses prevalent in a large part of the literature on
+this topic. One of the main problems lies in the evaluation methodology adopted
+by the \ac{nat} research community.
 
 We present a method for training \acl{nar} models for \ac{nmt} with \ac{ctc} in
 Chapter \ref{chap:nar-nmt-ctc}. We first describe the \ac{ctc} algorithm for
-computing loss between unaligned label and prediction sequences. Having such
-loss function relaxes the requirement for target length prediction, which is
-one of the obstacles in \ac{nat}. We show the changes we need to apply to the
-model architecture so we can use the \ac{ctc} loss, and we report on our
+computing loss between the unaligned label and prediction sequences. Having
+such a loss function relaxes the requirement for target length prediction,
+which is one of the obstacles in \ac{nat}. We show the changes we need to apply
+to the model architecture so we can use the \ac{ctc} loss, and we report on our
 experiments and their results, both in terms of speed and translation quality.
 Our analysis shows that \ac{nat} models suffer from reduced fluency of the
 translations, which is in line with the conclusions of other \ac{nat} studies.
-We briefly mention our attempt to improve the translation fluency using a
-\acl{lm} rescoring.
+We briefly mention our attempt to improve translation fluency using a \acl{lm}
+rescoring.
 
 In Chapter \ref{chap:experiments}, we document our recent efforts to address
 the flaws in the evaluation methodology discussed in Chapter \ref{chap:nat}
 with our \acs{ctc}-based model from Chapter \ref{chap:nar-nmt-ctc}. We compare
 our results to methods published in the context of \ac{nat}, as well as methods
 that focus directly on improving the efficiency of translation systems.  We
-find that despite achieving a high performance among \ac{nat} models, using
+find that despite achieving high performance among \ac{nat} models, using
 efficient \acl{ar} translation models leads to better results, both in terms of
 speed and translation quality. We argue that for better estimation of the
-benefits of \acl{nar} methods, the future research should take into account the
+benefits of \acl{nar} methods, future research should take into account the
 methods employed in production-ready systems.
 %
 We conclude the thesis in Chapter \ref{chap:conclusions}.
