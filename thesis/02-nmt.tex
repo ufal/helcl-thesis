@@ -443,13 +443,14 @@ RNNs, each layer is a recurrent network. The inputs of the second and each
 layer onwards are the outputs of the preceding layer. The output of the whole
 deep RNN is the output of the last layer.
 
-In deep \acp{rnn}, there are a few settings to consider. \JH{tell me more -- if
-  not more, make this a layernorm paragraph}
-
-\JH{first layer norm paragraph should give better motivation, last paragraph
-  should provide some insight to the formulas.}  To improve the convergence
-speed of the deep models, \emph{layer normalization} \citep{ba2016layer} is
-often employed between layers. For layer $l$ and its output states
+In deep \acp{rnn}, there are a few settings to consider.
+%\JH{tell me more -- if not more, make this a layernorm paragraph}
+%
+% \JH{first layer norm paragraph should give better motivation, last paragraph
+%   should provide some insight to the formulas.}
+To improve the convergence speed of the deep models and to stabilize the
+\ac{rnn} hidden state dynamics across layers, \emph{layer normalization}
+\citep{ba2016layer} is often employed. For layer $l$ and its output states
 %$h_1^l, \ldots h_{T_x}^l$, $h_i^l \in \mathbb{R}^n$,
 $\mathbf{h}^l \in \mathbb{R}^{T_x \times n}$, we compute:
 %
@@ -463,11 +464,12 @@ where $\mu^l$ and $\sigma^l$ are the mean and standard deviation of the output
 state values, $\gamma^l, \beta^l \in \mathbb{R}^{T_x \times n}$ are learnable
 \emph{gain} and \emph{bias} parameters, and $\odot$ denotes element-wise
 multiplication. The normalized states $\bar{\mathbf{h}}^l$ are then used as the
-input to the $l+1$-th layer of the network instead. \JH{$\mu^l$ probably has
-  different dim than $\mathbf{h}^l$?}
+input to the $(l+1)$-th layer of the network instead.
 
-
-
+Another common technique in multi-layer \acp{rnn} is to tie the vector spaces
+of the \ac{rnn} states on different layers with residual connections. In such
+networks, the input to the $(l+1)$-th layer is the sum of the output of the
+$l$-th layer with its input.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \subsection{Transformer Model}
@@ -601,11 +603,9 @@ is the dimension of the hidden state.
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Residual Connections and Layer Normalization.} As a post-processing
 step, the output of each sub-layer is connected with the output of the previous
-sub-layer with residual connections. \JH{zkontrolovat jestli se to definovalo v
-  Deep Architectures, stejně jako Layer Norm. Also, zvážit přidat dropout sem
-  někam} Similarly to the \acs{rnn}-based deep architectures, layer
-normalization is used in combination, which ties all states in the sub-layer
-stack into a shared vector space.
+sub-layer with residual connections. Similarly to the \acs{rnn}-based deep
+architectures, layer normalization is used in combination, which ties all
+states in the sub-layer stack into a shared vector space.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{Output Projection.} The states from the last decoder layer are
@@ -1024,7 +1024,27 @@ about the best results.
 
 \paragraph{Beam Search.}
 A widely adopted technique for exhaustive search approximation is the
-\emph{beam search} algorithm. \JH{more about beam search}
+\emph{beam search} algorithm. The algorithm keeps track of a small number $b$
+of hypotheses. In each time step, each hypothesis is expanded with $b$
+most-likely tokens as predicted by the model, forming $b^2$ candidate
+hypotheses. Out of the $b^2$ candidates, the algorithm selects $b$ best-scoring
+hypotheses which will form the beam in the next step.  To make up for the fact
+that shorter sentences receive higher probabilities, length normalization is
+usually taken into account when computing the hypothesis score
+\citep{wu2016google}:% compute the score $s(y|x)$ of a
+% hypothesis $y$ given source $x$ as follows:
+%
+\begin{equation}
+  \begin{split}
+  s(y|x) &= \log p(y|x, \theta) / lp(y) \\
+  lp(y) &= \frac{(5 + T_y)^\alpha}{(5 + 1)^\alpha}
+  \end{split}
+\end{equation}
+%
+where $s(y|x)$ is the score of the hypothesis $y$ given the source sentence
+$x$, $T_y$ is the length of $y$ and $\alpha$ is a hyperparameter which controls
+the strength of the length normalization.
+
 
 \paragraph{Ensembles and Weight Averaging.} A common technique to increase
 model performance during decoding is model \emph{ensembling}. In ensembling,
@@ -1093,8 +1113,13 @@ when the score itself is low \citep{callison-burch-etal-2006-evaluating,
   bojar-etal-2010-tackling, reiter2018structured, mathur-etal-2020-tangled,
   kocmi2021ship}.
 
-\JH{Add details about Character F-score and COMET! \citep{rei-etal-2020-comet,
-    popovic-2015-chrf}}
+\Acf{chrf}\glsunset{chrf} is another evaluation metric proposed by
+\citep{popovic-2015-chrf}. Unlike \acs{bleu}, it is based on character-level
+n-gram matching. More recently, \acs{comet} framework
+\citep{rei-etal-2020-comet} has been proposed as a class of trainable
+\acs{nn}-based evaluation metrics for \ac{mt}. The evaluation models are
+trained on human evaluation judgements and thus the evaluation metrics should
+mimic human behaviour.
 
 Besides the translation quality, the models can also be evaluated in terms of
 efficiency. The decoding speed is usually measured in two dimensions:
