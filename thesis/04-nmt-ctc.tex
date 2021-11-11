@@ -262,10 +262,10 @@ We implement and train our models in the Neural Monkey toolkit
 higher-level deep learning toolkit implemented in TensorFlow
 \citep{tensorflow2015-whitepaper}, aiming for fast prototyping using
 simple-format configuration files. We train all models for 10 epochs and we
-select the best-scoring model based on the validation BLEU score. The training
-of the En--De models on a single Nvidia GeForce GTX 1080 GPU took approximately
-4 weeks. Since the En--Ro parallel data was much smaller, the training of the
-En--Ro models took 4 days.
+select the best-scoring model based on the validation \acs{bleu} score. The
+training of the En--De models on a single Nvidia GeForce GTX 1080 GPU took
+approximately 4 weeks. Since the En--Ro parallel data was much smaller, the
+training of the En--Ro models took 4 days.
 
 We summarize the model and training settings in Table
 \ref{tab:end-to-end:hparams}. Note that the architecture resembles the
@@ -305,7 +305,7 @@ settings for training models in both directions in both language pairs.
 \paragraph{Results.} Table \ref{tab:end-to-end:bleu} compares the quantitative
 results of our non-autoregressive models with methods proposed by
 \citet{gu2017nonautoregressive} and \citet{lee-etal-2018-deterministic}. We use
-the SacreBLEU \citep{post-2018-call} to compute the BLEU scores of the model
+Sacrebleu \citep{post-2018-call} to compute the \acs{bleu} scores of the model
 outputs.
 
 \begin{table}
