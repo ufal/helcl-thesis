@@ -8,10 +8,13 @@ set yrange [0:0.0005]
 
 set format y "%.0t$\\cdot$10\\textsuperscript{%T}"
 set ylabel 'Learning rate $\alpha$' offset -1
-set xlabel 'Training step' offset -0.5
+set xlabel 'Training step' offset -1
 
 set xtics rotate by 45 right
 set format x "%.0s%c"
+
+# IN THE GENERATED TEX FILE, I CHANGED Y-AXIS TO 0 IN THE TRAINING STEP NODE
+# ALSO I DELETED THE ZERO YTICK label
 
 set key inside right top vertical spacing 1.5 sample 1
 
