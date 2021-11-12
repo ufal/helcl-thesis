@@ -5,44 +5,50 @@
 
 \Ac{mt} has always been the holy grail of computational linguistics. The first
 attempts to use algorithms for translation date back to before the field of
-computational linguistics was even established. By the 1950s, researchers began
-to develop automatic translation systems on computers. During the following
-decades, the use of rule-based translation backed up by a linguistic theory has
-been the main paradigm. Even in the early days, \ac{mt} systems were used in a
-number of applications, such as the translation of technical manuals and
-similar texts with a simple structure and low language variety.
+computational linguistics was even established
+\citep{dupont2017cryptological}. By the 1950s, researchers began to develop
+automatic translation systems on computers
+\citep{dostert1955georgetown}. During the following decades, the use of
+rule-based translation backed up by a linguistic theory has been the main
+paradigm. Even in the early days, \ac{mt} systems were used in a number of
+applications, such as the translation of technical manuals and similar texts
+with a simple structure and low language variety \citep{slocum-1985-survey}.
 
 In the late 1980s and early 1990s, technological progress enabled computers to
 work with larger textual data, and the first statistical methods for \ac{mt}
-were conceived. Instead of having roots in linguistics, statistical \ac{mt} is
-based on information theory. This paradigm shift made it possible to use the
-same methods for different language pairs without additional costs to design
-the rules for translation systems. As the computational power of computers and
-the size of the available data and the computational power of the grew bigger
-throughout the 1990s and 2000s, statistical methods became the standard
-approach to \ac{mt}. In those days, automatic \ac{mt} started to attract wide
-interest from the public with the first general-purpose translation systems
-available on the Internet.
+were conceived \citep{nagao1984framework, brown-etal-1990-statistical}. Instead
+of having roots in linguistics, statistical \ac{mt} is based on information
+theory \citep{shannon1948mathematical}. This paradigm shift made it possible to
+use the same methods for different language pairs without additional costs to
+design the rules for translation systems. As the computational power of
+computers and the size of the available data and the computational power of the
+grew bigger throughout the 1990s and 2000s, statistical methods became the
+standard approach to \ac{mt} \citep{koehn2009statistical}. In those days,
+automatic \ac{mt} started to attract wide interest from the public with the
+first general-purpose translation systems available on the Internet.
 
 In parallel with \ac{mt} research, the field of \ac{ai} has written its own
 history. From the first neurology-inspired algorithms in the 1950s and the
-formulation of the Turing test, through the so-called \ac{ai} winter periods
-and the development of artificial neural networks and the backpropagation
-algorithm, culminating during the last decade in the advent of deep learning.
-Not unlike \ac{mt}, the research advances in \ac{ai} owe their existence to
-faster and more powerful computers.
+formulation of the Turing test \citep{turing1950computing}, through the
+so-called \ac{ai} winter periods and the development of artificial neural
+networks and the backpropagation algorithm, culminating during the last decade
+in the advent of deep learning \citep{goodfellow2016deep}.  Not unlike \ac{mt},
+the research advances in \ac{ai} owe their existence to faster and more
+powerful computers.
 
 In the past decade, the fields of \ac{ai} and \ac{mt} fused together, resulting
-in a new paradigm of \emph{\acl{nmt}} (\acs{nmt}\glsunset{nmt}). Soon after
-\ac{nmt} was established as the new state-of-the-art approach to translation,
+in a new paradigm of \emph{\acl{nmt}} (\acs{nmt}\glsunset{nmt};
+\citealp{sutskever2014sequence,bahdanau2014neural}). Soon after \ac{nmt} was
+established as the new state-of-the-art approach to translation,
 high-performing systems became available online for the general public, and the
 whole field of \ac{mt} started growing rapidly. Whereas in the early stages,
 \ac{mt} development was focused on a few selected languages, mostly translating
 in or out of English, nowadays the research is slowly expanding towards
 low-resource languages or to different areas such as multimodal or multilingual
-translation. One of the emerging research subfields motivated by making
-\ac{nmt} models more accessible is \emph{\acl{nar}} \ac{nmt}, which is the main
-topic of this thesis.
+translation \citep{haddow2021survey, libovicky-helcl-2017-attention,
+  aharoni-etal-2019-massively}. One of the emerging research subfields
+motivated by making \ac{nmt} models more accessible is \emph{\acl{nar}}
+\ac{nmt}, which is the main topic of this thesis.
 
 % \JH{advent of NMT methods, už to je hrozně dobrý a tak to všichni používaji}
 % \JH{masový rozšiřování aplikací jak pro uživatele (low resource MT), různé
@@ -50,8 +56,9 @@ topic of this thesis.
 % smysl)}
 
 % \JH{rychle se vyvijejici vyzkum MT, objevuji se i zajimavy druhy NMT modelů a
-%   taky se hodne rychle ujima v aplikacich.}
-% \JH{spoustu zajímavých oborů jako třeba multimodální překlad, multi-source překlad, a taky non-autoregresivní překlad}
+% taky se hodne rychle ujima v aplikacich.}  \JH{spoustu zajímavých oborů jako
+% třeba multimodální překlad, multi-source překlad, a taky non-autoregresivní
+% překlad}
 
 \vspace{\baselineskip}
 

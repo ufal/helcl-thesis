@@ -514,7 +514,7 @@ position $j$ is computed as follows:
   \begin{split}
     E_{\text{pos}}(j, 2i) &= \sin(j / 10000^{2i/d}) \\
     E_{\text{pos}}(j, 2i + 1) &= \cos(j / 10000^{2i/d})
-  \end{split}
+  \end{split} \label{eq:positional-encoding}
 \end{equation}
 %
 where $d$ is the \emph{model dimension}. This number is equal to the dimension
@@ -572,8 +572,8 @@ $Q = K = V \in \mathbb{R}^{T \times d}$ is the set of $T$ states of the current
 layer.
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-\paragraph{Cross-Attention.} Each layer in the Transformer encoder consists of
-a self-attention and a feed-forward sub-layer. The decoder inserts an
+\paragraph{Cross-Attention.} Each Transformer encoder layer consists of a
+self-attention and a feed-forward sub-layer. The decoder inserts an
 \emph{encoder-decoder attention} (or \emph{cross-attention}) layer.  The
 cross-attention layer functions exactly like the self-attention layer, but the
 queries $Q$ are the decoder states (i.e. the output of the preceding
