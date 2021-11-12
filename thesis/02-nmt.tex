@@ -193,9 +193,6 @@ are then merged according to a list of merges. Unlike the \ac{bpe}
 segmentation, the wordpiece learning algorithm does not take the most frequent
 bigram, but instead the pair with the largest pointwise mutual
 information.
-% \JH{They say they take the pair that maximizes the likelihood of the data,
-% but then we would need to talk about language models first, and I guess it's
-% the same thing.}
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \paragraph{SentencePiece.} More recently,
@@ -439,14 +436,10 @@ deep \acp{rnn}, each layer is a recurrent network. The inputs of the second and
 each layer onwards are the outputs of the preceding layer. The output of the
 entire deep \ac{rnn} is the output of the last layer.
 
-In deep \acp{rnn}, there are a few settings to consider.
-%\JH{tell me more -- if not more, make this a layernorm paragraph}
-%
-% \JH{first layer norm paragraph should give better motivation, last paragraph
-%   should provide some insight to the formulas.}
-To improve the convergence speed of the deep models and to stabilize the
-\ac{rnn} hidden state dynamics across layers, \emph{layer normalization}
-\citep{ba2016layer} is often employed. For layer $l$ and its output states
+In deep \acp{rnn}, there are a few settings to consider. To improve the
+convergence speed of the deep models and to stabilize the \ac{rnn} hidden state
+dynamics across layers, \emph{layer normalization} \citep{ba2016layer} is often
+employed. For layer $l$ and its output states
 %$h_1^l, \ldots h_{T_x}^l$, $h_i^l \in \mathbb{R}^n$,
 $\mathbf{h}^l \in \mathbb{R}^{T_x \times n}$, we compute:
 %
