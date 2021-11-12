@@ -3,27 +3,30 @@
 \label{chap:nar-nmt-ctc}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\paperdisclaim{This chapter is based on paper ``End-to-End Non-Autoregressive
-  Neural Machine Translation with Connectionist Temporal Classification'',
-  joint work with Jindřich Libovický, published at EMNLP 2018.}
+\paperdisclaim{This chapter is based on the paper \emph{``End-to-End
+    Non-Autoregressive Neural Machine Translation with Connectionist Temporal
+    Classification''}, joint work with Jindřich Libovický, published at EMNLP
+  2018.}
 
 \noindent
-In this chapter, we lay grounds for the \ac{nar} approaches studied in this
-thesis. We describe our experiments with an architecture based on the \ac{ctc}
-loss \citep{libovicky-helcl-2018-end}. \JH{ok to self-cite when sections will
-  be based on this?} \JH{use \ac{nat} here somewhere}
+In this chapter, we lay the foundations for the \ac{nat} approaches studied in
+this thesis. We describe our experiments with an architecture based on the
+\ac{ctc} loss \citep{libovicky-helcl-2018-end}.
+% \JH{ok to self-cite when sections will be based on this?} \JH{use \ac{nat}
+% here somewhere}
 
 
-We begin with the description of the \ac{ctc} algorithm for compute the
+We begin with the description of the \ac{ctc} algorithm for computing the
 cross-entropy loss over all possible alignments between the reference sentence
 and the sequence of output states in Section \ref{sec:ctc}. Section
 \ref{sec:ctc:arch} introduces the proposed \ac{nat} model architecture based on
 the Transformer model \citep{vaswani2017attention}. The results of the
-preliminary experiments and the limitations are discussed in Section
-\ref{sec:ctc:experiments}. In Section \ref{sec:ctc:fluency}, we present our
-attempt to address the most severe issue non-autoregressive models have, which
-is the reduced fluency compared to the autoregressive models
-\citep{kasner2020improving,kasner2020incorporating}.
+preliminary experiments are discussed in Section \ref{sec:ctc:experiments}. In
+Section \ref{sec:ctc:fluency}, we present our attempt to address the most
+severe issue \ac{nar} models have, which is the reduced fluency compared to the
+\ac{ar} models \citep{kasner2020improving, kasner2020incorporating}. Section
+\ref{sec:ctc:limitations} summarizes the limitations of the presented
+approaches.
 
 % -----------------------------------------------------------------------------
 \section{Connectionist Temporal Classification}
@@ -37,26 +40,25 @@ handwriting recognition \citep{liwicki2007novel, eyben2009speech,
   graves2014towards}.
 
 The main strength of \ac{ctc} becomes evident in tasks where the input and
-output labels are weakly or not at all aligned, for example in situations where
-the observed input sequence is considerably longer than the target output
+output labels are weakly or not at all aligned, for example, in situations
+where the observed input sequence is considerably longer than the target output
 sequence -- hence the application to \ac{asr}, where the number of extracted
 features per second is higher than the number of phonemes uttered per second.
-%\JH{Confirm this.}
 
-Training neural networks with \ac{ctc} is independent on the actual neural
+Training neural networks with \ac{ctc} is independent of the actual neural
 network architecture. The \ac{ctc} loss function can be applied on any network
 with sequential outputs. Thus, this method is applicable to both \acp{rnn} and
 the Transformer model.
 
 Models trained with the \ac{ctc} assume that the alignment between the input
-(e.g. a group of frames in an audio signal) and the output (e.g. a phoneme)
-states is unknown. A variable number of frames in a row can encode a single
-phoneme. Similarly, in translation, multiple words in the source language may
-correspond to any number of (even non-consecutive) words in the target
-language.
+states (e.g. a group of frames in an audio signal) and the output states
+(e.g. a phoneme) is unknown. A variable number of frames in a row can encode a
+single phoneme. Similarly, in translation, multiple words in the source
+language may correspond to any number of (even non-consecutive) words in the
+target language.
 
 The idea behind \ac{ctc} is to allow some states to produce no output. This is
-realized by introducing a special blank token in the target vocabulary.
+achieved by introducing a special blank token into the target vocabulary.
 Optionally, identical outputs produced by multiple consecutive states may be
 merged and considered a single output. Because of these properties, there are
 groups of equivalent output sequences, which all represent the same target, as
@@ -79,11 +81,11 @@ illustrated in Figure~\ref{fig:ctc-equivalent-sequences}.
   \label{fig:ctc-equivalent-sequences}
 \end{figure}
 
-In the standard sequence-to-sequence architectures, the value of the loss
-function is defined as the sum of the cross entropies of each output state with
+In standard sequence-to-sequence architectures, the value of the loss function
+is defined as the sum of cross entropies of the output distributions with
 respect to the target sequence (see Equation \ref{eq:loss}). In \ac{ctc}, the
-loss is defined as the sum of cross-entropy losses of all of the output
-sequences equivalent to the given target sequence:
+loss is defined as the sum of cross-entropy losses of all output sequences
+equivalent to the given target sequence:
 %
 \begin{equation}
   \mathcal{L}_{\text{CTC}}({\theta}) = - \sum_{(x, y) \in D} \sum_{y' \sim y}  \log p(y' | x, \theta)
@@ -100,16 +102,18 @@ acceptable hypotheses. However, the number of equivalent hypotheses of a given
 length still grows exponentially with the sequence length -- in \ac{ctc}, the
 fixed length is always set to be longer than the label sequence.
 
-\JH{explain the difference with AXE -- this is sum over all, in contrast to
-  just taking the one with the minimum cross entropy. Also, we don't allow
-  skipping ground truth posiitons.}
+The main difference between our approach and \ac{axe} described in Section
+\ref{sec:nat:alignment} is that in our models, we take into account all
+possible alignments, whereas \ac{axe} considers only the alignment with the
+minimum cross entropy. Moreover, we do not allow skipping positions in the
+ground truth.
 
-The summation over the large set of equivalent sequences can be
-implemented using dynamic programming. When both the length of the output and
-the length of the target sequences are known, there is a constant number of the
-blank tokens to be generated. The process of computing the loss of the whole
-output sequence is divided into computing the partial losses with respect to
-the possible label prefixes.
+The summation over the large set of equivalent sequences can be implemented
+using dynamic programming. When both the length of the output and the length of
+the target sequences are known, there is a constant number of blank tokens to
+be generated. The process of computing the loss of the whole output sequence is
+divided into computing the partial losses with respect to the possible label
+prefixes.
 
 \begin{figure}
   \centering
@@ -125,48 +129,48 @@ the possible label prefixes.
 
 The \ac{ctc} loss computation is illustrated in Figure
 \ref{fig:ctc-dynamic-programming}. The rows represent tokens from the label
-sequence plus the optional blank tokens. The columns represent the output state
+sequence plus the optional blank tokens. The columns represent the output
 sequence.  Each node in the graph denotes generating a label from an output
-state. The arrows show valid transitions between the generation steps. An arrow
-can only go down one or two rows, or horizontally.  The horizontal arrows
-denote repeated generation of the same label. These labels are later merged to
-form a single output. An arrow can only go two rows down when the skipped row
-corresponds to the blank token, so no target tokens are left out. Each path in
-the diagram therefore shows one of the equivalent sequences that lead to
-generating the given label sequence.
+distribution. The arrows show valid transitions between the generation
+steps. An arrow can only go down one or two rows, or horizontally.  The
+horizontal arrows denote repeated generation of the same label. These labels
+are later merged to form a single output. An arrow can only go two rows down
+when the skipped row corresponds to the blank token, so no target tokens are
+left out. Therefore, each path in the diagram shows one of the equivalent
+sequences that lead to generating the given label sequence.
 
 Using the idea that many of the paths from left to right in the diagram share
 segments, we can apply dynamic programming to compute the sum of losses across
 all paths without the need to enumerate each of them. A node on coordinates
-$(i,j)$ stores the accumulated losses for the all path prefixes that lead to
-the node, added with the negative log-likelihood of the label on the $i$-th row
+$(i,j)$ stores the accumulated losses for all path prefixes that lead to the
+node, summed with the negative log-likelihood of the label on the $i$-th row
 being generated by the $j$-th output state. The two bottom-right nodes then
 store the sum of losses of all the paths.
 
-
-\JH{doplnit} The training of the network with \ac{ctc} is done by minimizing
-the \ac{ctc} loss function, which is defined as follows.
+Since the \ac{ctc} loss function is differentiable with respect to the model
+parameters, the training of the network can be done in the standard way using
+the backpropagation algorithm.
 
 % -----------------------------------------------------------------------------
 \section{Model Architecture}
 \label{sec:ctc:arch}
 % -----------------------------------------------------------------------------
 
-As said in the previous chapter, training models with \ac{ctc} does not impose
-any requirements on the model architecture. In our experiments, we aim for a
-reasonable comparison between our proposed approach and the state-of-the-art
-autoregressive models. We adapt the Transformer model and use similar
-hyperparameters where applicable.
+As mentioned in the previous section, training models with \ac{ctc} does not
+impose any requirements on the model architecture. In our experiments, we aim
+to make a reasonable comparison between our proposed approach and the
+state-of-the-art \acl{ar} models. We adapt the Transformer model and use
+similar hyperparameters where applicable.
 
-Non-autoregressive models generate the outputs in parallel, which requires that
-the output length is known beforehand. In autoregressive models, the end of
-sequence is indicated by a special end symbol, and the constraint on maximum
-length is merely a technical aspect.
+\Acl{nar} models generate the outputs in parallel, which requires that the
+output length is known beforehand. In \acl{ar} models, the end of the sequence
+is indicated by a special end symbol, and the constraint on maximum length is
+merely a technical aspect.
 
-To leverage the ability to output empty tokens to the full extent, the output
+To maximize the ability to output empty tokens to the full extent, the output
 length should be set to a higher number than the length of the target sequence.
 Since the length estimation does not need to be accurate, we select a number
-$k$ and we set the target sequence length to be $k$ times longer than the
+$k$, and we set the target sequence length to be $k$ times longer than the
 source length. Note that in case the selected length is shorter than the label
 sequence, the model will not be able to generate the whole target sequence.
 
@@ -175,7 +179,7 @@ sequence, the model will not be able to generate the whole target sequence.
   \input{./img/non-autoregressive.tex}
 
   \caption{The scheme of the non-autoregressive architecture with
-    state-splitting and CTC. Image source: \citet{libovicky-helcl-2018-end},
+    state splitting and CTC. Image source: \citet{libovicky-helcl-2018-end},
     Figure 1.}%
   \label{fig:state-splitting}
 \end{figure}
@@ -186,7 +190,7 @@ state splitting. This mechanism is illustrated in Figure
 \ref{fig:state-splitting}. After a given Transformer layer completes its
 computation, we linearly project the states
 $h_1, \ldots, h_{T_x} \in \mathbb{R}^d$ into $\mathbb{R}^{kd}$. Then, we split
-each of these projections into $k$ parts, which results to a $k$-times longer
+each of these projections into $k$ parts, which results in a $k$-times longer
 sequence of states $s_1, \ldots, s_{k \cdot T_x}$ of the original dimension
 $d$:
 %
@@ -198,40 +202,42 @@ for $b=0 \ldots k-1$ and $c=1 \ldots T_x$ where
 $W_{\text{spl}} \in \mathbb{R}^{d \times kd}$ and
 $b_{\text{spl}} \in \mathbb{R}^{kd}$ are the trainable projection parameters.
 
-We experiment with two placement options of the state splitting layer. First,
+We experiment with two placement options for the state-splitting layer. First,
 we try placing the state splitting at the end of the Transformer layer
 stack. In this scenario, there are 12 Transformer encoder layers, followed by
-the state splitting layer, whose outputs are used in the output
-projection. Second, we place the state splitting layer in the middle of the
+the state-splitting layer, whose outputs are used in the output projection. In
+Table \ref{tab:end-to-end:bleu}, this variant is called ``Deep
+encoder''. Second, we place the state-splitting layer in the middle of the
 Transformer layer stack, mimicking the 6-layer encoder-decoder architecture of
-the autoregressive Transformer model. In the second variant, cross-attention
-can be included in the second half of the layers, which attends to the states
-right after state splitting.
+the \ac{ar} Transformer model. We use the name ``Encoder-decoder'' for this
+variant in Table \ref{tab:end-to-end:bleu}. In the second variant,
+cross-attention can be included in the second half of the layers, which attends
+to the states right after state splitting. We call this model ``Encoder-decoder
+with pos. enc.'' in the results table.
 
 % -----------------------------------------------------------------------------
 \section{Preliminary Experiments}%
 \label{sec:ctc:experiments}
 % -----------------------------------------------------------------------------
 
-\JH{Section with experiments from the 2018 paper. Should show that it works,
-  but it's still far from perfect.}
+% \JH{Section with experiments from the 2018 paper. Should show that it works,
+%   but it's still far from perfect.}
 
-We conduct experiments with \ac{ctc}-based \ac{nat} models trained on
-English--German and English--Romanian translation in both directions.
+We conducted experiments with the \ac{ctc}-based \ac{nat} models described
+above on English--German and English--Romanian translation in both directions.
 
 \paragraph{Data.}
-In our experiments, we use the parallel data provided by the \acs{wmt}
+In our experiments, we use the parallel data provided by the \ac{wmt}
 organizers. For English--German, the training data consist of the Europarl
 corpus \citep{koehn-2005-europarl}, News commentary
 \citep{tiedemann-2012-parallel}, and Common
 Crawl.\footnote{\url{https://commoncrawl.org/}} For validation, we use the
-WMT~13 test set \citep{bojar-etal-2013-findings}, and we evaluate the
-translation quality on the WMT~14 test set
-\citep{bojar-etal-2014-findings}. For English--Romanian, the data consist of
-the Europarl corpus, and the SETIMES corpus distributed by OPUS
-\citep{tiedemann-2012-parallel}. We use the development and test set from
-WMT~16 \citep{bojar-etal-2016-findings}. The data sizes are shown in
-Table~\ref{tab:end-to-end:data}.
+WMT~13 test set \citep{bojar-etal-2013-findings}, and we evaluate translation
+quality on the WMT~14 test set \citep{bojar-etal-2014-findings}. For
+English--Romanian, the data consist of the Europarl corpus and the SETIMES
+corpus distributed by OPUS \citep{tiedemann-2012-parallel}. We use the
+development and test set from the WMT~16 \citep{bojar-etal-2016-findings}. Data
+sizes are shown in Table~\ref{tab:end-to-end:data}.
 
 \begin{table}
   \centering
@@ -244,7 +250,8 @@ Table~\ref{tab:end-to-end:data}.
     \bottomrule
   \end{tabular}
 
-  \caption{The training data sizes. \JH{more}}%
+  \caption{The sizes of the parallel training data and the wordpiece
+    vocabularies for English--German and English--Romanian translation.}%
   \label{tab:end-to-end:data}
 \end{table}
 
@@ -254,22 +261,22 @@ of the Moses translation toolkit \citep{koehn-etal-2007-moses}. Namely, we
 normalize the punctuation in the data, then we use the tokenizer and a
 truecaser. We segment the data using the wordpiece algorithm, creating a
 vocabulary of approximately 41k wordpieces for English--German, and 38k
-wordpieces fro English--Romanian \citep{wu2016google}.
+wordpieces for English--Romanian \citep{wu2016google}.
 
 \paragraph{Models and Training.}
 We implement and train our models in the Neural Monkey toolkit
 \citep{helcl-libovicky-2017-neural,helcl-etal-2018-neural}. Neural Monkey is a
 higher-level deep learning toolkit implemented in TensorFlow
-\citep{tensorflow2015-whitepaper}, aiming for fast prototyping using
-simple-format configuration files. We train all models for 10 epochs and we
-select the best-scoring model based on the validation \acs{bleu} score. The
-training of the En--De models on a single Nvidia GeForce GTX 1080 GPU took
-approximately 4 weeks. Since the En--Ro parallel data was much smaller, the
-training of the En--Ro models took 4 days.
+\citep{tensorflow2015-whitepaper}, aimed at fast prototyping using
+simple-format configuration files. We train all models for 10 epochs and select
+the best-scoring model based on the validation \acs{bleu} score. Training of
+the En--De models on a single Nvidia GeForce GTX 1080 GPU took approximately 4
+weeks. Since the En--Ro parallel data was much smaller, training of the En--Ro
+models took 4 days.
 
 We summarize the model and training settings in Table
 \ref{tab:end-to-end:hparams}. Note that the architecture resembles the
-Transformer big settigns, but uses a smaller model dimension. We use the same
+Transformer big settings, but uses a smaller model dimension. We use the same
 settings for training models in both directions in both language pairs.
 
 \begin{table}
@@ -302,8 +309,9 @@ settings for training models in both directions in both language pairs.
   \label{tab:end-to-end:hparams}
 \end{table}
 
+
 \paragraph{Results.} Table \ref{tab:end-to-end:bleu} compares the quantitative
-results of our non-autoregressive models with methods proposed by
+results of our \ac{nar} models with the methods proposed by
 \citet{gu2017nonautoregressive} and \citet{lee-etal-2018-deterministic}. We use
 Sacrebleu \citep{post-2018-call} to compute the \acs{bleu} scores of the model
 outputs.
@@ -345,8 +353,8 @@ outputs.
   \end{tabular}
 
   \caption{Automatic evaluation of our \acs{ctc}-based approach, compared to
-    the two of the first non-autoregressive methods, along with autoregressive
-    greedy-decoding baseline scores. }%
+    the two of the first \acl{nar} methods, along with \acl{ar} greedy-decoding
+    baseline scores. }%
   \label{tab:end-to-end:bleu}
 \end{table}
 
@@ -354,33 +362,42 @@ The first model of \citet{gu2017nonautoregressive} represents the \ac{nat}
 model with fine-tuning, which minimizes the KL divergence between the output
 distributions of the teacher and student models. In the second row, \acl{npd}
 (\acs{npd};\glsunset{npd} see Section \ref{sec:nat:principles}) with 100
-samples is used. Using \ac{npd} can slow down the decoding, because an
-additional scoring step by an autoregressive model is needed. In theory, if
-enough parallelism is available, this doubles the latency.
+samples is used. Using \ac{npd} can slow down the decoding because an
+additional scoring step is needed using an \ac{ar} model. In theory, if enough
+parallelism is available, this doubles the latency.
 
 The approach of \citet{lee-etal-2018-deterministic} is iterative. We show the
 performance of this method with 1 iteration and with 10 iterations. Note that
-using more iterations slows down the decoding speed of the iterative model.
+using more iterations slows the decoding speed of the iterative model.
 
-When compared to the single-pass models, the performance of the English--German
+Compared to single-pass models, the performance of the English--German
 \acs{ctc}-based models is similar. However, the performance of the
-English--Romanian models is poor. This is likely because of issues with
-Romanian diacritics in the data, as suggested also by the poorer performance of
-our autoregressive baseline. Also, the enhanced techniques (\ac{npd} and
-iterative refiniment) outperform our
-method in all scenarios, but at a computational cost.
+English--Romanian models is poor. This is probably due to issues with Romanian
+diacritics in the data, as suggested also by the poorer performance of our
+autoregressive baseline. Also, the enhanced techniques (\ac{npd} and iterative
+refiniment) outperform our method in all scenarios, but at a computational
+cost.
 
-\JH{Description of weight averaging and the beam search.}
+We also evaluate the effect of weight averaging and beam search (described in
+Section \ref{sec:decoding}). As opposed to decoding from an \ac{ar} model, beam
+search in \acs{ctc}-based \ac{nar} models operates only on the output
+distributions from the single decoding step. Although in \ac{nar} models we are
+able to find the most likely sequence by taking the argmax of the output
+distribution in each position, this way we only find a single alignment. Using
+beam search takes into account more alignments, and the sum of the alignment
+probabilities can be higher than the probability of the sentence generated by
+argmax decoding. We see from Table \ref{tab:end-to-end:bleu} that especially
+weight averaging brings a substantial improvement of the translation quality.
 
-The decoding speed for \ac{ar} and {nar} models under different conditions is
-shown in Table~\ref{tab:end-to-end:speed}. We report the average time to decode
-a single sentence on the \ac{wmt}~15 test set \citep{bojar-etal-2015-findings},
-which consists of 2,169 sentence pairs. In the CPU setting, we are using a CPU
-machine with the TensorFlow session configured to use 12 CPU threads. The GPU
-results are measured on a single Nvidia GeForce GTX 1080 GPU. We show the
-average latency as well as the average time to decode a sentence when using
-batch decoding.
-\JH{Compare speed results? Or leave it for the next chapter.}
+The decoding speed for \ac{ar} and \ac{nar} models under different conditions
+is shown in Table~\ref{tab:end-to-end:speed}. We report the average time to
+decode a single sentence on the \ac{wmt}~15 test set
+\citep{bojar-etal-2015-findings}, which consists of 2,169 sentence pairs. In
+the CPU setting, we are using a CPU machine with the TensorFlow session
+configured to use 12 CPU threads. GPU results are measured on a single Nvidia
+GeForce GTX 1080 GPU. We show the average latency as well as the average time
+to decode a sentence with batch decoding.
+% \JH{Compare speed results? Or leave it for the next chapter.}
 
 \begin{table}
   \centering
@@ -406,16 +423,16 @@ batch decoding.
 Figure \ref{fig:end-to-end:speed} shows the decoding latencies on sentences
 from the \ac{wmt}~15 test set \citep{bojar-etal-2015-findings}. As we can see
 from the relationship between the source sentence length and the decoding time,
-the non-autoregressive model exhibits lower time complexity than the
-autoregressive model. The latencies in the plot were measured on a CPU server
-using 12 threads. We used greedy decoding with a single sentence in a batch.
+the \ac{nar} model exhibits a lower time complexity than the \ac{ar}
+model. The latencies in the plot were measured on a CPU server using 12
+threads. We use greedy decoding with a single sentence in a batch.
 
 \begin{figure}
   \centering
   \input{img/end-to-end-decoding-speed/speed.tex}
 
   \caption{The relationship between the latency and the number of source tokens
-    using an \acs{ar} and an \acs{nar} model}%
+    using an \acl{ar} and a \acl{nar} model}%
   \label{fig:end-to-end:speed}
 \end{figure}
 
@@ -424,32 +441,31 @@ using 12 threads. We used greedy decoding with a single sentence in a batch.
 We performed manual error analysis of the model outputs. We sampled 100 random
 sentences from the English--German test set for each translation direction.
 For each sentence in the test set, we first classified whether the sentence was
-correctly translated, or whether it was at least comprehensible.
+correctly translated or whether it was at least comprehensible.
 
 We then identified four types of errors which were prevalent the most in the
 outputs: 1) the output sentence was too short, 2) a verb was missing in the
-output, 3) a named entity that consists of mutliple subwords was not properly
+output, 3) a named entity that consists of multiple subwords was not properly
 constructed, and 4) another multi-subword word was corrupted.
 
-The prevalence of the different types of errors we found is shown in Table
+The prevalence of the different types of errors that we found is shown in Table
 \ref{tab:end-to-end:error-analysis}. We observed that when the outputs of the
 \ac{ar} model were incorrect, this was further amplified in the \ac{nar} model,
 rendering many sentences incomprehensible. Overall, we can see that the number
 of completely correct translations in the sample was low for the \ac{nar}
 model, less than a quarter of the sentences in both directions. One of the most
-common errors in English $\rightarrow$ German direction was the ommission of a
-verb at the end of the sentence. This is likely a manifest of the multimodality
-problem -- in German, there are two ways of composing the past tense, one of
-which inflects the verb in place, and the other puts the verb to the end of the
-sentence. In both directions, we noticed many errors connected to words which
-are represented with multiple wordpieces, such as rare or infrequent words or
-named entities.
+common errors in the English $\rightarrow$ German direction was the omission of
+a verb at the end of the sentence. This is likely a manifest of the
+multimodality problem -- in German, there are two ways of composing the past
+tense, one of which inflects the verb in place and the other puts the verb to
+the end of the sentence. In both directions, we noticed many errors connected
+to words which are represented with multiple wordpieces, such as rare or
+infrequent words or named entities.
 
 Many of the errors are related to the fluency of the output, which might be
 caused by the weakened language model in the \ac{nar} models. We address this
 issue by incorporating an external language model into the decoding process,
-and we describe these experiments in the following section.
-% In Section \ref{sec:ctc:fluency}
+and describe these experiments in the following section.
 
 \begin{table}
   \centering
@@ -471,40 +487,36 @@ and we describe these experiments in the following section.
   \caption{Results of a cursory manual analysis of the most frequent types of
     errors in English $\leftrightarrow$ German translation models.}%
   \label{tab:end-to-end:error-analysis}
-
 \end{table}
-
-
-\JH{is there something to add?}
 
 % -----------------------------------------------------------------------------
 \section{Improving Fluency with n-gram Language Models}%
 \label{sec:ctc:fluency}
 % -----------------------------------------------------------------------------
 
-\paperdisclaim{This section is based on paper \emph{``Improving Fluency of
+\paperdisclaim{This section is based on the paper \emph{``Improving Fluency of
     Non-Autoregressive Neural Machine Translation''}, joint work with Zdeněk
   Kasner and Jindřich Libovický, published online at \texttt{arXiv.org}.}
 
 \noindent
 In this section, we describe our effort to improve the language modeling
 capabilities of the \acs{ctc}-based \ac{nat} model. As described in the
-previous section, frequent errors \acl{nar} models make include missing verbs
-or bad composition of words from multiple subwords. The literature on \ac{nar}
-models also points out that token repetition is also a frequent issue. \JH{but
-  not so much in alignment based models which often collapse the repetition
-  while still allowing to generate repeated words intentionally (separating
-  with blank token)}
+previous section, frequent errors that \acl{nar} models make include missing
+verbs or bad composition of words from multiple subwords. The literature on
+\ac{nar} models also points out that token repetition is also a frequent issue,
+although in alignment-based models (see Section \ref{sec:nat:alignment}), the
+repeated tokens are often merged together. (The models can still generate
+repeated words; for example, by interleaving them with the blank token.)
 
 \Acp{lm} have been a very successful component in the classical phrase-based
-statistical \acs{mt} models \citep{koehn2009statistical}. However in neural
-\acs{mt}, language modeling is handeled by the decoder part, which can be
-viewed as an \acs{lm} conditioned on the encoder hidden representation of the
-source sentence.
+statistical \acs{mt} models \citep{koehn2009statistical}. However, in neural
+\acs{mt}, language modeling is handled by the decoder part, which can be viewed
+as a \ac{lm} conditioned on the encoder hidden representation of the source
+sentence.
 
-By imposing the conditional independence assumption in non-autoregressive
-models (Equation \ref{eq:nat-output-distribution}) we impair the implicit
-language model, which leads to the lower fluency of the translations.
+By imposing the conditional independence assumption in \acl{nar} models
+(Equation \ref{eq:nat-output-distribution}) we impair the implicit language
+model, which leads to the lower fluency of the translations.
 
 In this study, we propose to enhance the beam search algorithm (see Section
 \ref{sec:decoding}) by a number of fluency-oriented features, which we include
@@ -515,7 +527,7 @@ in the hypothesis scoring model:
 \end{equation}
 %
 where $p(y|x)$ is the probability given by the \acs{ctc} model, $\Phi_i(y)$ are
-the scoring model features, and $w_i$ are their respective weights. This
+the features of the scoring model, and $w_i$ are their respective weights. This
 rescoring approach is somewhat similar to the \ac{npd} proposed by
 \citet{gu2017nonautoregressive}, in which they create more hypotheses by
 sampling from the fertility model and rescore them using an \ac{ar} Transformer
@@ -566,24 +578,24 @@ is the length of the source sentence.
   \label{tab:ngrams:data}
 \end{table}
 
-We follow a similar experimental setup as in the previous section with a few
-differences. In addition to the parallel data, we use backtranslated
+We follow an experimental setup similar to that in the previous section with a
+few differences. In addition to the parallel data, we use backtranslated
 monolingual data (dataset sizes are shown in Table~\ref{tab:ngrams:data}),
 which we mix with upsampled parallel data so that the ratio of the synthetic
 and parallel data in the training dataset is approximately 1:1. We train the
 \ac{ar} baselines and the \ac{nat} model on this dataset, so that the models
-with \ac{lm} scorer have access to the same data.  Instead of the wordpiece
+with the \ac{lm} scorer have access to the same data.  Instead of the wordpiece
 vocabulary, we use SentencePiece \citep{kudo-richardson-2018-sentencepiece}
 with 50k tokens in the vocabulary.  We train a 5-gram language model on the
-monolingual data using KenLM.\footnote{\url{https://github.com/kpu/kenlm/}}
-We use structured perceptron \citep{huang-etal-2012-structured} to learn the
+monolingual data using KenLM.\footnote{\url{https://github.com/kpu/kenlm/}} We
+use structured perceptron \citep{huang-etal-2012-structured} to learn the
 feature weights in the rescoring model. We train the perceptron on the
-development set, using half of the devset for training and the other half for
+development set, using half of the dataset for training and the other half for
 testing.
 
 Table \ref{tab:ngrams:bleu} shows the \acs{bleu} scores on the test data and
-the latencies of the \ac{nar} models when decoding with various beam sizes. We
-can see that even for lower beam size settings, the beam rescoring model
+the latencies of the \ac{nar} models using various beam sizes for decoding. We
+can see that even for low beam size settings, the beam rescoring model
 achieves considerable improvements over the \ac{nar} baseline. The rescoring
 model does affect the decoding speed as the beam size grows, but the
 translation improvement gained by beam sizes up to 10 does not cost too much in
@@ -619,19 +631,19 @@ terms of speed.
   \label{tab:ngrams:bleu}
 \end{table}
 
-We conduct an ablation study of the features in the rescoring model. The
+We conducted an ablation study of the features in the rescoring model. The
 \acs{bleu} scores of the rescoring model with different sets of rescoring
 features (\ac{lm}, blank vs. non-blank symbol ratio, and the number of trailing
-blank tokens) for various beam sizes are shown in Table
-~\ref{tab:ngrams:features}. In the first row, only the \ac{ctc} score is used,
-therefore no rescoring is performed. In the second row, the \ac{lm} score is
-added to the model. We see that adding the \ac{lm} alone accounts for most of
-the performance gain. In the third row, we add the blank vs. non-blank symbol
-ratio to the \ac{ctc} and \ac{lm} scores. The fourth row shows results of the
-scoring model with the full set of features.\footnote{Note that we use a
-  different test set (\ac{wmt}~15 news test set). For comparison with the other
-  models on this test set, we refer the reader to \citet{kasner2020improving}
-  or \citet{kasner2020incorporating}.}
+blank tokens) for various beam sizes are shown in
+Table~\ref{tab:ngrams:features}. In the first row, only the \ac{ctc} score is
+used (i.e., no rescoring is performed). In the second row, the \ac{lm} score is
+added to the model. We see that the addition of the \ac{lm} alone accounts for
+most of the performance gain. In the third row, we add the blank vs. non-blank
+symbol ratio to the \ac{ctc} and \ac{lm} scores. The fourth row shows the
+results of the scoring model with the full set of features.\footnote{Note that
+  we use a different test set (\ac{wmt}~15 news test set). For comparison with
+  the other models on this test set, we refer the reader to
+  \citet{kasner2020improving} or \citet{kasner2020incorporating}.}
 
 \begin{table}
   \centering
@@ -669,15 +681,15 @@ system, it is still much faster than the \ac{ar} counterpart.
   \label{fig:ngrams:speed}
 \end{figure}
 
-To illustrate how can the beam rescoring improve the fluency of the outputs of
-the \ac{nar} model, we hand-pick a few examples from the German--English test
-set and we show them in Table \ref{tab:ngrams:examples}.
+To illustrate how beam rescoring can improve the fluency of the outputs of
+the \ac{nar} model, we handpick a few examples from the German--English test
+set and show them in Table \ref{tab:ngrams:examples}.
 
 \begin{table}
   \centering
   \input{img/ngrams_examples.tex}
 
-  \caption{Hand-picked examples of the model outputs for German--English
+  \caption{Handpicked examples of the model outputs for German--English
     translation.}%
   \label{tab:ngrams:examples}
 \end{table}
@@ -690,19 +702,18 @@ set and we show them in Table \ref{tab:ngrams:examples}.
 
 The proposed approaches described in this chapter and their experimental
 evaluation have certain limitations, related to the discussion in Section
-\ref{sec:nat:discussion}. We list the most relevant drawbacks in the following
-paragraphs and we attempt to address all of them in the experiments presented
-in the next chapter.
+\ref{sec:nat:discussion}. We list the most relevant drawbacks and we attempt to
+address them in the experiments presented in the next chapter.
 
 One of the main weaknesses of the preliminary experiments is the relatively low
 translation quality of both the \acl{ar} baseline and the \acs{ctc}-based
-models compared to the other approaches. The main cause of the poor \ac{nat}
-model performance is that the models were trained without knowledge
+models compared to the other approaches. The main cause of the poor performance
+of the \ac{nat} model is that the models were trained without knowledge
 distillation. The causes of the poor translation quality of the \ac{ar}
 baseline models include not using backtranslation (see the \ac{ar} results
 without and with backtranslation in Tables \ref{tab:end-to-end:bleu} and
 \ref{tab:ngrams:bleu} in Sections \ref{sec:ctc:experiments} and
-\ref{sec:ctc:fluency} respectively), and using smaller and perhaps a noisier
+\ref{sec:ctc:fluency} respectively) and using a smaller and perhaps noisier
 dataset than what can be obtained.
 
 Another weakness of the models from the previous sections is the relatively low
@@ -710,7 +721,7 @@ decoding speed in absolute numbers. Although we achieve reasonable speed-up
 compared to an \ac{ar} baseline, the latency can be substantially lower than we
 measured, both on CPU and on a GPU.
 
-\JH{co dodat? conclude the chapter somehow, or ignore this.}
+% \JH{co dodat? conclude the chapter somehow, or ignore this.}
 
 
 %%% Local Variables:
