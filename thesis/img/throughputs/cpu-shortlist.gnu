@@ -13,7 +13,7 @@ set key inside right top vertical spacing 1.5 sample 1 autotitle columnhead
 set logscale x 2
 # set logscale y
 
-set xlabel "Batch size"
+set xlabel "Batch size (sentences)"
 set xrange [1:128]
 
 set decimal locale
