@@ -129,8 +129,6 @@ paragraph in Section \ref{sec:training:methodology}.  We train two Transformer
 base models (one for each translation direction) for dual cross-entropy
 filtering using the clean part of the data after the rule-based cleaning
 step.
-% \JH{Add more details on these models, perhaps include the hyperparameters
-% somewhere in an appendix, plus add the dev scores}
 
 We score the crawled part of the parallel data using the trained models and we
 sort the sentence pairs according to the score. To estimate how many of the
@@ -144,7 +142,6 @@ scores achieved by the Transformer big models on the development data (the
 75\% as the ``clean'' portion of the crawled data. The develoment scores
 achieved by the trained models are shown in Table
 \ref{tab:dual-cross-entropy-selection}.
-% \JH{Add the data sizes after this cleaning step.}
 
 \begin{table}
   \centering
@@ -161,16 +158,6 @@ achieved by the trained models are shown in Table
     different amounts of scored crawled parallel data in both directions.}%
   \label{tab:dual-cross-entropy-selection}
 \end{table}
-
-% \JH{The following is not true / old:}
-% We train our autoregressive models on a mix of the clean data and the
-% backtranslations. We use tagged-backtranslation and we oversample the clean
-% dataset to form roughly 25\% of the mix. We select the top 100 million sentence
-% pairs from the backtranslated data according to Moore-Lewis language modeling
-% score. \JH{tento odstavec rozvest aspon na stranku a kus}. We also try using
-% the top 150 million. \JH{napsat jinak:} As the size of the clean data is 3.6
-% million sentence pairs, we oversample the dataset by a factor of 10 for the 100M
-% backtranslation version or 14 for the 150M backtranslation version.
 
 % ------------------------------------------------------------------------------
 \paragraph{Backtranslation.} We train three additional translation models (four
@@ -230,8 +217,6 @@ Table \ref{tab:trafo-big-hparams}.
 
 After the training on mixed parallel and backtranslated data converged, we
 continued the training of the models on parallel data only.
-% \JH{Early stopping.}
-% \JH{Add a table with scores of the teacher models.}
 
 \begin{table}
   \centering
@@ -269,9 +254,6 @@ continued the training of the models on parallel data only.
 % ------------------------------------------------------------------------------
 \footnotetext{We did not use gradient clipping because of issues in the Marian
   toolkit implementation.}
-  %\JH{is there an issue? Also, put this on the right
-%    page.}}  % JH: Perhaps switch to the footnote package, which can handle
-             % that better
 % ------------------------------------------------------------------------------
 
 % ------------------------------------------------------------------------------
@@ -401,10 +383,11 @@ token.
 \label{sec:exp:results}
 % ------------------------------------------------------------------------------
 
-In this section we analyze the results both in terms of translation quality
-(Subsection \ref{subsec:results:quality}) and decoding speed (Subsection
-\ref{subsec:results:time}). \JH{we present the discussion and comparison to
-  other methods in \ref{subsec:results:discussion}.}
+In this section we analyze the results both in terms of translation quality in
+Section \ref{subsec:results:quality} and decoding speed in Section
+\ref{subsec:results:time}. We discuss the results from the perspectives of the
+related literature on the \ac{nat} models and the submissions to the Efficient
+Translation Shared Task in Section \ref{subsec:results:discussion}.
 
 
 % ------------------------------------------------------------------------------
@@ -457,18 +440,11 @@ We also note that the difference in the \acs{comet} score is bigger than in
 \acs{bleu}, which might suggest that \acs{nar} models would rank poorly in
 human evaluation, despite achieving reasonable \acs{bleu} scores.
 
-% \JH{We observe... gaps everywhere, AR clearly better in translation. relatively
-%   small gaps in ChrF scores, moderate gaps in bleu, large gaps in COMET which
-%   could suggest that NAR systems will rank poorly in human evaluation even
-%   though they achieve high \acs{bleu} scores.}
-
 The results on the test set confirm the ranking of the \acs{nar} models as seen
 during training (see Figures \ref{fig:ende-learning-curves} and
 \ref{fig:deen-learning-curves}), including the interesting exception of the
 English $\rightarrow$ German Micro model. Otherwise, the larger the student
 model is, the better scores it achieves.
-% \JH{we have experiments with tied embeddings but I would keep them out
-% because the results were the same.}
 
 Finally, we see that using a lexical shortlist does not have an effect on the
 translation quality in all model variants. However, we see that shortlisting
@@ -657,10 +633,9 @@ minimize the effect of the model loading overhead.
 
 For measuring the CPU times, we use the same environment as the \acs{wmt}~21
 shared task organizers, which is a dual-socket Intel Xeon Gold 6354 from Oracle
-Cloud, a 36-core CPU server. For GPU efficiency, we use an Nvidia A100 GPU.
-% albeit on a slightly different server architecture. \JH{what arch exactly?}
-We also include our results on an Nvidia P100 GPU which has been used often in
-the literature (see Table \ref{tab:related:hardware} in Section
+Cloud, a 36-core CPU server. For GPU efficiency, we use an Nvidia A100 GPU.  We
+also include our results on an Nvidia P100 GPU which has been used often in the
+literature (see Table \ref{tab:related:hardware} in Section
 \ref{sec:nat:discussion}).
 
 \paragraph{GPU Latency and Throughput.}
@@ -744,18 +719,18 @@ using lexical shortlists.
 In Figure \ref{fig:throughput:cpu36}, we show the CPU decoding times of the
 trained models using 36 CPU cores with different batching settings.  We see
 similar trends to GPU decoding -- the \ac{nar} models are faster with smaller
-batch sizes. When the batch size is increasing, the \ac{ar} models eventually
-match the decoding speed of the \ac{nar} models. Unlike GPU decoding, there is
-a considerable difference between the large and base models in both \ac{ar} and
-\ac{nar} variants.
+batch sizes. The \ac{ar} models eventually match the decoding speed of the
+\ac{nar} models as the batch size increases. However, there is a considerable
+difference between the large and base models in both \ac{ar} and \ac{nar}
+variants.
 
-We also notice that increasing the batch size can even slow down the decoding
-speed. There may be several reasons for this behavior. First, the size of the
-shortlist grows proportionally with the size of the batch, as there are more
-possible target words. Second, when the batch size is too large, much of the
-computation is wasted on the padded positions in shorter sentences (as
-explained in Section \ref{sec:training:methodology}). These issues are not
-evident in GPU decoding due to a much higher level of parallelism.
+We also notice that increasing the batch size can slow the decoding speed
+down. There may be several reasons for this behavior. First, the size of the
+shortlist grows proportionally with the batch size, as there are more possible
+target words. Second, when the batch is too large, much of the computation is
+wasted on the padded positions in shorter sentences (as explained in Section
+\ref{sec:training:methodology}). These issues are not evident in GPU decoding
+due to a higher level of parallelism.
 
 It is apparent from the data table in Figure \ref{fig:throughput:cpu36} that
 using lexical shortlist improves the decoding speed of both \ac{ar} and
@@ -764,13 +739,17 @@ shortlisting. We see that changing the batch size has similar effect in both
 cases, perhaps with the exception of the micro and tiny models which benefit
 greatly from the shortlist in combination with a small batch size.
 
-\JH{a limitation of the implementation: missing fields mean out-of-memory,
-  comment on how marian behaves on multiple CPUs, ugh.}
+In case of the \ac{nar} model with batch size od 128, we ran across an
+out-of-memory error due to a limitation in the Marian implementation. When
+using multiple CPUs for the decoding, the program makes a copy of the whole
+model for each CPU core used. When the batch size is too large, this will
+eventually fill the whole RAM and the process is killed.
 
-\JH{times on a single CPU core are all rubbish so we do not even report them in
-  a table}
-
-
+We tried to measure the single-core CPU latency, but the decoding speed was too
+slow to compete with the efficiency task submissions. Based on the decoding
+time on a smaller sample of the data, we estimate the time to translate the
+whole dataset would take around 100 hours using the large \ac{nar} model and
+around 15 hours using the tiny model.
 
 \begin{figure}
   \centering
@@ -785,14 +764,14 @@ greatly from the shortlist in combination with a small batch size.
 
     \midrule
     Full output \\
-    \acs{ar} -- Large & 52,087 &  &  &  & 12,166 & 10,151 & 9,370 & 9,244 \\
-    \acs{ar} -- Base  & 16,293 & 9,727 & 7,191 & 5,420 & 3,635 & 2,925 & 2,707 & 2,664 \\
+    \acs{ar} -- Large & 52,087 &       & 23,478 & 16,731 & 12,166 & 10,151 & 9,370 & 9,244 \\
+    \acs{ar} -- Base  & 16,293 & 9,727 &  7,191 &  5,420 &  3,635 &  2,925 & 2,707 & 2,664 \\
     \addlinespace
-    Large & 14,542 &       &       &       & 8,357 & 8,247 & 8,238 & \\
-    Base  &  3,508 &       &       &       & 2,921 & 2,920 & 2,934 & 2,948 \\
-    Small &  2,346 &       &       & 1,933 & 1,921 & 1,921 & 1,936 & 1,950 \\
-    Micro &  1,952 &       &       &       & 1,588 & 1,587 & 1,607 & 1,627 \\
-    Tiny  &    784 &       &       &   687 &   685 &   694 &   701 &   719 \\
+    Large & 14,542 & 11,320 & 9,534 & 8,657 & 8,357 & 8,247 & 8,238 & \\
+    Base  &  3,508 &  3,126 & 2,979 & 2,927 & 2,921 & 2,920 & 2,934 & 2,948 \\
+    Small &  2,346 &  2,079 & 1,975 & 1,933 & 1,921 & 1,921 & 1,936 & 1,950 \\
+    Micro &  1,952 &  1,728 & 1,641 & 1,600 & 1,588 & 1,587 & 1,607 & 1,627 \\
+    Tiny  &    784 &    719 &   697 &   687 &   685 &   694 &   701 &   719 \\
 
 
     \midrule
@@ -822,19 +801,24 @@ greatly from the shortlist in combination with a small batch size.
 \label{subsec:results:discussion}
 % ------------------------------------------------------------------------------
 
-\JH{V diskusi musim rict: First, we achieved the best scores on wmt 14, but
-  those exact models score very poorly on wmt21, especially with the COMET
-  score which should simulate human evaluation \citep{rei-etal-2020-comet,
-    popovic-2015-chrf}}
+Tables \ref{tab:wmt14-bleu-scores} and \ref{tab:wmt14-weight-avg} in Section
+\ref{subsec:results:quality} show that we achieve state-of-the-art in \acl{nar}
+translation on the \acs{wmt}~14 test set, outperforming both single-step and
+iterative methods (see the results overview of the related work in Table
+\ref{tab:related:wmt14} in Section \ref{sec:nat:discussion}). However, the
+results on the \acs{wmt}~21 test set in Table \ref{tab:wmt21-scores} show that
+there is still large room for improvement, especially when looking at the
+\acs{comet} scores. We believe that these findings should motivate the future
+research not to evaluate translation quality exclusively on the \acs{wmt}~14
+test set.
 
-\JH{dale musim zminit comparison s edinburkem \citep{Behnke-wmt21-speed} v
-  tabulce \ref{tab:efficiency:comparison}.}
-
-\JH{from the comparison we see that the autoregressive edinburgh base model is
-  superior in most regards, except for the GPU decoding latency. As we discuss
-  in Section \ref{sec:nat:discussion}, these conditions are the only considered
-  scenario in most of the related studies. }
-
+We compare our models to one of the best-performing submissions in the
+efficiency task -- the University of Edinburgh's ``base'' model
+\citep{Behnke-wmt21-speed} -- in Table \ref{tab:efficiency:comparison}. It is
+clear from the comparison that the Edinburgh \acl{ar} model is superior to our
+\ac{nar} models in most regards. One exception is the GPU decoding latency. As
+we discuss in Section \ref{sec:nat:discussion}, these conditions are the only
+considered scenario in most of the related studies.
 
 \begin{table}
   \centering

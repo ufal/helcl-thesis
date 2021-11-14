@@ -12,9 +12,6 @@
 In this chapter, we lay the foundations for the \ac{nat} approaches studied in
 this thesis. We describe our experiments with an architecture based on the
 \ac{ctc} loss \citep{libovicky-helcl-2018-end}.
-% \JH{ok to self-cite when sections will be based on this?} \JH{use \ac{nat}
-% here somewhere}
-
 
 We begin with the description of the \ac{ctc} algorithm for computing the
 cross-entropy loss over all possible alignments between the reference sentence
@@ -92,8 +89,7 @@ equivalent to the given target sequence:
   \label{eq:ctc-loss}
 \end{equation}
 %
-where $\sim$ denotes the equivalence relation. % \JH{$J_{\theta}$ should perhaps
-%  be $J(\theta)$. Also, consider the $\sim$ sign.}
+where $\sim$ denotes the equivalence relation.
 
 The inner summation in Equation \ref{eq:ctc-loss} is computed over all possible
 sequences equivalent to the label sequence. For technical purposes, the label
@@ -219,9 +215,6 @@ with pos. enc.'' in the results table.
 \section{Preliminary Experiments}%
 \label{sec:ctc:experiments}
 % -----------------------------------------------------------------------------
-
-% \JH{Section with experiments from the 2018 paper. Should show that it works,
-%   but it's still far from perfect.}
 
 We conducted experiments with the \ac{ctc}-based \ac{nat} models described
 above on English--German and English--Romanian translation in both directions.
@@ -397,7 +390,6 @@ the CPU setting, we are using a CPU machine with the TensorFlow session
 configured to use 12 CPU threads. GPU results are measured on a single Nvidia
 GeForce GTX 1080 GPU. We show the average latency as well as the average time
 to decode a sentence with batch decoding.
-% \JH{Compare speed results? Or leave it for the next chapter.}
 
 \begin{table}
   \centering
@@ -720,8 +712,6 @@ Another weakness of the models from the previous sections is the relatively low
 decoding speed in absolute numbers. Although we achieve reasonable speed-up
 compared to an \ac{ar} baseline, the latency can be substantially lower than we
 measured, both on CPU and on a GPU.
-
-% \JH{co dodat? conclude the chapter somehow, or ignore this.}
 
 
 %%% Local Variables:

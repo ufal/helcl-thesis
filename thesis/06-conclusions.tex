@@ -3,37 +3,54 @@
 \label{chap:conclusions}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-In this thesis, we explored the possibilities of non-autoregressive models for
-neural machine translation.
+In this thesis, we explored the possibilities of \ac{nar} models for
+\ac{nmt}. We described the commonly used \ac{nmt} models and showed techniques
+to effectively train them and to use them for translation.
 
-We presented a comprehensive survey of the \JH{jako attemtpts ale jiny -
-  pokusy, bidy, ...} which have been proposed in this quite recent and rapidly
-developing field. \JH{mozna tady nejaky vyjmenovat, jako gu nebto lee,
-  iterative refinemtn a alignmnent-based metody s dynamickym progrfamovanim}
+We presented a comprehensive survey of the related research efforts that have
+been made so far in this rapidly developing field. We described \ac{nar}
+methods based on latent variables, iterative refinement, or on the relaxed
+requirement of the alignment between the output predictions and the
+ground-truth labels.
 
-We pointed out some of the drawbacks of the approaches, namely \JH{parhaps?
-  the} comparing the results to weaker baselines both in terms of translation
-quality and speed. Another weakness is potentially flawed evaluation
-methodology when the conclusions rely only on reporting relative speed
-improvements across different evaluation environment settings.
+We pointed out some of the drawbacks in the related \ac{nar} approaches, such
+as using weaker baselines both in terms of translation quality and decoding
+speed, and we identified some of the flaws in the evaluation methodology.
 
-In the first of the two experimental chapters \JH{(In Chapter 4)} we proposed a
-novel method for non-autoregressive machine translation based on connectionist
-temporal classification, which has been adopted by the non-autoregressive
-research community as one of the basic approaches. We show ...
+In the first of the two experiemntal chapters (Chapter \ref{chap:nar-nmt-ctc}),
+we proposed a novel method for \ac{nar} \ac{nmt} based on \ac{ctc} which has
+been adopted by the \ac{nar} research community as one of the basic approaches
+since its original publication.
 
-In the final chapter of this thesis we aim at improving our ctc-based approach
-by using knowledge distillation using a strong autoregressive teacher model.
-We \JH{continue}
+In Chapter \ref{chap:experiments}, we aim at improving our \acs{ctc}-based
+approach by using knowledge distillation using a strong \ac{ar} teacher model.
+We compare our results to both the \acs{wmt}~14 benchmark and the results of
+the \acs{wmt}~21 Efficient Translation Shared Task
+\citep{heafield-etal-2021-findings}. We find that even though our models are
+among the best performing on \acs{wmt}~14, there is a large room for
+improvement when we compare them to highly optimized \acl{ar} models submitted
+to the efficiency task.
 
-\paragraph{Future Work.}
-\JH{One future work is to implement the quantization into the NAT models.}
+To conclude, the research of \acs{nar} models should take into account findings
+of the efficiency task, evaluate the translation quality also on newer test
+sets, and measure the decoding speed under various conditions, such as batched
+GPU and CPU decoding.
 
-\JH{Paragraph about gender bias in knowledge distillation
-  https://aclanthology.org/2021.emnlp-main.803}
+\section*{Future Work}
+Based on our results, future research can be conducted in two main directions
+-- focusing either on the translation quality of the \ac{nat} models or on the
+decoding speed. As we have shown on a case study with lexical shortlists,
+optimization techniques commonly applied to \ac{ar} models have the potential
+to help \ac{nar} models as well. These techniques include quantization or
+pruning of parts of the model, such as the attention heads.
 
-\JH{JL: do future taky můžeš napsat, že taky můžeš oměřit další věci, třeba
-  morpheval a performance na jinejch doménách}
+Knowledge distillation has been shown to amplify gender bias already present
+the teacher model \citep{vamvas-sennrich-2021-contrastive}. This phenomenon is
+especially relevant for \acs{nat} models since knowledge distillation is an
+integral part of the training. Future work could address the gender bias
+problem in these models. A qualitative analysis of other aspects could be also
+considered, for example measuring the morphological quality or the performance
+on different domains or in low-resource scenarios.
 
 %%% Local Variables:
 %%% mode: latex
