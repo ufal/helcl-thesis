@@ -8,21 +8,22 @@ As we discussed in Section \ref{sec:nat:discussion}, the flaws in the
 evaluation methodology adopted by current research of \ac{nat} models make it
 difficult to identify approaches suitable in production-ready conditions.  In
 this chapter, we present further experiments with \ac{nat} models trained with
-\ac{ctc}. We focus on fair comparison with other non-autoregressive approaches
-as well as state-of-the-art optimized autoregressive methods.  In line with our
-previous experiments (see Chapter \ref{chap:nar-nmt-ctc}) and also with the
-rest of the related work, we conduct experiments on English-German translation.
+\ac{ctc}. We focus on a fair comparison with other non-autoregressive
+approaches as well as state-of-the-art optimized autoregressive methods.  In
+line with our previous experiments (see Chapter \ref{chap:nar-nmt-ctc}) and
+also with the rest of the related work, we conduct experiments on
+English-German translation.
 
 As previously stated (see Section \ref{sec:nat:principles}), knowledge
 distillation \citep{kim-rush-2016-sequence} is a crucial element that brings
 the performance of \ac{nar} methods closer to that of \ac{ar} methods. We use
-strong \ac{ar} teachers as both our baseline models, and as the source of the
+strong \ac{ar} teachers as both our baseline models and as the source of the
 artificial target side data for training of the distilled models. We describe
 our teacher models in detail in Section \ref{sec:exp:teachers}
 
 In Section \ref{sec:exp:students}, we describe the training of the \ac{nar}
 student models. We follow the approach described in Chapter
-\ref{chap:nar-nmt-ctc}. The key changes to the \acs{ctc}-based models include
+\ref{chap:nar-nmt-ctc}. Key changes to the \acs{ctc}-based models include
 training the student models on distilled data and using a faster implementation
 of the translation system.
 
@@ -30,7 +31,7 @@ In the analysis of the results presented in Section \ref{sec:exp:results}, we
 try to connect the separate worlds of \ac{nat} research and the bids to improve
 the efficiency of translation models. Our student models outperform all of the
 \ac{nar} models in terms of \acs{bleu} on the standard \acs{wmt}~14 translation
-benchmark. However, at the same time the models score relatively poorly in
+benchmark. However, at the same time, the models score relatively poorly in
 comparison to the current state-of-the-art \ac{ar} translation models, which
 suggests that the gap in translation quality between \ac{ar} and \ac{nar}
 models is still a problem, contrary to some of the claims in the literature
@@ -59,7 +60,7 @@ data for our \ac{nar} student models.
 In our English-German experiments, we use autoregressive models from our
 submission to the \ac{wmt} 2021 News Translation Shared Task
 \citep{chen-etal-2021-university}. We use these models both as strong \ac{ar}
-baselines, and as teacher models for generating distilled data for the \ac{nar}
+baselines and as teacher models for generating distilled data for the \ac{nar}
 student models, described in Section \ref{sec:exp:students}. The models were
 trained on cleaned parallel data augmented with backtranslated monolingual
 data, using Marian, a C++ toolkit for training and decoding from \ac{nmt}
@@ -69,7 +70,7 @@ models \citep{junczys-dowmunt-etal-2018-marian}.
 \paragraph{Data Cleaning.} We prepare the training dataset consisting of the
 following parts: First, we use clean parallel data from the Europarl corpus
 \citep{koehn-2005-europarl}, the Tilde MODEL -- RAPID corpus
-\citep{rozis-skadins-2017-tilde}, and News Commentary corpus from OPUS
+\citep{rozis-skadins-2017-tilde}, and the News Commentary corpus from OPUS
 \citep{tiedemann-2012-parallel}. Next, we include sources of crawled parallel
 data from the web, which are considered noisy. These include Paracrawl
 \citep{espla-etal-2019-paracrawl}, Common
@@ -77,19 +78,19 @@ Crawl\footnote{\url{https://commoncrawl.org/}}, WikiMatrix
 \citep{schwenk2019wikimatrix}, and the Wikipedia Parallel Titles
 Corpus\footnote{\url{https://linguatools.org/tools/corpora/wikipedia-parallel-titles-corpora/}}. Finally,
 we use backtranslation \citep{sennrich-etal-2016-improving} of monolingual data
-obtained from News Crawl.  We train our own models for generating the
+obtained from News Crawl.  We train our own models to generate the
 backtranslations on cleaned parallel data, as described below.
 
 We perform the following filtering techniques on the gathered data (both clean
-and noisy) to improve the overall parallel data quality.
+and noisy) to improve the overall quality of the parallel data.
 
-We start with a deterministic rule-based filtering%
+We start with deterministic rule-based filtering%
 \footnote{\url{https://github.com/browsermt/students/blob/master/train-student/clean/}}
 and deduplication. We remove all sentence pairs containing non-printing
 characters, empty sentences, and sentences longer than 120 words; we also
 remove all sentence pairs with length ratio of less than 0.6 (0.4 for
 Wikititles), sentences in which over 40\% of characters do not constitute
-tokens, and sentences in which more than 50\% was non-alphabetic characters. We
+tokens, and sentences in which more than 50\% were non-alphabetic characters. We
 run language identification using fastText
 \citep{joulin-etal-2017-bag,joulin2016fasttext} and remove all sentence pairs
 classified as not English-German.
@@ -131,15 +132,15 @@ step.
 % \JH{Add more details on these models, perhaps include the hyperparameters
 % somewhere in an appendix, plus add the dev scores}
 
-We score the crawled part of the parallel data using the trained models, and we
+We score the crawled part of the parallel data using the trained models and we
 sort the sentence pairs according to the score. To estimate how many of the
 crawled sentence pairs can we consider clean, we train the big variant of the
 Transformer translation models in both directions on different amounts of the
-scored data (following the teacher model hyperparameter settings in
-\ref{tab:trafo-big-hparams}). We use 25\%, 50\%, 75\%, and 100\% of the data,
+scored data (following the teacher model hyperparameter settings in Table
+\ref{tab:trafo-big-hparams}). We use 25\%, 50\%, 75\% and 100\% of the data,
 taking the highest-scoring sentence pairs for training. Based on the \acs{bleu}
 scores achieved by the Transformer big models on the development data (the
-\ac{wmt} 2019 test set, \citealp{barrault-etal-2019-findings}), we set down the
+\ac{wmt} 2019 test set, \citealp{barrault-etal-2019-findings}), we declare the
 75\% as the ``clean'' portion of the crawled data. The develoment scores
 achieved by the trained models are shown in Table
 \ref{tab:dual-cross-entropy-selection}.
@@ -174,13 +175,13 @@ achieved by the trained models are shown in Table
 % ------------------------------------------------------------------------------
 \paragraph{Backtranslation.} We train three additional translation models (four
 in total with the one from the data cleaning step) on the filtered parallel
-dataset for creating backtranslations \citep{sennrich-etal-2016-improving}. We
-use the same hyperparameter settings as for the teacher models (see Table
+dataset to create backtranslations \citep{sennrich-etal-2016-improving}. We use
+the same hyperparameter settings as for the teacher models (see Table
 \ref{tab:trafo-big-hparams}), except for different random seeds for parameter
 initialization.
 
 We translate the monolingual data using the four models in an ensemble. We
-limit the target sentence length to 150 tokens and we use beam search decoding
+limit the target sentence length to 150 tokens and use beam search decoding
 with 6 hypotheses in the beam, with the length normalization parameter set to
 1.
 
@@ -189,9 +190,9 @@ years 2018, 2019, and 2020, as released by the \acs{wmt} organizers
 \citep{bojar-etal-2018-findings,barrault-etal-2019-findings,
   barrault-etal-2020-findings}. In total, we gathered 91 million English
 sentences for backtranslation into German and 146 million German sentences for
-backtranslation in the other direction. Table \ref{tab:mono-data-sizes} shows
-the sizes of the monolingual data before and after applying the rule-based
-filtering described in the paragraphs above.
+backtranslation into English. Table \ref{tab:mono-data-sizes} shows the sizes
+of the monolingual data before and after applying the rule-based filtering
+described in the paragraphs above.
 
 \begin{table}
   \centering
@@ -223,7 +224,7 @@ in Section \ref{sec:training:methodology}.
 % ------------------------------------------------------------------------------
 \paragraph{Teacher Model Training.}  We train the teacher models on shuffled
 concatenation of the authentic parallel and tagged backtranslated data. As with
-the models for backtranslation, we train four models with different seeds for
+the backtranslation models, we train four models with different seeds for
 random initialization in each direction. We show the hyperparameter values in
 Table \ref{tab:trafo-big-hparams}.
 
@@ -267,8 +268,9 @@ continued the training of the models on parallel data only.
 \end{table}
 % ------------------------------------------------------------------------------
 \footnotetext{We did not use gradient clipping because of issues in the Marian
-  toolkit implementation.  \JH{is there an issue? Also, put this on the right
-    page.}}  % JH: Perhaps switch to the footnote package, which can handle
+  toolkit implementation.}
+  %\JH{is there an issue? Also, put this on the right
+%    page.}}  % JH: Perhaps switch to the footnote package, which can handle
              % that better
 % ------------------------------------------------------------------------------
 
@@ -276,11 +278,11 @@ continued the training of the models on parallel data only.
 \paragraph{Knowledge Distillation.} The teacher models are used to create
 artificial targets for the student models \citep{kim-rush-2016-sequence}. For
 each translation direction, we translate the source side of the parallel data
-and the authentic monolingual data (in the source language) using ensembled
-teacher models. We do not create wholly synthetic datasets by
+and the authentic monolingual data (in the source language) using the ensemble
+of the teacher models. We do not create wholly synthetic datasets by
 forward-translating backtranslated data.
 
-For generating the knowledge distilled dataset, we use beam search with the
+For generating the knowledge-distilled dataset, we use beam search with the
 beam size of 12 and the normalization parameter set to 0.8. Similarly to
 generating the backtranslated data, we limit the target sentence length to 150
 tokens.
@@ -383,13 +385,16 @@ matrix is otherwise $d \times |V|$) and thus saving time on matrix
 multiplication operation. Output probabilities of the tokens which are not in
 the shortlist are not computed (and these tokens are never generated).
 
-For each batch, a new shortlist is generated using a bilingual lexicon.  Using
-a parallel corpus, the word alignment is computed. The bilingual lexicon is the
-set of target tokens aligned with each source token, along with the
-frequencies. To create a shortlist for a given batch, the potential
-translations of every source token are added to the shortlist. Specifically in
-our settings, we include 100 most frequent and 100 most probable translations
-of each token.
+To use lexical shortlists during decoding, we need to create a bilingual
+lexicon first. Using a parallel corpus, we compute the word alignment. Based on
+the alignment, the bilingual lexicon is the set of target tokens aligned with
+each source token, along with the occurrence frequencies.
+
+During decoding, a new lexical shortlist is generated for every new batch. To
+create a shortlist for a given batch, the potential translations of every
+source token are added to the shortlist. Specifically in our settings, we
+include 100 most frequent and 100 most probable translations of each source
+token.
 
 % ------------------------------------------------------------------------------
 \section{Results}%
@@ -398,7 +403,8 @@ of each token.
 
 In this section we analyze the results both in terms of translation quality
 (Subsection \ref{subsec:results:quality}) and decoding speed (Subsection
-\ref{subsec:results:time}).
+\ref{subsec:results:time}). \JH{we present the discussion and comparison to
+  other methods in \ref{subsec:results:discussion}.}
 
 
 % ------------------------------------------------------------------------------
@@ -407,12 +413,13 @@ In this section we analyze the results both in terms of translation quality
 % ------------------------------------------------------------------------------
 
 We compare the results of our models to both related work on \ac{nat} and to
-the results of the \ac{wmt}~21 Efficiency Shared Task which features
-highly-optimized \ac{ar} translation models.  In the \ac{nar} literature, the
-\acs{wmt}~14 test set \citep{bojar-etal-2014-findings} is used as a standard
-benchmark. On the other hand, the efficiency task uses the recent test set from
-\acs{wmt}~21 \JH{cite findings}. In this section, we present the results on
-both datasets.
+the results of the \ac{wmt}~21 Efficiency Shared Task which features highly
+optimized \ac{ar} translation models \citep{heafield-etal-2021-findings}. In
+the \ac{nar} literature, the \acs{wmt}~14 test set
+\citep{bojar-etal-2014-findings} is used as a standard benchmark. On the other
+hand, the efficiency task uses the recent test set from \acs{wmt}~21
+\citep{akhbardeh-etal-2021-findings}. In this section, we present the results
+on both datasets.
 
 \paragraph{Results on the \acs{wmt}~21 test set.}
 As argued in Section \ref{sec:evaluation}, \acs{bleu} alone is not necessarily
@@ -439,10 +446,10 @@ translation set using Sacrebleu, and we report the
 average.\footnote{\acs{chrf}; En$\leftrightarrow$De: {\scriptsize
     \texttt{nrefs:1|case:mixed|eff:yes|nc:6|nw:0|space:no|version:2.0.0}}}
 Finally, we compute the \acs{comet} scores with the \texttt{wmt20-comet-da}
-model of \acs{comet} version \texttt{dd2298} (1.0.0rc9).
+model of the \acs{comet} version \texttt{dd2298} (1.0.0rc9).
 
 We observe that in both translation directions, the \ac{ar} models outperform
-the \ac{nar} models. The performance gap between the models grows futher with
+the \ac{nar} models. The performance gap between the models grows further with
 beam search and ensembling. We can also see that knowledge distillation has a
 positive effect on both \ac{ar} and \ac{nar} models, with the student \ac{ar}
 model matching the performance of the ensemble of four large teacher models.
@@ -464,9 +471,9 @@ model is, the better scores it achieves.
 % because the results were the same.}
 
 Finally, we see that using a lexical shortlist does not have an effect on the
-translation quality in all model variants. \JH{distill vs non-distill?}
-
-
+translation quality in all model variants. However, we see that shortlisting
+impairs the performance of the Transformer base model when decoding with beam
+search.
 
 \begin{table}
   \centering
@@ -565,7 +572,7 @@ translation quality in all model variants. \JH{distill vs non-distill?}
 
 \paragraph{Results on the \acs{wmt}~14 test set.}
 We present automatic evaluation results measured on the \acs{wmt}~14 test set
-to provide comparison to the related work on \acl{nar} models (see Table
+to provide a comparison to the related work on \acl{nar} models (see Table
 \ref{tab:related:wmt14} in Section \ref{sec:nat:discussion} for reference).  In
 Table \ref{tab:wmt14-bleu-scores} we show the \acs{bleu} scores achieved by our
 \ac{nar} student models on this test set.
@@ -580,7 +587,7 @@ checkpoint averaging. In each variant, we take the average parameters of the
 five best scoring models as measured on the validation set (either before the
 300,000th update or overall). In contrast to our previous experiments in
 Chapter \ref{chap:nar-nmt-ctc} (see Table \ref{tab:end-to-end:bleu}), we found
-chekpoint averaging does only have a small effect on the translation quality in
+that checkpoint averaging only has a small effect on the translation quality in
 terms of \acs{bleu}.
 
 \begin{table}
@@ -639,7 +646,7 @@ terms of \acs{bleu}.
 \label{subsec:results:time}
 % ------------------------------------------------------------------------------
 
-In this section we analyze the decoding speed of the English $\rightarrow$
+In this section, we analyze the decoding speed of the English $\rightarrow$
 German \ac{nar} models. We aim at recreating the evaluation conditions
 following the \acs{wmt}~21 Efficiency Shared Task
 \citep{heafield-etal-2021-findings}. We measure the decoding latency and
@@ -649,7 +656,7 @@ The decoding time is measured on a dataset containing one million sentences to
 minimize the effect of the model loading overhead.
 
 For measuring the CPU times, we use the same environment as the \acs{wmt}~21
-shared task organizers which is a dual-socket Intel Xeon Gold 6354 from Oracle
+shared task organizers, which is a dual-socket Intel Xeon Gold 6354 from Oracle
 Cloud, a 36-core CPU server. For GPU efficiency, we use an Nvidia A100 GPU.
 % albeit on a slightly different server architecture. \JH{what arch exactly?}
 We also include our results on an Nvidia P100 GPU which has been used often in
@@ -659,52 +666,25 @@ the literature (see Table \ref{tab:related:hardware} in Section
 \paragraph{GPU Latency and Throughput.}
 Figures \ref{fig:throughput:p100} and \ref{fig:throughput:a100} plot the times
 to translate the test set on P100 and A100 GPUs, respectively. Each figure
-shows the relationship between the batch size and the decoding time in seconds,
+shows the relationship between the batch size and the decoding time in seconds
 and includes a table with the measured data. The runs corresponding to the
 missing entries in the table did not finish in 24 hours.
 
-We see similar trends in both GPU settings. For \ac{ar} models, increasing the
+Setting aside the absolute values (as expected, an A100 is faster than a P100),
+both GPU settings yield similar results. For \ac{ar} models, increasing the
 batch size heavily reduces the overall decoding speed and eventually surpasses
-the large \ac{nar} models. Increasing the batch size on a GPU increases the
-decoding speed of \ac{nar} models as well, but the effect is diminished for
-larger batch sizes.
+the large \ac{nar} models. Increasing the batch size speeds up the decoding in
+\ac{nar} models as well, but the effect is diminished for larger batch sizes.
 
-From this point of view, the optimal scenario for \ac{nar} models are
-situations in which the system runs in online mode, i.e. with a batch size of
+From this point of view, the optimal scenario for \ac{nar} models is a
+situation in which the system runs in online mode, i.e. with a batch size of
 1, or with a batch size of a few sentences. Using a faster GPU with more
 threads increases the batch size when \ac{ar} models meet the speed of \ac{nar}
 models.
 
-
-\paragraph{CPU Latency and Throughput.}
-Table \ref{tab:exp:cpu} shows
-
-
-
-\begin{table}
-  \centering
-
-  \begin{tabular}{lrr}
-    \toprule
-    Model & 1 CPU Core & 36 CPU Cores \\
-    \midrule
-    \acs{ar} -- Large & & 9,626 \\
-    \acs{ar} -- Base & & \\
-    \midrule
-    \Acl{nar} models \\
-    Large & & 8,126 \\
-    Base  & & 2,880 \\
-    Small & & 1,890 \\
-    Micro & & 1,558 \\
-    Tiny  & &   673 \\
-    \bottomrule
-  \end{tabular}
-
-  \caption{}%
-  \label{tab:exp:cpu}
-\end{table}
-
-
+We measured the GPU decoding time both with and without shortlisting. However,
+the differences were minimal. Therefore, we only report decoding times without
+using lexical shortlists.
 
 \begin{figure}
   \centering
@@ -731,7 +711,6 @@ Table \ref{tab:exp:cpu} shows
     single Nvidia \emph{Pascal} P100 GPU with different batch size settings.}%
   \label{fig:throughput:p100}
 \end{figure}
-
 
 \begin{figure}
   \centering
@@ -760,6 +739,37 @@ Table \ref{tab:exp:cpu} shows
 \end{figure}
 
 
+% -----------------------------------------------------------------------------
+\paragraph{CPU Latency and Throughput.}
+In Figure \ref{fig:throughput:cpu36}, we show the CPU decoding times of the
+trained models using 36 CPU cores with different batching settings.  We see
+similar trends to GPU decoding -- the \ac{nar} models are faster with smaller
+batch sizes. When the batch size is increasing, the \ac{ar} models eventually
+match the decoding speed of the \ac{nar} models. Unlike GPU decoding, there is
+a considerable difference between the large and base models in both \ac{ar} and
+\ac{nar} variants.
+
+We also notice that increasing the batch size can even slow down the decoding
+speed. There may be several reasons for this behavior. First, the size of the
+shortlist grows proportionally with the size of the batch, as there are more
+possible target words. Second, when the batch size is too large, much of the
+computation is wasted on the padded positions in shorter sentences (as
+explained in Section \ref{sec:training:methodology}). These issues are not
+evident in GPU decoding due to a much higher level of parallelism.
+
+It is apparent from the data table in Figure \ref{fig:throughput:cpu36} that
+using lexical shortlist improves the decoding speed of both \ac{ar} and
+\ac{nar} models. For clarity, we only plot the measured decoding times with
+shortlisting. We see that changing the batch size has similar effect in both
+cases, perhaps with the exception of the micro and tiny models which benefit
+greatly from the shortlist in combination with a small batch size.
+
+\JH{a limitation of the implementation: missing fields mean out-of-memory,
+  comment on how marian behaves on multiple CPUs, ugh.}
+
+\JH{times on a single CPU core are all rubbish so we do not even report them in
+  a table}
+
 
 
 \begin{figure}
@@ -771,20 +781,38 @@ Table \ref{tab:exp:cpu} shows
   \begin{tabular}{lrrrrrrrr}
     \toprule
     Batch size & 1 & 2 & 4 & 8 & 16 & 32 & 64 & 128 \\
+
+
     \midrule
-    \acs{ar} -- Large &&  & 19,001 & 13,586 & 10,939 & 9,651 & 9,124 & 9,067 \\
-    \acs{ar} -- Base  &&  & 18,914 & 13,597 & 10,946 & 9,643 & 9,154 & \\
+    Full output \\
+    \acs{ar} -- Large & 52,087 &  &  &  & 12,166 & 10,151 & 9,370 & 9,244 \\
+    \acs{ar} -- Base  & 16,293 & 9,727 & 7,191 & 5,420 & 3,635 & 2,925 & 2,707 & 2,664 \\
+    \addlinespace
+    Large & 14,542 &       &       &       & 8,357 & 8,247 & 8,238 & \\
+    Base  &  3,508 &       &       &       & 2,921 & 2,920 & 2,934 & 2,948 \\
+    Small &  2,346 &       &       & 1,933 & 1,921 & 1,921 & 1,936 & 1,950 \\
+    Micro &  1,952 &       &       &       & 1,588 & 1,587 & 1,607 & 1,627 \\
+    Tiny  &    784 &       &       &   687 &   685 &   694 &   701 &   719 \\
+
+
     \midrule
+    Shortlist \\
+    \acs{ar} -- Large & 41,168 & 27,977 & 18,914 & 13,597 & 10,946 & 9,643 & 9,154 & 9,090 \\
+    \acs{ar} -- Base  & 10,555 &  6,776 &  4,660 &  3,664 &  2,957 & 2,643 & 2,564 & 2,587 \\
+    \addlinespace
     Large & 12,799 & 9,870 & 8,245 & 7,545 & 7,434 & 7,511 & 7,639 & \\
     Base  &  2,549 & 2,298 & 2,263 & 2,306 & 2,399 & 2,503 & 2,609 & 2,707 \\
     Small &  1,346 & 1,246 & 1,250 & 1,306 & 1,399 & 1,497 & 1,606 & 1,714 \\
     Micro &    958 &   897 &   913 &   974 & 1,062 & 1,163 & 1,271 & 1,380 \\
     Tiny  &    244 &   246 &   273 &   316 &   373 &   437 &   506 &   582 \\
+
+
     \bottomrule
   \end{tabular}
 
   \caption{Wall times to translate one million sentences (in seconds) on 36 CPU
-    cores using lexical shortlist with different batch size settings.}%
+    cores with different batch size settings. The graph shows the decoding
+    times with shortlisting.}%
   \label{fig:throughput:cpu36}
 \end{figure}
 
@@ -794,7 +822,45 @@ Table \ref{tab:exp:cpu} shows
 \label{subsec:results:discussion}
 % ------------------------------------------------------------------------------
 
-\JH{V diskusi musim rict: First, we achieved best scores on wmt 14, but those exact models score very poorly on wmt21, especially with the COMET score which should simulate human evaluation \citep{rei-etal-2020-comet, popovic-2015-chrf}}
+\JH{V diskusi musim rict: First, we achieved the best scores on wmt 14, but
+  those exact models score very poorly on wmt21, especially with the COMET
+  score which should simulate human evaluation \citep{rei-etal-2020-comet,
+    popovic-2015-chrf}}
+
+\JH{dale musim zminit comparison s edinburkem \citep{Behnke-wmt21-speed} v
+  tabulce \ref{tab:efficiency:comparison}.}
+
+\JH{from the comparison we see that the autoregressive edinburgh base model is
+  superior in most regards, except for the GPU decoding latency. As we discuss
+  in Section \ref{sec:nat:discussion}, these conditions are the only considered
+  scenario in most of the related studies. }
+
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{lrrrrrr}
+    \toprule
+    & \multicolumn{3}{c}{Translation quality} & \multicolumn{3}{c}{Decoding time (seconds)} \\
+    & {\small \acs{chrf}} & {\small \acs{comet}} & {\small \acs{bleu}} & {\small GPU, b>1} & {\small GPU, b=1} & {\small CPU, b>1} \\
+    \midrule
+    Edinburgh base & 61.5 & 0.527 & 55.3 & 140 & 16,851 & 500 \\
+    \midrule
+    \acs{ar} -- Large (teacher) & 59.2 & 0.411 & 50.5 & 1,918 & {\it > 24h} & 9,090 \\
+    \acs{ar} -- Base (student) & 59.5 & 0.455 & 51.6 & 1,465 & {\it > 24h} & 2,587 \\
+    \addlinespace
+    \acs{nar} -- Large & 58.6 & 0.149 & 47.8 & 782 & 7,020 & 7,434 \\
+    \acs{nar} -- Micro & 57.3 & -0.008 & 43.5 & 311 & 2,322 & 897 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{Comparison of our models with the Edinburgh ``base'' model submitted
+    to the \acs{wmt} Efficient Translation Shared Task
+    \citep{Behnke-wmt21-speed}. Columns denoted \emph{b>1} show the best result
+    using batching, \emph{b=1} is measured with a single sentence in the
+    batch. The CPU times were measured using 36 CPU cores.} %
+  \label{tab:efficiency:comparison}
+\end{table}
 
 %%% Local Variables:
 %%% mode: latex

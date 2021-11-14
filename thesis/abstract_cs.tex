@@ -1,1 +1,37 @@
-abstrakt abstrakt abstrakt
+V poslední době nabídl výzkum strojového překladu nové metody pro zrychlení
+generování.
+%
+Jedním z navrhovaných metod je takzvaný neautoregresivní neuronový strojový
+překlad.
+%
+V klasických autoregresivních překladových systémech jsou výstupní
+pravděpodobnostní rozdělení modelována podmíněně na předchozích výstupech.
+%
+Tato závislost umožňuje modelům sledovat stav překládání a obvykle vede ke
+generování velmi plynulých textů.
+%
+Autoregresivní postup je však ze své podstaty sekvenční a nelze jej
+paralelizovat.
+%
+Neautoregresivní systémy modelují pravděpodobnosti jednotlivých cílových slov
+jako navzájem podmíněně nezávislé, což znamená, že dekódování lze paralelizovat
+snadno.
+%
+Nevýhodou je ovšem nízká kvalita překladu ve srovnání s modely
+autoregresivními.
+%
+Cíl výzkumu neautoregresivních metod strojového překladu je zlepšit kvalitu
+překladu a zároveň uchovat vysokou rychlost dekódování.
+%
+V naší práci se věnujeme výzkumu neautoregresivních modelů trénovaných pomocí
+takzvané \uv{connectionist temporal classification}.
+%
+
+
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "thesis"
+%%% End:

@@ -875,8 +875,6 @@ we have presented here. We point out a few aspects that most of the literature
 has in common, as well as some issues regarding the evaluation and comparison
 to meaningful baselines.
 
-\JH{add some more to the intro -- summary, problems, following chapters}
-
 % -----------------------------------------------------------------------------
 \paragraph{Results.} Table \ref{tab:related:wmt14} shows selected results of
 the described approaches in English $\rightarrow$ German \ac{mt}, measured on
@@ -887,9 +885,7 @@ applicable.
 
 We can see that rescoring using an \acl{ar} teacher consistently helps the
 translation performance. However, the more rescoring steps are taken, the less
-decoding speed is gained. \JH{There should be a table with the decoding speeds,
-  and there should be a figure showing the pareto frontier. The thing is, no
-  such graph would make much sense given the arguments presented below.}
+decoding speed is gained.
 
 \begin{table}
   \centering
@@ -1025,8 +1021,9 @@ For example, \citet{gu2017nonautoregressive} report a latency of 408 ms for
 their \ac{ar} model (a Transformer base), measured on a single Nvidia P100 GPU,
 without batching. In contrast, our implementation achieves a latency of around
 100 ms with the same model under the same hardware and hyperparameter settings
-and no optimizations. Additionally, most articles cite a baseline \ac{ar}
-latency of 607 ms \JH{konkretne kdo}, which is the result of
+and no optimizations. Additionally, some articles cite a baseline \ac{ar}
+latency of 607 ms \citep{wang-etal-2019-nonautoregressive,
+  guo-etal-2020-jointly}, which is the result of
 \citet{gu2017nonautoregressive} with beam search, even though beam search is
 not used in the presented \ac{nar} models for the most part.
 
@@ -1086,12 +1083,15 @@ ratios between different papers disregards the actual decoding times -- it is
 easier to achieve 20 times speed-up over a slow baseline than over a baseline
 which is faster.
 
+Due to these reasons, we believe that we cannot show a fair comparison of the
+methods presented here on a graph showing the pareto frontier between the
+decoding speed and translation quality.
+
 However, it is challenging to find a way to compare the contributions of
 different research groups objectively. One such effort is made by the
 organizers of the Efficiency Shared Task, now organized yearly at the \acl{wmt}
 (\acs{wmt}\glsunset{wmt}; \citealp{heafield-etal-2020-findings,
-  heafield-etal-2021-findings}).\JH{update bib when ready, separate WMT from
-  cite}
+  heafield-etal-2021-findings}).
 
 In the Efficiency Shared Task, submissions are evaluated both in terms of
 translation quality and decoding speed under various settings. All submissions
@@ -1100,7 +1100,10 @@ the effects of data and model loading, the decoding time is measured on a
 dataset that contains one million sentences. The speed is measured in five
 different scenarios: GPU latency (decoding without batching) and throughput
 (decoding with the optimal batch size), latency and throughput on a single CPU,
-and throughput on a multi-core CPU. \JH{shrnout poznatky ze shared tasku}
+and throughput on a multi-core CPU. The main findings of the shared task are
+that \acl{ar} models can be optimized to achieve latency of 5--20 ms even with
+inexpensive hardware, without sacrificing much in terms of translation quality
+\citep{heafield-etal-2021-findings}.
 
 Our final observation is that measuring latency on a single GPU without
 batching is a setup that favors \ac{nar} models, even though other scenarios
@@ -1109,7 +1112,8 @@ the differences between \ac{ar} and \ac{nar} models fade, because
 batch-parallelization of \ac{ar} models makes up for time-parallelization of
 \ac{nar} models. On the other hand, in an online decoding scenario on a CPU,
 only limited parallelization is possible, so the advantage of \ac{nar} models
-is also diminished. \JH{observation je na zaklade vysledku, odkaz na kapitolu}
+is also diminished. We present detailed analysis of this behavior in
+Chapter~\ref{chap:experiments}.
 
 
 %%% Local Variables:
