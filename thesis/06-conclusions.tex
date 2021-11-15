@@ -10,14 +10,13 @@ to effectively train them and to use them for translation.
 We presented a comprehensive survey of the related research efforts that have
 been made so far in this rapidly developing field. We described \ac{nar}
 methods based on latent variables, iterative refinement, or on the relaxed
-requirement of the alignment between the output predictions and the
-ground-truth labels.
+alignment between the output predictions and the ground-truth labels.
 
-We pointed out some of the drawbacks in the related \ac{nar} approaches, such
-as using weaker baselines both in terms of translation quality and decoding
-speed, and we identified some of the flaws in the evaluation methodology.
+We pointed out some of the drawbacks in related \ac{nar} approaches, such as
+using weaker baselines both in terms of translation quality and decoding speed,
+and identified some of the flaws in the evaluation methodology.
 
-In the first of the two experiemntal chapters (Chapter \ref{chap:nar-nmt-ctc}),
+In the first of the two experimental chapters (Chapter \ref{chap:nar-nmt-ctc}),
 we proposed a novel method for \ac{nar} \ac{nmt} based on \ac{ctc} which has
 been adopted by the \ac{nar} research community as one of the basic approaches
 since its original publication.
@@ -31,15 +30,26 @@ among the best performing on \acs{wmt}~14, there is a large room for
 improvement when we compare them to highly optimized \acl{ar} models submitted
 to the efficiency task.
 
-To conclude, the research of \acs{nar} models should take into account findings
-of the efficiency task, evaluate the translation quality also on newer test
-sets, and measure the decoding speed under various conditions, such as batched
-GPU and CPU decoding.
+To conclude, over the past few years, the research community has set its hopes
+on the \ac{nar} models because, in theory, the decoding has lower time
+complexity. Moreover, the literature on this topic often claims that \ac{nar}
+models already match the performance of their \ac{ar} counterparts. However,
+our findings suggest that, in fair comparison with strong efficient baselines,
+many research studies concluding that \ac{nar} models are superior over \ac{ar}
+models may be overclaiming. To avoid these problems in the future, research of
+\ac{nar} models should take into account findings of the efficiency task,
+evaluate the translation quality also on newer test sets, and measure the
+decoding speed under various conditions, such as batched GPU and CPU decoding.
+
+% To conclude, the research of \acs{nar} models should take into account findings
+% of the efficiency task, evaluate the translation quality also on newer test
+% sets, and measure the decoding speed under various conditions, such as batched
+% GPU and CPU decoding.
 
 \section*{Future Work}
 Based on our results, future research can be conducted in two main directions
 -- focusing either on the translation quality of the \ac{nat} models or on the
-decoding speed. As we have shown on a case study with lexical shortlists,
+decoding speed. As we have shown in a case study with lexical shortlists,
 optimization techniques commonly applied to \ac{ar} models have the potential
 to help \ac{nar} models as well. These techniques include quantization or
 pruning of parts of the model, such as the attention heads.
@@ -47,9 +57,9 @@ pruning of parts of the model, such as the attention heads.
 Knowledge distillation has been shown to amplify gender bias already present
 the teacher model \citep{vamvas-sennrich-2021-contrastive}. This phenomenon is
 especially relevant for \acs{nat} models since knowledge distillation is an
-integral part of the training. Future work could address the gender bias
-problem in these models. A qualitative analysis of other aspects could be also
-considered, for example measuring the morphological quality or the performance
+integral part of the training. Future work could address the problem of gender
+bias in these models. A qualitative analysis of other aspects could be also
+considered, for example, measuring the morphological quality or the performance
 on different domains or in low-resource scenarios.
 
 %%% Local Variables:
