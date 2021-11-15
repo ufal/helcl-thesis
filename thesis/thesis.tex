@@ -6,14 +6,6 @@
 \documentclass[12pt,notitlepage,a4paper,openright]{report}
 \pagestyle{plain}
 
-%\begin{filecontents*}{\jobname.xmpdata}
-%  \Author{Jindřich Helcl}
-%  \Title{Non-Autoregressive Neural Machine Translation}
-%  \Keywords{non-autoregressive neural machine translation, neural machine translation, deep learning}
-%  \Subject{TODO}
-%  \Publisher{Charles University}
-%\end{filecontents*}
-
 \PassOptionsToPackage{hyperfootnotes=false}{hyperref}
 
 % fix pdfx
@@ -87,6 +79,7 @@
 \hypersetup{
     colorlinks=false,
     pdfborder={0 0 0},
+    unicode=true,
 }
 
 \makeglossaries{}
@@ -282,7 +275,18 @@ I understand that my work relates to the rights and obligations
 \vfill
 
 
-{\noindent\footnotesize \JH{TODO  akcknowledgementy -- lindat, neurem3, gauk, HPC, gourmet}}
+{\noindent\footnotesize %
+  This work was supported by the Czech Science Foundation, grant No. 19-26934X
+  (NEUREM 3), Charles University grant No. 52315/2014, and by the SVV grant
+  No. 260 575.  This work has been using language resources and tools developed
+  and/or stored and/or distributed by the LINDAT/CLARIN project of the Ministry
+  of Education, Youth and Sports of the Czech Republic (project LM2015071).
+  This work was conducted within the EU projects Gourmet, under grant agreement
+  No 825299, and Bergamot, under grant agreement No 825303. It was also
+  supported by the UK EPSRC grant EP/S001271/1 (MTStretch). It was performed
+  using computing resources in CSD3 using funding from the UK EPSRC (capital
+  grant EP/P020259/1).%
+}
 
 \cleardoublepage{}
 \addcontentsline{toc}{chapter}{Table of Contents}

@@ -386,8 +386,8 @@ token.
 In this section we analyze the results both in terms of translation quality in
 Section \ref{subsec:results:quality} and decoding speed in Section
 \ref{subsec:results:time}. We discuss the results from the perspectives of the
-related literature on the \ac{nat} models and the submissions to the Efficient
-Translation Shared Task in Section \ref{subsec:results:discussion}.
+related literature on the \ac{nat} models and the submissions to the Efficiency
+Shared Task in Section \ref{subsec:results:discussion}.
 
 
 % ------------------------------------------------------------------------------
@@ -652,10 +652,9 @@ the large \ac{nar} models. Increasing the batch size speeds up the decoding in
 \ac{nar} models as well, but the effect is diminished for larger batch sizes.
 
 From this point of view, the optimal scenario for \ac{nar} models is a
-situation in which the system runs in online mode, i.e. with a batch size of
-1, or with a batch size of a few sentences. Using a faster GPU with more
-threads increases the batch size when \ac{ar} models meet the speed of \ac{nar}
-models.
+situation in which the system runs in online mode, i.e. with a batch size of 1,
+or with a batch size of a few sentences. On a faster GPU with more threads,
+\ac{ar} models need a larger batch size to meet the speed of \ac{nar} models.
 
 We measured the GPU decoding time both with and without shortlisting. However,
 the differences were minimal. Therefore, we only report decoding times without
@@ -733,23 +732,23 @@ wasted on the padded positions in shorter sentences (as explained in Section
 due to a higher level of parallelism.
 
 It is apparent from the data table in Figure \ref{fig:throughput:cpu36} that
-using lexical shortlist improves the decoding speed of both \ac{ar} and
+the use of a lexical shortlist improves the decoding speed of both \ac{ar} and
 \ac{nar} models. For clarity, we only plot the measured decoding times with
-shortlisting. We see that changing the batch size has similar effect in both
-cases, perhaps with the exception of the micro and tiny models which benefit
+shortlisting. We see that changing the batch size has a similar effect in both
+cases, perhaps with the exception of the micro and tiny models, which benefit
 greatly from the shortlist in combination with a small batch size.
 
-In case of the \ac{nar} model with batch size od 128, we ran across an
+In case of the \ac{nar} model with batch size of 128, we ran across an
 out-of-memory error due to a limitation in the Marian implementation. When
 using multiple CPUs for the decoding, the program makes a copy of the whole
-model for each CPU core used. When the batch size is too large, this will
-eventually fill the whole RAM and the process is killed.
+model for each CPU core. When the batch size is too large, this will eventually
+fill the whole RAM, and the process is killed.
 
-We tried to measure the single-core CPU latency, but the decoding speed was too
-slow to compete with the efficiency task submissions. Based on the decoding
-time on a smaller sample of the data, we estimate the time to translate the
-whole dataset would take around 100 hours using the large \ac{nar} model and
-around 15 hours using the tiny model.
+We tried to measure single-core CPU latency, but the decoding speed was too
+slow to compete with efficiency task submissions. Based on the decoding time on
+a smaller sample of the data, we estimate the time to translate the whole
+dataset would take around 100 hours using the large \ac{nar} model and around
+15 hours using the tiny model.
 
 \begin{figure}
   \centering
@@ -764,8 +763,8 @@ around 15 hours using the tiny model.
 
     \midrule
     Full output \\
-    \acs{ar} -- Large & 52,087 &       & 23,478 & 16,731 & 12,166 & 10,151 & 9,370 & 9,244 \\
-    \acs{ar} -- Base  & 16,293 & 9,727 &  7,191 &  5,420 &  3,635 &  2,925 & 2,707 & 2,664 \\
+    \acs{ar} -- Large & 52,087 & 33,189 & 23,478 & 16,731 & 12,166 & 10,151 & 9,370 & 9,244 \\
+    \acs{ar} -- Base  & 16,293 &  9,727 &  7,191 &  5,420 &  3,635 &  2,925 & 2,707 & 2,664 \\
     \addlinespace
     Large & 14,542 & 11,320 & 9,534 & 8,657 & 8,357 & 8,247 & 8,238 & \\
     Base  &  3,508 &  3,126 & 2,979 & 2,927 & 2,921 & 2,920 & 2,934 & 2,948 \\
@@ -802,23 +801,23 @@ around 15 hours using the tiny model.
 % ------------------------------------------------------------------------------
 
 Tables \ref{tab:wmt14-bleu-scores} and \ref{tab:wmt14-weight-avg} in Section
-\ref{subsec:results:quality} show that we achieve state-of-the-art in \acl{nar}
-translation on the \acs{wmt}~14 test set, outperforming both single-step and
-iterative methods (see the results overview of the related work in Table
-\ref{tab:related:wmt14} in Section \ref{sec:nat:discussion}). However, the
-results on the \acs{wmt}~21 test set in Table \ref{tab:wmt21-scores} show that
-there is still large room for improvement, especially when looking at the
-\acs{comet} scores. We believe that these findings should motivate the future
-research not to evaluate translation quality exclusively on the \acs{wmt}~14
-test set.
+\ref{subsec:results:quality} show that we achieve state-of-the-art scores in
+\acl{nar} translation on the \acs{wmt}~14 test set, outperforming both
+single-step and iterative methods (see the results overview of the related work
+in Table \ref{tab:related:wmt14} in Section \ref{sec:nat:discussion}). However,
+the results on the \acs{wmt}~21 test set in Table \ref{tab:wmt21-scores} show
+that there is still a great deal of room for improvement, especially when
+looking at the \acs{comet} scores. We believe that these findings should
+motivate future research not to evaluate translation quality exclusively on the
+\acs{wmt}~14 test set.
 
-We compare our models to one of the best-performing submissions in the
+We compare our models with one of the best performing submissions in the
 efficiency task -- the University of Edinburgh's ``base'' model
 \citep{Behnke-wmt21-speed} -- in Table \ref{tab:efficiency:comparison}. It is
 clear from the comparison that the Edinburgh \acl{ar} model is superior to our
 \ac{nar} models in most regards. One exception is the GPU decoding latency. As
 we discuss in Section \ref{sec:nat:discussion}, these conditions are the only
-considered scenario in most of the related studies.
+scenario considered in most of the related studies.
 
 \begin{table}
   \centering
@@ -839,10 +838,10 @@ considered scenario in most of the related studies.
   \end{tabular}
 
   \caption{Comparison of our models with the Edinburgh ``base'' model submitted
-    to the \acs{wmt} Efficient Translation Shared Task
-    \citep{Behnke-wmt21-speed}. Columns denoted \emph{b>1} show the best result
-    using batching, \emph{b=1} is measured with a single sentence in the
-    batch. The CPU times were measured using 36 CPU cores.} %
+    to the \acs{wmt} Efficiency Shared Task \citep{Behnke-wmt21-speed}. Columns
+    denoted \emph{b>1} show the best result using batching, \emph{b=1} is
+    measured with a single sentence in the batch. CPU times were measured using
+    36 CPU cores.} %
   \label{tab:efficiency:comparison}
 \end{table}
 

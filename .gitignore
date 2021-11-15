@@ -2,7 +2,6 @@ _markdown_thesis
 thesis.markdown.in
 
 thesis.pdf
-thesis.xmpdata
 pdfa.xmpi
 
 ## Core latex/pdflatex auxiliary files:
