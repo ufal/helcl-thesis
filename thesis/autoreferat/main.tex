@@ -1,0 +1,222 @@
+\documentclass[9pt,notitlepage,a5paper,openright]{extreport}
+\special{papersize=148mm,210mm}
+\pagestyle{plain}
+
+%\usepackage[a-2u]{pdfx}
+\usepackage{fontspec}
+
+\usepackage[czech,english]{babel}
+\usepackage{lmodern}
+\usepackage{textcomp}
+\usepackage[defaultlines=4,all]{nowidow}
+
+\usepackage{graphicx} % nezbytné pro standardní vkládání obrázků do dokumentu
+\usepackage[usenames,dvipsnames,svgnames,table,rgb]{xcolor}
+\usepackage[twoside, inner=2.0cm, outer=1.5cm, top=1.8cm, bottom=2.0cm]{geometry} % nastavení dané velikosti okrajů
+\usepackage[round]{natbib}
+\usepackage{multirow}
+\usepackage{arydshln} % dashed lines in tables
+\usepackage{array}
+\usepackage{amssymb,latexsym,pifont}
+\usepackage{amsmath}
+%\usepackage{longtable}
+\usepackage{enumitem} % custom lists
+\usepackage[normalem]{ulem} % underlining
+\usepackage{setspace} % radkovani
+\usepackage{varioref} % nice references (above/below)
+\usepackage[above,section]{placeins} % avoid figures pushed at end of chapters
+\usepackage{listings}
+
+\usepackage{tabularx}
+\usepackage{booktabs} % nicer lines in table
+\usepackage{multicol}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{gnuplot-lua-tikz}
+\usetikzlibrary{shapes.geometric}
+\usepackage{epstopdf}
+\usepackage{mathtools}
+
+\usepackage[acronym, nomain]{glossaries}
+\usepackage[shortcuts=ac,automake]{glossaries-extra}
+\preto\chapter{\glsresetall}
+
+\setabbreviationstyle[acronym]{long-short}
+
+\usepackage{subcaption} % sub figures in a fiture
+\usepackage{standalone} % include standoalone tikz images
+\usepackage{bibentry}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=false,
+    pdfborder={0 0 0},
+}
+
+
+\makeatletter
+\def\@makechapterhead#1{
+  {\parindent \z@ \raggedright \normalfont
+   \Huge\bfseries \thechapter. #1
+   \par\nobreak
+   \vskip 20\p@
+}}
+\def\@makeschapterhead#1{
+  {\parindent \z@ \raggedright \normalfont
+   \Huge\bfseries #1
+   \par\nobreak
+   \vskip 20\p@
+}}
+\makeatother
+
+
+\makeglossaries{}
+\input{acronyms}
+
+% Czech babel conflicts with cline, hacky fix (http://tex.stackexchange.com/questions/111999/slovak-and-czech-babel-gives-problems-with-cmidrule-and-cline):
+% - basically disables hyphenation in tables, but it's not used anyway so it doesn't matter
+\usepackage{etoolbox}
+\preto\tabular{\shorthandoff{-}}
+\preto\tikzpicture{\shorthandoff{-}}
+
+\setmainfont[Ligatures=Common]{Linux Libertine}
+\setsansfont[Scale=MatchLowercase]{DejaVu Sans}
+\setmonofont[Scale=MatchLowercase]{DejaVu Sans Mono}
+
+\let\cleardoublepage\clearpage
+
+\setstretch{1.1} % radkovani
+
+\expandafter\def\expandafter\quote\expandafter{\quote\small} % mensi pismo u quotations
+
+% orphan & widow control
+%\clubpenalty 10000
+%\widowpenalty 10000
+
+% odstup poznamek od textu
+\def\footnoteskip#1{
+  \renewcommand\footnoterule{
+     \vspace{#1}
+     \hrule width 0.4\columnwidth%
+     \vspace{3pt}
+}
+}
+\footnoteskip{0.8em}
+
+% v obsahu budou jen sections
+\setcounter{tocdepth}{2}
+% necisluju subsections
+\setcounter{secnumdepth}{2}
+
+%% cutting down warnings
+%\hfuzz=2pt
+%\hbadness=10000
+
+% force-ordering citations according to dummy keys
+\newcommand{\dummybiborderkey}[1]{}
+
+
+%\include{macros}
+\newcommand{\eos}{\texttt{</s>}}
+
+\newcommand{\veryshortarrow}[1][3pt]{\mathrel{%
+     \vcenter{\hbox{\rule[-.5\fontdimen8\textfont3]{#1}{\fontdimen8\textfont3}}}%
+     \mkern-4mu\hbox{\usefont{U}{lasy}{m}{n}\symbol{41}}}}
+
+\newcommand{\paperdisclaim}[1]{%
+\begin{center}\begin{minipage}{0.9\textwidth}
+\footnotesize\it #1
+\end{minipage}\end{center}
+}
+
+% standard deviation -- needs renaming, otherwise leave commented oot
+% \newcommand{\R}[2]{#1 \tiny $\pm$ \small #2}
+
+\def\JH#1{{\color{blue}JH: \it #1}}
+\def\ignorecolumn#1\unskip{}
+
+
+\title{Non-Autoregressive Neural Machine Translation}
+
+\def\ThesisTitle{Non-Autoregressive Neural Machine Translation}
+\def\ThesisTitleCS{Neautoregresivní neuronový strojový překlad}
+
+% Author of the thesis
+\def\ThesisAuthor{Jindřich Helcl}
+
+% Year when the thesis is submitted
+\def\YearSubmitted{2021}
+
+% Name of the department or institute, where the work was officially assigned
+% (according to the Organizational Structure of MFF UK in English,
+% or a full name of a department outside MFF)
+\def\Department{Institute of Formal and Applied Linguistics}
+\def\DepartmentCS{Ústav formální a aplikované lingvistiky}
+
+% Is it a department (katedra), or an institute (ústav)?
+\def\DeptType{Institute}
+
+% Thesis supervisor: name, surname and titles
+\def\Supervisor{prof.\ RNDr.\ Jan Hajič, Dr.}
+
+% Supervisor's department (again according to Organizational structure of MFF)
+\def\SupervisorsDepartment{Institute of Formal and Applied Linguistics}
+
+% Study programme and specialization
+\def\StudyProgramme{Computer Science}
+\def\StudyBranch{Mathematical Linguistics}
+\def\StudyProgrammeCS{Informatika}
+\def\StudyBranchCS{Matematická lingvistika}
+
+\def\Opponents{
+
+
+}
+
+\def\OpponentA{
+ & prof.\ Lucia Specia, Ph.D. \\
+ & Department of Computing \\
+ & Faculty of Engineering \\
+ & Imperial College London \\
+ & 180 Queen's Gate, South Kensington, London, United Kingdom  \\
+}
+\def\OpponentAcs{
+ & prof.\ Lucia Specia, Ph.D. \\
+ & Department of Computing \\
+ & Faculty of Engineering \\
+ & Imperial College London \\
+ & 180 Queen's Gate, South Kensington, Londýn, Spojené království  \\
+}
+\def\OpponentB{
+ & Ing.\ Jan Čech, Ph.D. \\
+ & Department of Cybernetics \\
+ & Faculty of Electrical Engineering \\
+ & Czech Technical University  \\
+ & Karlovo naměstí 13, 121 35 Prague~2, Czech Republic \\
+}
+\def\OpponentBcs{
+ & Ing.\ Jan Čech, Ph.D. \\
+ & Katedra kybernetiky \\
+ & Fakulta elektrotechnická \\
+ & České vysoké učení technické  \\
+ & Karlovo naměstí 13, 121 35 Praha~2 \\
+}
+%
+
+
+\begin{document}
+
+\include{autoreftitle}
+
+\include{content}
+
+\newpage
+\bibliographystyle{csplainnat}
+\addcontentsline{toc}{chapter}{Bibliography}
+{\small \bibliography{references,anthology}}
+
+\addcontentsline{toc}{chapter}{List of Publications}
+\include{list_of_publications}
+
+\end{document}
