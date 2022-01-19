@@ -40,7 +40,7 @@
 
 \usepackage[acronym, nomain]{glossaries}
 \usepackage[shortcuts=ac,automake]{glossaries-extra}
-\preto\chapter{\glsresetall}
+%\preto\chapter{\glsresetall}
 
 \setabbreviationstyle[acronym]{long-short}
 
@@ -117,7 +117,14 @@
 \newcommand{\dummybiborderkey}[1]{}
 
 
-%\include{macros}
+
+% check and cross marks
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+% \include{macros}
+\newcommand{\mc}[1]{\multicolumn{1}{c}{#1}}
+\newcommand{\mcl}[1]{\multicolumn{1}{l}{#1}}
+
 \newcommand{\eos}{\texttt{</s>}}
 
 \newcommand{\veryshortarrow}[1][3pt]{\mathrel{%

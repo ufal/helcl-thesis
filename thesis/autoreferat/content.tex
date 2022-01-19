@@ -1,3 +1,13 @@
+
+% 20 stran:
+
+% intro          1  (1)
+% NAT background 5  (6)
+% CTC            8 (14)
+% experiments    7 (21)
+% concl.         1 (22)
+
+
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Introduction}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -40,18 +50,9 @@ the translation system. On the other hand, it also presents a challenge to the
 language model, which usually leads to poorer translation quality.
 
 
-
-
-% 20 stran:
-
-% intro          1
-% NAT background 6
-% CTC            4
-% experiments    4
-% concl.         1
-
-
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Non-Autoregressive Neural Machine Translation}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The defining feature of a \ac{nar} model is the assumption of
 conditional independence between the output distributions across time
@@ -126,8 +127,7 @@ encoder inputs, either uniformly stretched to the predicted target sentence
 length, or copied using a fertility model. Second, the decoder self-attention
 does not use the causal mask, since all states can now attend to all other
 states in both directions. Third, a \emph{positional attention} sub-layer is
-added to every decoder layer, where the positional encoding (see Equation
-\ref{eq:positional-encoding} in Section \ref{sec:encdec:transformer}) is used
+added to every decoder layer, where the positional encoding is used
 as queries and keys, and the decoder states as
 values. \citet{gu2017nonautoregressive} argue that providing positional
 information directly to the decoder layers could improve the potential of the
@@ -172,12 +172,1226 @@ similarly to greedy decoding. The average method chooses the expected fertility
 given the distribution in each position. \ac{npd} is based on sampling and
 rescoring with an \acl{ar} model, as explained below.
 
+\paragraph{Knowledge Distillation.} To tackle the multimodality problem from
+another angle, \citet{gu2017nonautoregressive} propose to use sequence-level
+knowledge distillation to create artificial training data
+\citep{kim-rush-2016-sequence}. Knowledge distillation is based on training an
+\ac{ar} teacher model and using it to create artificial training data for a
+student model. The main idea is that the outputs of a teacher model will have a
+simpler structure than natural language, limiting the number of distribution
+modes.
 
-\chapter{Connectionist Temporal Classification}
+According to an ablation study published by \citet{gu-kong-2021-fully}, using
+knowledge distillation is a crucial element in training non-autoregressive
+translation models, regardless the actual method used.
+\citet{zhou-etal-2020-understanding} further study the effects of knowledge
+distillation strategies on the translation quality of \ac{nar} models. They
+link the data complexity to the potential of \ac{nar} modeling and find that
+knowledge distillation reduces the complexity, which in turn leads to improved
+model performance.
 
+
+% ------------------------------------------------------------------------------
+\section{Limitations of Related Work}%
+\label{sec:nat:discussion}
+% ------------------------------------------------------------------------------
+
+In this section, we take a high-level view of related approaches. We point out
+a few aspects that most of the literature has in common, as well as some issues
+regarding the evaluation and comparison to meaningful baselines.
+
+% -----------------------------------------------------------------------------
+\paragraph{Translation Quality.} Weak \acl{ar} baseline models are a common
+element in the \acl{nar} literature. In most cases, the base variant of the
+Transformer model is used as baseline (and most of the base hyperparameters are
+used for the \ac{nar} model as well), arguing that having similar numbers of
+parameters makes the baseline and the \ac{nar} model comparable. A comparable
+model size is a valid point; on the other hand, it raises doubts about the
+scalability of the proposed approaches; the difference between large \ac{ar}
+and \ac{nar} model variants might not be proportional.
+
+Moreover, even the Transformer base model can be trained in a better way than
+as reported by \citet{vaswani2017attention} and as referenced by many \ac{nar}
+papers as their baseline, achieving a better translation quality
+\citep{popel-bojar-2018-training}. A reasonable improvement of the baseline
+could be achieved by training a student \ac{ar} model on the
+knowledge-distilled data.
+
+% -----------------------------------------------------------------------------
+\paragraph{Decoding Speed.} Similarly to the previous paragraph, the baselines
+that appear in the literature are usually weak also in terms of decoding speed.
+For example, \citet{gu2017nonautoregressive} report a latency of 408 ms for
+their \ac{ar} model (a Transformer base), measured on a single Nvidia P100 GPU,
+without batching. In contrast, our implementation achieves a latency of around
+100 ms with the same model under the same hardware and hyperparameter settings
+and no optimizations. Additionally, some articles cite a baseline \ac{ar}
+latency of 607 ms \citep{wang-etal-2019-nonautoregressive,
+  guo-etal-2020-jointly}, which is the result of
+\citet{gu2017nonautoregressive} with beam search, even though beam search is
+not used in the presented \ac{nar} models for the most part.
+
+% -----------------------------------------------------------------------------
+\paragraph{Evaluation Methodology.} Another aspect we need to address is the
+evaluation methodology itself. Setting aside the fact that automatic quality
+evaluation using \acs{bleu} is the only reported metric, perhaps complemented
+by a cursory manual evaluation on a small sample, the evaluation of the speed
+improvements is inconsistent and sometimes the interpretation of the results is
+outright wrong.
+
+The main problem is that the actual decoding speed depends on a lot of factors
+that are not easily reproducible. The most obvious factor is perhaps the
+hardware on which the decoding speed is measured, followed by the
+implementation. The average decoding time per sentence is also heavily
+influenced by the batch size in batched decoding. Table
+\ref{tab:related:hardware} shows that these conditions vary wildly within the
+literature.
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{llcr}
+    \toprule
+    Publication & GPU type & CPU? & Batch \\
+    \midrule
+    \citet{gu2017nonautoregressive} & P100 & \xmark & 1 \\
+    \citet{lee-etal-2018-deterministic} & P100 or P40 & \cmark & 1  \\
+    \citet{kaiser2018fast} & GTX 1080 & \xmark  & 1, 64  \\
+    \citet{ghazvininejad-etal-2019-mask} & Possibly V100 & \xmark  & 10 \\
+    \citet{sun2019fast} & P100 & \xmark & 1    \\
+    \citet{wang-etal-2019-nonautoregressive} & P100 & \xmark & 1    \\
+    \citet{li-etal-2019-hint} & Possibly M40 & \xmark  & 1   \\
+    \citet{ma-etal-2019-flowseq} &  TITAN X & \xmark &  {\it various}    \\
+    \citet{ghazvininejad2020aligned} & {\it Not reported} & \xmark  & {\it unknown}  \\
+    \citet{shao2020minimizing} &  TITAN X & \xmark  & 1   \\
+    \citet{guo-etal-2020-jointly} & GTX 1080 Ti & \xmark & 1    \\
+    \citet{kasai2020nonautoregressive} & V100 & \xmark & 1    \\
+    \citet{qian-etal-2021-glancing} & GTX 1080 Ti & \xmark  & 1?  \\
+    \citet{ran-etal-2021-guiding} & P40 & \xmark & 1   \\
+    \citet{gu-kong-2021-fully} & V100 & \cmark  & 1   \\
+    \citet{du2021orderagnostic} & {\it Not reported} & \xmark  & 1   \\
+    \citet{huang-etal-2021-nonautoregressive} & V100 & \xmark & 1   \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{The hardware setting and decoding batch size for measuring the
+    decoding speed as reported in a sample of papers described in this
+    section.}%
+  \label{tab:related:hardware}
+\end{table}
+
+A popular solution that takes the varying conditions into account for
+evaluating decoding speed is to report the relative speed-up measured between
+experiments within a single study. However, comparing these relative speed-up
+ratios between different papers disregards the actual decoding times -- it is
+easier to achieve 20 times speed-up over a slow baseline than over a baseline
+which is faster.
+
+Due to these reasons, we believe that we cannot show a fair comparison of the
+methods presented here on a graph showing the pareto frontier between the
+decoding speed and translation quality.
+
+However, it is challenging to find a way to compare the contributions of
+different research groups objectively. One such effort is made by the
+organizers of the Efficiency Shared Task, now organized yearly at the \acl{wmt}
+(\acs{wmt}\glsunset{wmt}; \citealp{heafield-etal-2020-findings,
+  heafield-etal-2021-findings}).
+
+In the Efficiency Shared Task, submissions are evaluated both in terms of
+translation quality and decoding speed under various settings. All submissions
+are evaluated on the same hardware, hosted by Amazon Web Services.  To amortize
+the effects of data and model loading, the decoding time is measured on a
+dataset that contains one million sentences. The speed is measured in five
+different scenarios: GPU latency (decoding without batching) and throughput
+(decoding with the optimal batch size), latency and throughput on a single CPU,
+and throughput on a multi-core CPU. The main findings of the shared task are
+that \acl{ar} models can be optimized to achieve latency of 5--20 ms even with
+inexpensive hardware, without sacrificing much in terms of translation quality
+\citep{heafield-etal-2021-findings}.
+
+Our final observation is that measuring latency on a single GPU without
+batching is a setup that favors \ac{nar} models, even though other scenarios
+should also be considered for real-world applications. In batched GPU decoding,
+the differences between \ac{ar} and \ac{nar} models fade, because
+batch-parallelization of \ac{ar} models makes up for time-parallelization of
+\ac{nar} models. On the other hand, in an online decoding scenario on a CPU,
+only limited parallelization is possible, so the advantage of \ac{nar} models
+is also diminished. We present detailed analysis of this behavior in
+Chapter~\ref{chap:experiments}.
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Connectionist Temporal Classification}%
+\label{chap:nar-nmt-ctc}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paperdisclaim{This chapter is based on the paper \emph{``End-to-End
+    Non-Autoregressive Neural Machine Translation with Connectionist Temporal
+    Classification''}, joint work with Jindřich Libovický, published at EMNLP
+  2018.}
+
+\noindent
+In this chapter, we lay the foundations for the \ac{nar} approaches to \ac{nmt}
+studied in this thesis. We describe our experiments with an architecture based
+on the \ac{ctc} loss \citep{libovicky-helcl-2018-end}.
+
+
+\Ac{ctc} \citep{graves2006connectionist} is a method for training neural
+networks on sequential data. Originally applied to the phonetic labelling task,
+but later successfully adapted in related areas, including \ac{asr} or
+handwriting recognition \citep{liwicki2007novel, eyben2009speech,
+  graves2014towards}.
+
+The main strength of \ac{ctc} becomes evident in tasks where the input and
+output labels are weakly or not at all aligned, for example, in situations
+where the observed input sequence is considerably longer than the target output
+sequence -- hence the application to \ac{asr}, where the number of extracted
+features per second is higher than the number of phonemes uttered per second.
+
+Training neural networks with \ac{ctc} is independent of the actual neural
+network architecture. The \ac{ctc} loss function can be applied on any network
+with sequential outputs. Thus, this method is applicable to both \acp{rnn} and
+the Transformer model.
+
+Models trained with the \ac{ctc} assume that the alignment between the input
+states (e.g. a group of frames in an audio signal) and the output states
+(e.g. a phoneme) is unknown. A variable number of frames in a row can encode a
+single phoneme. Similarly, in translation, multiple words in the source
+language may correspond to any number of (even non-consecutive) words in the
+target language.
+
+The idea behind \ac{ctc} is to allow some states to produce no output. This is
+achieved by introducing a special blank token into the target vocabulary.
+Optionally, identical outputs produced by multiple consecutive states may be
+merged and considered a single output. Because of these properties, there are
+groups of equivalent output sequences, which all represent the same target, as
+illustrated in Figure~\ref{fig:ctc-equivalent-sequences}.
+
+\begin{figure}
+  \centering
+  \begin{minipage}{\textwidth}
+    \begin{equation*}
+        \text{a cat sat on a mat} =
+        \begin{cases}
+          & \text{a <blank> cat sat on a <blank> mat} \\
+          & \text{a a cat cat sat on a mat} \\
+          & \text{a <blank> cat cat sat on a mat} \\
+        \end{cases}
+    \end{equation*}
+  \end{minipage}
+  \caption{A group of output sequences of equal length which all represent the
+    same target in CTC.} %
+  \label{fig:ctc-equivalent-sequences}
+\end{figure}
+
+In standard sequence-to-sequence architectures, the value of the loss function
+is defined as the sum of cross entropies of the output distributions with
+respect to the target sequence.% (see Equation \ref{eq:loss}).
+In \ac{ctc}, the
+loss is defined as the sum of cross-entropy losses of all output sequences
+equivalent to the given target sequence:
+%
+\begin{equation}
+  \mathcal{L}_{\text{CTC}}({\theta}) = - \sum_{(x, y) \in D} \sum_{y' \sim y}  \log p(y' | x, \theta)
+  \label{eq:ctc-loss}
+\end{equation}
+%
+where $\sim$ denotes the equivalence relation.
+
+The inner summation in Equation \ref{eq:ctc-loss} is computed over all possible
+sequences equivalent to the label sequence. For technical purposes, the label
+sequences are limited to a fixed length, which greatly reduces the number of
+acceptable hypotheses. However, the number of equivalent hypotheses of a given
+length still grows exponentially with the sequence length -- in \ac{ctc}, the
+fixed length is always set to be longer than the label sequence.
+
+% The main difference between our approach and \ac{axe} described in Section
+% \ref{sec:nat:alignment} is that in our models, we take into account all
+% possible alignments, whereas \ac{axe} considers only the alignment with the
+% minimum cross entropy. Moreover, we do not allow skipping positions in the
+% ground truth.
+
+The summation over the large set of equivalent sequences can be implemented
+using dynamic programming. When both the length of the output and the length of
+the target sequences are known, there is a constant number of blank tokens to
+be generated. The process of computing the loss of the whole output sequence is
+divided into computing the partial losses with respect to the possible label
+prefixes.
+
+\begin{figure}
+  \centering
+
+  \includegraphics[width=10cm]{img/ctc_schema.png}
+
+  \caption{An illustration of the algorihm for the CTC loss computation. Each
+    node denotes producing either a token from the label sequence, or the blank
+    token. Each path from one of the two top-left nodes to one of the two
+    bottom-right nodes corresponds to one of the equivalent sequences.  }
+  \label{fig:ctc-dynamic-programming}
+\end{figure}
+
+The \ac{ctc} loss computation is illustrated in Figure
+\ref{fig:ctc-dynamic-programming}. The rows represent tokens from the label
+sequence plus the optional blank tokens. The columns represent the output
+sequence.  Each node in the graph denotes generating a label from an output
+distribution. The arrows show valid transitions between the generation
+steps. An arrow can only go down one or two rows, or horizontally.  The
+horizontal arrows denote repeated generation of the same label. These labels
+are later merged to form a single output. An arrow can only go two rows down
+when the skipped row corresponds to the blank token, so no target tokens are
+left out. Therefore, each path in the diagram shows one of the equivalent
+sequences that lead to generating the given label sequence.
+
+Using the idea that many of the paths from left to right in the diagram share
+segments, we can apply dynamic programming to compute the sum of losses across
+all paths without the need to enumerate each of them. A node on coordinates
+$(i,j)$ stores the accumulated losses for all path prefixes that lead to the
+node, summed with the negative log-likelihood of the label on the $i$-th row
+being generated by the $j$-th output state. The two bottom-right nodes then
+store the sum of losses of all the paths.
+
+Since the \ac{ctc} loss function is differentiable with respect to the model
+parameters, the training of the network can be done in the standard way using
+the backpropagation algorithm.
+
+
+% -----------------------------------------------------------------------------
+\section{Model Architecture}
+\label{sec:ctc:arch}
+% -----------------------------------------------------------------------------
+
+As mentioned in the previous section, training models with \ac{ctc} does not
+impose any requirements on the model architecture. In our experiments, we aim
+to make a reasonable comparison between our proposed approach and the
+state-of-the-art \acl{ar} models. We adapt the Transformer model and use
+similar hyperparameters where applicable.
+
+\Acl{nar} models generate the outputs in parallel, which requires that the
+output length is known beforehand. In \acl{ar} models, the end of the sequence
+is indicated by a special end symbol, and the constraint on maximum length is
+merely a technical aspect.
+
+To maximize the ability to output empty tokens to the full extent, the output
+length should be set to a higher number than the length of the target sequence.
+Since the length estimation does not need to be accurate, we select a number
+$k$, and we set the target sequence length to be $k$ times longer than the
+source length. Note that in case the selected length is shorter than the label
+sequence, the model will not be able to generate the whole target sequence.
+
+\begin{figure}
+  \centering
+  \scalebox{0.7}{%
+  \input{./img/non-autoregressive.tex}
+}
+  \caption{The scheme of the non-autoregressive architecture with
+    state splitting and CTC. Image source: \citet{libovicky-helcl-2018-end},
+    Figure 1.}%
+  \label{fig:state-splitting}
+\end{figure}
+
+
+We implement the source-to-target length expansion by linear projections and
+state splitting. This mechanism is illustrated in Figure
+\ref{fig:state-splitting}. After a given Transformer layer completes its
+computation, we linearly project the states
+$h_1, \ldots, h_{T_x} \in \mathbb{R}^d$ into $\mathbb{R}^{kd}$. Then, we split
+each of these projections into $k$ parts, which results in a $k$-times longer
+sequence of states $s_1, \ldots, s_{k \cdot T_x}$ of the original dimension
+$d$:
+%
+\begin{equation}
+  s_{ck+b} = \left( W_{\text{spl}} h_c + b_{\text{spl}} \right)_{bd:(b+1)d}
+\end{equation}
+%
+for $b=0 \ldots k-1$ and $c=1 \ldots T_x$ where
+$W_{\text{spl}} \in \mathbb{R}^{d \times kd}$ and
+$b_{\text{spl}} \in \mathbb{R}^{kd}$ are the trainable projection parameters.
+
+We experiment with two placement options for the state-splitting layer. First,
+we try placing the state splitting at the end of the Transformer layer
+stack. In this scenario, there are 12 Transformer encoder layers, followed by
+the state-splitting layer, whose outputs are used in the output projection. In
+Table \ref{tab:end-to-end:bleu}, this variant is called ``Deep
+encoder''. Second, we place the state-splitting layer in the middle of the
+Transformer layer stack, mimicking the 6-layer encoder-decoder architecture of
+the \ac{ar} Transformer model. We use the name ``Encoder-decoder'' for this
+variant in Table \ref{tab:end-to-end:bleu}. In the second variant,
+cross-attention can be included in the second half of the layers, which attends
+to the states right after state splitting. We call this model ``Encoder-decoder
+with pos. enc.'' in the results table.
+
+
+% -----------------------------------------------------------------------------
+\section{Preliminary Experiments}%
+\label{sec:ctc:experiments}
+% -----------------------------------------------------------------------------
+
+We conducted experiments with the \ac{ctc}-based \ac{nat} models described
+above on English--German and English--Romanian translation in both directions.
+
+\paragraph{Data.}
+In our experiments, we use the parallel data provided by the \ac{wmt}
+organizers. For English--German, the training data consist of the Europarl
+corpus \citep{koehn-2005-europarl}, News commentary
+\citep{tiedemann-2012-parallel}, and Common
+Crawl.\footnote{\url{https://commoncrawl.org/}} For validation, we use the
+WMT~13 test set \citep{bojar-etal-2013-findings}, and we evaluate translation
+quality on the WMT~14 test set \citep{bojar-etal-2014-findings}. For
+English--Romanian, the data consist of the Europarl corpus and the SETIMES
+corpus distributed by OPUS \citep{tiedemann-2012-parallel}. We use the
+development and test set from the WMT~16 \citep{bojar-etal-2016-findings}. Data
+sizes are shown in Table~\ref{tab:end-to-end:data}.
+
+\begin{table}
+  \centering
+  \begin{tabular}{lrr}
+    \toprule
+     & Sentence pairs & Vocabulary size \\
+    \midrule
+    En -- De & 4.58 M & 41,488 \\
+    En -- Ro & 613 k & 38,440 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{The sizes of the parallel training data and the wordpiece
+    vocabularies for English--German and English--Romanian translation.}%
+  \label{tab:end-to-end:data}
+\end{table}
+
+We preprocess the data with scripts from the \texttt{mosesdecoder}
+repository,\footnote{\url{https://github.com/moses-smt/mosesdecoder/}} a part
+of the Moses translation toolkit \citep{koehn-etal-2007-moses}. Namely, we
+normalize the punctuation in the data, then we use the tokenizer and a
+truecaser. We segment the data using the wordpiece algorithm, creating a
+vocabulary of approximately 41k wordpieces for English--German, and 38k
+wordpieces for English--Romanian \citep{wu2016google}.
+
+\paragraph{Models and Training.}
+We implement and train our models in the Neural Monkey toolkit
+\citep{helcl-libovicky-2017-neural,helcl-etal-2018-neural}. Neural Monkey is a
+higher-level deep learning toolkit implemented in TensorFlow
+\citep{tensorflow2015-whitepaper}, aimed at fast prototyping using
+simple-format configuration files. We train all models for 10 epochs and select
+the best-scoring model based on the validation \acs{bleu} score. Training of
+the En--De models on a single Nvidia GeForce GTX 1080 GPU took approximately 4
+weeks. Since the En--Ro parallel data was much smaller, training of the En--Ro
+models took 4 days.
+
+% We summarize the model and training settings in Table
+% \ref{tab:end-to-end:hparams}. Note that the architecture resembles the
+% Transformer big settings, but uses a smaller model dimension. We use the same
+% settings for training models in both directions in both language pairs.
+
+% \begin{table}
+%   \centering
+%   \begin{tabular}{lr}
+%     \toprule
+%     Parameter & Value \\
+%     \midrule
+%     No. of encoder layers & 6 \\
+%     No. of decoder layers & 6 \\
+%     Model dimension & 512 \\
+%     Attention heads & 16 \\
+%     Dropout probability & 0.1 \\
+%     Feed-forward hidden size & 4,096 \\
+%     State splitting factor & 3 \\
+%     State splitting projection size & 1,536 \\
+%     Vocabulary size & See Table \ref{tab:end-to-end:data} \\
+%     \midrule
+%     Optimizer method & adam \\
+%     $\beta_1$ & 0.9 \\
+%     $\beta_2$ & 0.997 \\
+%     $\epsilon$ & 10\textsuperscript{-9} \\
+%     Learning rate & 10\textsuperscript{-4} \\
+%     Fixed batch size & 20 \\
+%     Gradient clipping & 1 \\
+%     \bottomrule
+%   \end{tabular}
+
+%   \caption{Experimental settings for the Neural Monkey experiments.}%
+%   \label{tab:end-to-end:hparams}
+% \end{table}
+
+
+\paragraph{Results.} Table \ref{tab:end-to-end:bleu} compares the quantitative
+results of our \ac{nar} models with the methods proposed by
+\citet{gu2017nonautoregressive} and \citet{lee-etal-2018-deterministic}. We use
+Sacrebleu \citep{post-2018-call} to compute the \acs{bleu} scores of the model
+outputs.
+
+\begin{table}
+  \centering
+  \begin{tabular}{lcccc}
+    \toprule
+     & \multicolumn{2}{c}{WMT~16} & \multicolumn{2}{c}{WMT~14} \\
+     & En $\rightarrow$ Ro & Ro $\rightarrow$ En & En $\rightarrow$ De & De $\rightarrow$ En \\
+    \midrule
+    \citet{gu2017nonautoregressive} & & & & \\
+    Autoregressive baseline & 31.35 & 31.03 & 22.71 & 26.39 \\
+    \addlinespace
+    NAT + FT & 27.29 & 29.06 & 17.69 & 21.47 \\
+    NAT + FT + NPD (100 s) & 29.79 & 31.44 & 19.17 & 23.20 \\
+    \midrule
+    \citet{lee-etal-2018-deterministic} & & & & \\
+    Autoregressive baseline & 31.93 & 31.55  & 23.77 & 28.15 \\
+    \addlinespace
+    1 iteration & 24.45 & 25.73 & 13.91 & 16.77 \\
+    10 iterations & 29.32 & 30.19 & 21.61 & 25.48 \\
+    \midrule
+    \citet{libovicky-helcl-2018-end} & & & & \\
+    Autoregressive baseline & 21.19 & 29.64 & 22.94 & 28.58 \\
+    \addlinespace
+    Deep encoder & 17.33 & 22.85 & 12.21 & 12.53 \\
+    \quad + weight averaging & 18.47 & 24.68 & 14.65 & 16.72 \\
+    \quad + beam search & 18.70 & 25.28 & 15.19 & 17.58 \\
+    \addlinespace
+    Encoder-decoder  & 18.51 & 22.37 & 13.29 & 17.98 \\
+    \quad + weight averaging & 19.54 & 24.67 & 16.56 & 18.64 \\
+    \quad + beam search & 19.81 & 25.21 & 17.09 & 18.80  \\
+    \addlinespace
+    Encoder-decoder with pos. enc. & 18.13 & 22.75 & 12.51 & 11.35 \\
+    \quad + weight averaging & 19.31 & 24.21 & 17.37 & 18.07 \\
+    \quad + beam search & 19.93 & 24.71 & 17.68 & 19.80 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{Automatic evaluation of our \acs{ctc}-based approach, compared to
+    the two of the first \acl{nar} methods, along with \acl{ar} greedy-decoding
+    baseline scores. }%
+  \label{tab:end-to-end:bleu}
+\end{table}
+
+The first model of \citet{gu2017nonautoregressive} represents the \ac{nat}
+model with fine-tuning, which minimizes the KL divergence between the output
+distributions of the teacher and student models. In the second row, \ac{npd}
+with 100 samples is used. Using \ac{npd} can slow down the decoding because an
+additional scoring step is needed using an \ac{ar} model. In theory, if enough
+parallelism is available, this doubles the latency.
+
+The approach of \citet{lee-etal-2018-deterministic} is iterative. We show the
+performance of this method with 1 iteration and with 10 iterations. Note that
+using more iterations slows the decoding speed of the iterative model.
+
+Compared to single-pass models, the performance of the English--German
+\acs{ctc}-based models is similar. However, the performance of the
+English--Romanian models is poor. This is probably due to issues with Romanian
+diacritics in the data, as suggested also by the poorer performance of our
+autoregressive baseline. Also, the enhanced techniques (\ac{npd} and iterative
+refiniment) outperform our method in all scenarios, but at a computational
+cost.
+
+We also evaluate the effect of weight averaging and beam search. As opposed to
+decoding from an \ac{ar} model, beam search in \acs{ctc}-based \ac{nar} models
+operates only on the output distributions from the single decoding
+step. Although in \ac{nar} models we are able to find the most likely sequence
+by taking the argmax of the output distribution in each position, this way we
+only find a single alignment. Using beam search takes into account more
+alignments, and the sum of the alignment probabilities can be higher than the
+probability of the sentence generated by argmax decoding. We see from Table
+\ref{tab:end-to-end:bleu} that especially weight averaging brings a substantial
+improvement of the translation quality.
+
+The decoding speed for \ac{ar} and \ac{nar} models under different conditions
+is shown in Table~\ref{tab:end-to-end:speed}. We report the average time to
+decode a single sentence on the \ac{wmt}~15 test set
+\citep{bojar-etal-2015-findings}, which consists of 2,169 sentence pairs. In
+the CPU setting, we are using a CPU machine with the TensorFlow session
+configured to use 12 CPU threads. GPU results are measured on a single Nvidia
+GeForce GTX 1080 GPU. We show the average latency as well as the average time
+to decode a sentence with batch decoding.
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{lrr}
+    \toprule
+     & \mc{CPU} & \mc{GPU} \\
+    \midrule
+    \acs{ar}, batch=1 & 2,247 ms & 1,129 ms \\
+    \acs{ar}, batch=100 & & 127 ms\\
+    % AR, beam=?
+    \addlinespace
+    \acs{nar}, batch=1 & 397 ms & 353 ms  \\
+    \acs{nar}, batch=100 &  & 41 ms \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{The average times to decode one sentence under different conditions.}%
+  \label{tab:end-to-end:speed}
+
+\end{table}
+
+Figure \ref{fig:end-to-end:speed} shows the decoding latencies on sentences
+from the \ac{wmt}~15 test set \citep{bojar-etal-2015-findings}. As we can see
+from the relationship between the source sentence length and the decoding time,
+the \ac{nar} model exhibits a lower time complexity than the \ac{ar}
+model. The latencies in the plot were measured on a CPU server using 12
+threads. We use greedy decoding with a single sentence in a batch.
+
+\begin{figure}
+  \centering
+  \input{img/end-to-end-decoding-speed/speed.tex}
+
+  \caption{The relationship between the latency and the number of source tokens
+    using an \acl{ar} and a \acl{nar} model}%
+  \label{fig:end-to-end:speed}
+\end{figure}
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Experiments}
+\label{chap:experiments}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+The flaws in the evaluation methodology adopted by current research of \ac{nat}
+models make it difficult to identify approaches suitable in production-ready
+conditions.  In this chapter, we present further experiments with \ac{nat}
+models trained with \ac{ctc}. We focus on a fair comparison with other
+non-autoregressive approaches as well as state-of-the-art optimized
+autoregressive methods.  In line with our previous experiments and also with
+the rest of the related work, we conduct experiments on English-German
+translation.
+
+% ------------------------------------------------------------------------------
+\section{Autoregressive Teacher Models}%
+\label{sec:exp:teachers}
+% ------------------------------------------------------------------------------
+
+\paperdisclaim{This section is based on the paper \emph{``The University of
+    Edinburgh's English-German and English-Hausa Submissions to the WMT21 News
+    Translation Task''}, joint work with Pinzen Chen, Ulrich Germann, Laurie
+  Burchell, Nikolay Bogoychev, Antonio Valerio Miceli Barone, Jonas Waldendorf,
+  Alexandra Birch, and Kenneth Heafield, published at WMT 2021.}
+
+\noindent
+In our English-German experiments, we use autoregressive models from our
+submission to the \ac{wmt} 2021 News Translation Shared Task
+\citep{chen-etal-2021-university}. We use these models both as strong \ac{ar}
+baselines and as teacher models for generating distilled data for the \ac{nar}
+student models, described in Section \ref{sec:exp:students}. The models were
+trained on cleaned parallel data augmented with backtranslated monolingual
+data, using Marian, a C++ toolkit for training and decoding from \ac{nmt}
+models \citep{junczys-dowmunt-etal-2018-marian}.
+
+
+% ------------------------------------------------------------------------------
+\paragraph{Data Cleaning.} We prepare the training dataset consisting of the
+following parts: First, we use clean parallel data from the Europarl corpus
+\citep{koehn-2005-europarl}, the Tilde MODEL -- RAPID corpus
+\citep{rozis-skadins-2017-tilde}, and the News Commentary corpus from OPUS
+\citep{tiedemann-2012-parallel}. Next, we include sources of crawled parallel
+data from the web, which are considered noisy. These include Paracrawl
+\citep{espla-etal-2019-paracrawl}, Common
+Crawl\footnote{\url{https://commoncrawl.org/}}, WikiMatrix
+\citep{schwenk2019wikimatrix}, and the Wikipedia Parallel Titles
+Corpus\footnote{\url{https://linguatools.org/tools/corpora/wikipedia-parallel-titles-corpora/}}. Finally,
+we use backtranslation \citep{sennrich-etal-2016-improving} of monolingual data
+obtained from News Crawl.  We train our own models to generate the
+backtranslations on cleaned parallel data, as described below.
+
+We perform the following filtering techniques on the gathered data (both clean
+and noisy) to improve the overall quality of the parallel data.
+
+We start with deterministic rule-based filtering%
+\footnote{\url{https://github.com/browsermt/students/blob/master/train-student/clean/}}
+and deduplication. We remove all sentence pairs containing non-printing
+characters, empty sentences, and sentences longer than 120 words; we also
+remove all sentence pairs with length ratio of less than 0.6 (0.4 for
+Wikititles), sentences in which over 40\% of characters do not constitute
+tokens, and sentences in which more than 50\% were non-alphabetic characters. We
+run language identification using fastText
+\citep{joulin-etal-2017-bag,joulin2016fasttext} and remove all sentence pairs
+classified as not English-German.
+
+To further clean the data, we apply dual cross-entropy filtering, as proposed
+by \citet{junczys-dowmunt-2018-dual}. We train two Transformer base models (one
+for each translation direction) for dual cross-entropy filtering using the
+clean part of the data after the rule-based cleaning step.
+
+We score the crawled part of the parallel data using the trained models and we
+sort the sentence pairs according to the score. To estimate how many of the
+crawled sentence pairs can we consider clean, we train the big variant of the
+Transformer translation models in both directions on different amounts of the
+scored data (following the teacher model hyperparameter settings in Table
+\ref{tab:trafo-big-hparams}). We use 25\%, 50\%, 75\% and 100\% of the data,
+taking the highest-scoring sentence pairs for training. Based on the \acs{bleu}
+scores achieved by the Transformer big models on the development data (the
+\ac{wmt} 2019 test set, \citealp{barrault-etal-2019-findings}), we declare the
+75\% as the ``clean'' portion of the crawled data.
+
+
+% ------------------------------------------------------------------------------
+\paragraph{Backtranslation.} We train three additional translation models (four
+in total with the one from the data cleaning step) on the filtered parallel
+dataset to create backtranslations \citep{sennrich-etal-2016-improving}. We use
+the same hyperparameter settings as for the teacher models (see Table
+\ref{tab:trafo-big-hparams}), except for different random seeds for parameter
+initialization.
+
+We translate the monolingual data using the four models in an ensemble. We
+limit the target sentence length to 150 tokens and use beam search decoding
+with 6 hypotheses in the beam, with the length normalization parameter set to
+1.
+
+As the source of the monolingual data, we use the News Crawl datasets from
+years 2018, 2019, and 2020, as released by the \acs{wmt} organizers
+\citep{bojar-etal-2018-findings,barrault-etal-2019-findings,
+  barrault-etal-2020-findings}. In total, we gathered 91 million English
+sentences for backtranslation into German and 146 million German sentences for
+backtranslation into English.
+
+We follow the approach of \citet{caswell-etal-2019-tagged} and we tag the
+backtranslated sentences with a special token on a first position.
+
+
+% ------------------------------------------------------------------------------
+\paragraph{Teacher Model Training.}  We train the teacher models on shuffled
+concatenation of the authentic parallel and tagged backtranslated data. As with
+the backtranslation models, we train four models with different seeds for
+random initialization in each direction. We show the hyperparameter values in
+Table \ref{tab:trafo-big-hparams}.
+
+After the training on mixed parallel and backtranslated data converged, we
+continued the training of the models on parallel data only.
+
+\begin{table}
+  \centering
+  \begin{tabular}{llr}
+    \toprule
+    Parameter & Marian config variable & \mcl{Value} \\
+    \midrule
+    No. of encoder layers & \texttt{enc-depth} & 6 \\
+    No. of decoder layers & \texttt{dec-depth} & 6 \\
+    Model dimension &  \texttt{dim-emb} & 1,024 \\
+    Feed-forward state dimension & \texttt{transformer-dim-ffn} & 4,096 \\
+    Attention heads & \texttt{transformer-heads} & 16 \\
+    % & transformer-postprocess & dan \\
+    % & transformer-postprocess-emb & d\\
+    Vocabulary size & & 32,000 \\
+    \midrule
+    Optimizer method & \texttt{optimizer} & adam \\
+    $\beta_1$ & \multirow{3}{*}{\texttt{optimizer-params}} & 0.9 \\
+    $\beta_2$ & & 0.998 \\
+    $\epsilon$ & & 10\textsuperscript{-9} \\
+    No. of batches per update & \texttt{optimizer-delay} & 2 \\
+    Fit batch to available memory & \texttt{mini-batch-fit} & true \\
+    Learning rate & \texttt{learn-rate}  & 10\textsuperscript{-4} \\
+    Learning rate warmup & \texttt{lr-warmup} & 8,000 \\
+    Learning rate decay & \texttt{lr-decay-inv-sqrt} & 8,000 \\
+    Gradient clipping\footnotemark & \texttt{clip-norm} & 0 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{The hyperparameters of the teacher models. The same values were
+    used for training the models for backtranslation.}%
+  \label{tab:trafo-big-hparams}
+
+\end{table}
+% ------------------------------------------------------------------------------
+\footnotetext{We did not use gradient clipping because of issues in the Marian
+  toolkit implementation.}
+% ------------------------------------------------------------------------------
+
+% ------------------------------------------------------------------------------
+\paragraph{Knowledge Distillation.} The teacher models are used to create
+artificial targets for the student models \citep{kim-rush-2016-sequence}. For
+each translation direction, we translate the source side of the parallel data
+and the authentic monolingual data (in the source language) using the ensemble
+of the teacher models. We do not create wholly synthetic datasets by
+forward-translating backtranslated data.
+
+For generating the knowledge-distilled dataset, we use beam search with the
+beam size of 12 and the normalization parameter set to 0.8. Similarly to
+generating the backtranslated data, we limit the target sentence length to 150
+tokens.
+
+
+% ------------------------------------------------------------------------------
+\section{Student Models}%
+\label{sec:exp:students}
+% ------------------------------------------------------------------------------
+
+In this section, we describe our non-autoregressive student models. We
+implemented the \acs{ctc}-based Transformer architecture in the Marian toolkit
+\citep{junczys-dowmunt-etal-2018-marian}. For the computation of the \ac{ctc}
+loss, we use the warp-ctc
+library,\footnote{\url{https://github.com/baidu-research/warp-ctc/}} an
+efficient parallelized implementation for GPUs \citep{amodei-etal-2016-deep}.
+
+We experiment with different hyperparameter settings that control the size of
+the student model. Our baseline non-autoregressive model is a big Transformer
+model with 6 encoder layers, followed by the state-splitting layer, and another
+6 decoder layers. Apart from the \ac{ctc}-specific configuration, we use the
+same hyperparameters as in the teacher models, shown in Table
+\ref{tab:trafo-big-hparams}. In addition, we train four smaller models based on
+the Transformer base hyperparameters -- using model dimension of 512,
+feed-forward state dimension of 2,048, and 8 attention heads. Each smaller
+model uses a different number of encoder and decoder layers. We show the number
+of encoder and decoder layers in Table \ref{tab:student-model-hparams}. In all
+settings, we use the splitting factor of 3 in the state splitting layer.
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{llrr}
+    \toprule
+    Model & Base architecture & \mcl{Encoder layers} & \mcl{Decoder layers} \\
+    \midrule
+    Teacher & Transformer big & 6 & 6 \\
+    \midrule
+    Large & Transformer big & 6 & 6 \\
+    \addlinespace
+    Base  & \multirow{4}{*}{Transformer base} & 6 & 6 \\
+    Small & & 3 & 3\\
+    Micro & & 2 & 2 \\
+    Tiny  & & 1 & 1 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{The hyperparameters of the student models.}%
+  \label{tab:student-model-hparams}
+\end{table}
+
+
+% ------------------------------------------------------------------------------
+\section{Results}%
+\label{sec:exp:results}
+% ------------------------------------------------------------------------------
+
+In this section we analyze the results both in terms of translation quality in
+Section \ref{subsec:results:quality} and decoding speed in Section
+\ref{subsec:results:time}. We discuss the results from the perspectives of the
+related literature on the \ac{nat} models and the submissions to the Efficiency
+Shared Task in Section \ref{subsec:results:discussion}.
+
+
+% ------------------------------------------------------------------------------
+\subsection{Translation Quality}%
+\label{subsec:results:quality}
+% ------------------------------------------------------------------------------
+
+We compare the results of our models to both related work on \ac{nat} and to
+the results of the \ac{wmt}~21 Efficiency Shared Task which features highly
+optimized \ac{ar} translation models \citep{heafield-etal-2021-findings}. In
+the \ac{nar} literature, the \acs{wmt}~14 test set
+\citep{bojar-etal-2014-findings} is used as a standard benchmark. On the other
+hand, the efficiency task uses the recent test set from \acs{wmt}~21
+\citep{akhbardeh-etal-2021-findings}. In this section, we present the results
+on both datasets.
+
+\paragraph{Results on the \acs{wmt}~21 test set.}
+In line with the evaluation methodology of the efficiency task, we also measure
+\acs{comet} \citep{rei-etal-2020-comet} and \acs{chrf} score
+\citep{popovic-2015-chrf}. We do not perform human evaluation.
+
+Table \ref{tab:wmt21-scores} shows the results of automatic evaluation
+% with \acs{bleu}, \acs{chrf}, and \acs{comet}% scores
+on the \acs{wmt}~21 news translation test set. In the English $\rightarrow$
+German direction, the test set consists of 1,002 sentences along with three
+different reference translations. In the German $\rightarrow$ English
+direction, there are 1,000 sentences with two reference translations each. We
+measure multi-reference \acs{bleu} score using Sacrebleu \citep{post-2018-call}
+and we report confidence intervals computed with bootstrap resampling. We
+report the Sacrebleu signatures for English $\rightarrow$ German%
+\footnote{En$\rightarrow$De: {\scriptsize
+    \texttt{nrefs:3|bs:1000|seed:12345|case:mixed|eff:no|tok:13a|smooth:exp|version:2.0.0}}}
+and German $\rightarrow$ English%
+\footnote{De$\rightarrow$En: {\scriptsize
+    \texttt{nrefs:2|bs:1000|seed:12345|case:mixed|eff:no|tok:13a|smooth:exp|version:2.0.0}}}
+directions. We compute the \acs{chrf} score separately on each reference
+translation set using Sacrebleu, and we report the
+average.\footnote{\acs{chrf}; En$\leftrightarrow$De: {\scriptsize
+    \texttt{nrefs:1|case:mixed|eff:yes|nc:6|nw:0|space:no|version:2.0.0}}}
+Finally, we compute the \acs{comet} scores with the \texttt{wmt20-comet-da}
+model of the \acs{comet} version \texttt{dd2298} (1.0.0rc9).
+
+We observe that in both translation directions, the \ac{ar} models outperform
+the \ac{nar} models. The performance gap between the models grows further with
+beam search and ensembling. We can also see that knowledge distillation has a
+positive effect on both \ac{ar} and \ac{nar} models, with the student \ac{ar}
+model matching the performance of the ensemble of four large teacher models.
+We also note that the difference in the \acs{comet} score is bigger than in
+\acs{bleu}, which might suggest that \acs{nar} models would rank poorly in
+human evaluation, despite achieving reasonable \acs{bleu} scores.
+
+The results on the test set confirm the ranking of the \acs{nar} models as seen
+during training, including the interesting exception of the
+English $\rightarrow$ German Micro model. Otherwise, the larger the student
+model is, the better scores it achieves.
+
+Finally, we see that using a lexical shortlist does not have an effect on the
+translation quality in all model variants. However, we see that shortlisting
+impairs the performance of the Transformer base model when decoding with beam
+search.
+
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{lrrr@{}>{\small \enspace \textpm}lrrr@{}>{\small \enspace
+        \textpm}l}
+    \toprule
+    \multirow{2}{*}{\bf En $\rightarrow$ De} %
+    & \multicolumn{4}{c}{Full output projection} & \multicolumn{4}{c}{Shortlist} \\
+    & \acs{chrf} & \acs{comet} & \multicolumn{2}{c}{\acs{bleu}}
+    & \acs{chrf} & \acs{comet} & \multicolumn{2}{c}{\acs{bleu}} \\
+
+    \midrule
+    Single greedy \acs{ar} \\
+    Large & 59.2 & 0.4110 & 50.5 & 1.3 & 59.2 & 0.4124 & 50.6 & 1.3\\
+    Base  & 58.1 & 0.3881 & 47.9 & 1.3 & 58.1 & 0.3875 & 47.9 & 1.2\\
+
+    \addlinespace
+    Single beam \acs{ar} \\
+    Large & 58.8 & 0.4053 & 50.8 & 1.3 & 58.8 & 0.4144 & 47.9 & 1.2\\
+    Base  & 57.9 & 0.3873 & 48.0 & 1.3 & 55.1 & 0.2666 & 39.3 & 1.1\\
+
+    \addlinespace
+    Ensemble beam \acs{ar} \\
+    Large & 59.5 & 0.4332 & 52.2 & 1.3 & 59.4 & 0.4303 & 52.2 & 1.3\\
+
+    \midrule
+    Student \acs{ar} \\
+    Base  & 59.5 &  0.4550 & 51.6 & 1.2 & 59.6 &  0.4564 & 51.6 & 1.2 \\
+
+    \addlinespace
+    \Acs{nar} models \\
+    Large & 58.6 &  0.1485 & 47.8 & 1.2 & 58.7 &  0.1442 & 47.7 & 1.2 \\
+    Base  & 56.3 & -0.0521 & 41.8 & 1.1 & 56.3 & -0.0545 & 41.8 & 1.1 \\
+    Small & 56.2 & -0.0752 & 41.9 & 1.1 & 56.2 & -0.0773 & 41.9 & 1.2 \\
+    Micro & 57.3 & -0.0083 & 43.5 & 1.1 & 57.4 & -0.0085 & 43.6 & 1.1 \\
+    Tiny  & 53.6 & -0.3333 & 34.7 & 1.0 & 53.8 & -0.3346 & 34.8 & 1.0 \\
+
+    \bottomrule
+  \end{tabular}
+
+%   \caption{Quantitative results of the English $\rightarrow$ German translation
+%     models on the \acs{wmt}~21 test set using three different automatic
+%     evalutation metrics.}%
+%   \label{tab:wmt21-scores-ende}
+% \end{table}
+
+% \begin{table}
+%   \centering
+
+  \vspace{1\baselineskip}
+
+  \begin{tabular}{lrrr@{}>{\small \enspace \textpm}lrrr@{}>{\small \enspace
+        \textpm}l}
+    \toprule
+    \multirow{2}{*}{\bf De $\rightarrow$ En} %
+    & \multicolumn{4}{c}{Full output projection} & \multicolumn{4}{c}{Shortlist} \\
+    & \acs{chrf} & \acs{comet} & \multicolumn{2}{c}{\acs{bleu}}
+                 & \acs{chrf} & \acs{comet} & \multicolumn{2}{c}{\acs{bleu}} \\
+
+    \midrule
+    Single greedy \acs{ar} \\
+    Large & 61.9 & 0.5868 & 48.4 & 1.3 & 61.9 & 0.5866 & 48.5 & 1.3\\
+    Base  & 61.0 & 0.5532 & 47.0 & 1.3 & 60.5 & 0.5534 & 47.1 & 1.3\\
+
+    \addlinespace
+    Single beam \acs{ar} \\
+    Large & 61.5 & 0.5885 & 49.2 & 1.2 & 61.2 & 0.5659 & 43.9 & 1.1\\
+    Base  & 60.7 & 0.5534 & 47.4 & 1.3 & 58.0 & 0.4591 & 38.5 & 1.2\\
+
+    \addlinespace
+    Ensemble beam \acs{ar} \\
+    Large & 62.0 & 0.5954 & 50.6 & 1.3 & 62.3 & 0.5970 & 50.8 & 1.3\\
+
+    \midrule
+    Student \acs{ar} \\
+    Base & 63.3 & 0.6115 & 51.1 & 1.3 & 63.3 & 0.6112 & 51.1 & 1.3\\
+
+    \addlinespace
+    \Acs{nar} models \\
+    Large & 61.6 &  0.3296 & 46.4 & 1.4 & 61.6 &  0.3288 & 46.4 & 1.4\\
+    Base  & 61.4 &  0.2957 & 45.8 & 1.3 & 61.4 &  0.2663 & 45.7 & 1.3\\
+    Small & 61.0 &  0.2462 & 44.6 & 1.3 & 61.0 &  0.2454 & 44.6 & 1.3\\
+    Micro & 59.6 &  0.1475 & 42.3 & 1.4 & 59.6 &  0.1468 & 42.3 & 1.4\\
+    Tiny  & 55.9 & -0.1558 & 34.4 & 1.3 & 55.9 & -0.1560 & 34.4 & 1.3\\
+
+    \bottomrule
+  \end{tabular}
+
+  \caption{Quantitative results of the German $\leftrightarrow$ English
+    translation models on the \acs{wmt}~21 test set using \acs{chrf},
+    \acs{comet}, and \acs{bleu}.}%
+  \label{tab:wmt21-scores}
+\end{table}
+
+
+\paragraph{Results on the \acs{wmt}~14 test set.}
+We present automatic evaluation results measured on the \acs{wmt}~14 test set.
+Since many of the related approaches stop the training early after 300 thousand
+updates \citep{gu2017nonautoregressive, gu-kong-2021-fully}, we report the
+scores of our models both at this point in training, and after the training
+reached convergence.
+
+Table \ref{tab:wmt14-weight-avg} shows the \acs{wmt}~14 \acs{bleu} scores with
+checkpoint averaging. In each variant, we take the average parameters of the
+five best scoring models as measured on the validation set (either before the
+300,000th update or overall).
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{lrrrr}
+    \toprule
+    & \multicolumn{2}{c}{En $\rightarrow$ De}
+    & \multicolumn{2}{c}{De $\rightarrow$ En} \\
+    Model
+    & 300k & Final & 300k &  Final \\
+    \midrule
+
+    Large & 27.7 & 28.4 & 30.0 & 31.3 \\
+    Base  & 22.4 & 23.7 & 28.1 & 30.3 \\
+    Small & 22.5 & 23.6 & 26.7 & 29.1 \\
+    Micro & 23.7 & 25.0 & 25.1 & 27.5 \\
+    Tiny  & 19.0 & 20.3 & 19.6 & 21.7 \\
+
+    \bottomrule
+  \end{tabular}
+
+  \caption{The \acs{bleu} scores of the \emph{averaged} models on the
+    \acs{wmt}~14 test set after 300k updates and at the end of the training.}%
+  \label{tab:wmt14-weight-avg}
+
+\end{table}
+
+
+
+% ------------------------------------------------------------------------------
+\subsection{Decoding Time}%
+\label{subsec:results:time}
+% ------------------------------------------------------------------------------
+
+In this section, we analyze the decoding speed of the English $\rightarrow$
+German \ac{nar} models. We aim at recreating the evaluation conditions
+following the \acs{wmt}~21 Efficiency Shared Task
+\citep{heafield-etal-2021-findings}. We measure the decoding latency and
+throughput in different hardware environments.
+
+The decoding time is measured on a dataset containing one million sentences to
+minimize the effect of the model loading overhead.
+
+For measuring the CPU times, we use the same environment as the \acs{wmt}~21
+shared task organizers, which is a dual-socket Intel Xeon Gold 6354 from Oracle
+Cloud, a 36-core CPU server. For GPU efficiency, we use an Nvidia A100 GPU.
+
+
+\paragraph{GPU Latency and Throughput.}
+Figure \ref{fig:throughput:a100} shows the relationship between the batch size
+and the decoding time in seconds on the A100 GPU.  For \ac{ar} models,
+increasing the batch size heavily reduces the overall decoding speed and
+eventually surpasses the large \ac{nar} models. Increasing the batch size
+speeds up the decoding in \ac{nar} models as well, but the effect is diminished
+for larger batch sizes.
+
+From this point of view, the optimal scenario for \ac{nar} models is a
+situation in which the system runs in online mode, i.e. with a batch size of 1,
+or with a batch size of a few sentences. On a faster GPU with more threads,
+\ac{ar} models need a larger batch size to meet the speed of \ac{nar} models.
+
+
+\begin{figure}
+  \centering
+  \input{./img-special/a100.tex}
+  \vspace{1\baselineskip}
+
+  \begin{tabular}{lrrrrrrrr}
+    \toprule
+    Batch size & 1 & 2 & 4 & 8 & 16 & 32 & 64 & 128 \\
+    \midrule
+    \acs{ar} -- Large && 53,902 & 29,369 & 15,351 & 8,907 & 5,216 & 3,090 & 1,918 \\
+    \acs{ar} -- Base  && 47,145 & 25,745 & 13,836 & 7,498 & 3,997 & 2,371 & 1,465 \\
+    \midrule
+    Large & 7,020 & 3,874 & 2,292 & 1,547 & 1,179 & 973 & 850 & 782 \\
+    Base  & 6,289 & 3,400 & 1,854 & 1,166 &   816 & 635 & 542 & 485 \\
+    Small & 3,300 & 1,860 & 1,051 &   717 &   526 & 434 & 380 & 357 \\
+    Micro & 2,322 & 1,345 &   833 &   544 &   433 & 367 & 332 & 311 \\
+    Tiny  & 1,360 &   780 &   503 &   367 &   301 & 273 & 252 & 243 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{Wall times to translate one million sentences (in seconds) on a
+    single Nvidia \emph{Ampere} A100 GPU with different batch size settings.}%
+  \label{fig:throughput:a100}
+\end{figure}
+
+
+% -----------------------------------------------------------------------------
+\paragraph{CPU Latency and Throughput.}
+In Figure \ref{fig:throughput:cpu36}, we show the CPU decoding times of the
+trained models using 36 CPU cores with different batching settings.  We see
+similar trends to GPU decoding -- the \ac{nar} models are faster with smaller
+batch sizes. The \ac{ar} models eventually match the decoding speed of the
+\ac{nar} models as the batch size increases. However, there is a considerable
+difference between the large and base models in both \ac{ar} and \ac{nar}
+variants.
+
+We also notice that increasing the batch size can slow the decoding speed
+down. There may be several reasons for this behavior. First, the size of the
+shortlist grows proportionally with the batch size, as there are more possible
+target words. Second, when the batch is too large, much of the computation is
+wasted on the padded positions in shorter sentences (as explained in Section
+\ref{sec:training:methodology}). These issues are not evident in GPU decoding
+due to a higher level of parallelism.
+
+It is apparent from the data table in Figure \ref{fig:throughput:cpu36} that
+the use of a lexical shortlist improves the decoding speed of both \ac{ar} and
+\ac{nar} models. For clarity, we only plot the measured decoding times with
+shortlisting. We see that changing the batch size has a similar effect in both
+cases, perhaps with the exception of the micro and tiny models, which benefit
+greatly from the shortlist in combination with a small batch size.
+
+In case of the \ac{nar} model with batch size of 128, we ran across an
+out-of-memory error due to a limitation in the Marian implementation. When
+using multiple CPUs for the decoding, the program makes a copy of the whole
+model for each CPU core. When the batch size is too large, this will eventually
+fill the whole RAM, and the process is killed.
+
+We tried to measure single-core CPU latency, but the decoding speed was too
+slow to compete with efficiency task submissions. Based on the decoding time on
+a smaller sample of the data, we estimate the time to translate the whole
+dataset would take around 100 hours using the large \ac{nar} model and around
+15 hours using the tiny model.
+
+\begin{figure}
+  \centering
+
+  \input{./img-special/cpu-shortlist.tex}
+  \vspace{1\baselineskip}
+
+  \begin{tabular}{lrrrrrrrr}
+    \toprule
+    Batch size & 1 & 2 & 4 & 8 & 16 & 32 & 64 & 128 \\
+
+
+    \midrule
+    Full output \\
+    \acs{ar} -- Large & 52,087 & 33,189 & 23,478 & 16,731 & 12,166 & 10,151 & 9,370 & 9,244 \\
+    \acs{ar} -- Base  & 16,293 &  9,727 &  7,191 &  5,420 &  3,635 &  2,925 & 2,707 & 2,664 \\
+    \addlinespace
+    Large & 14,542 & 11,320 & 9,534 & 8,657 & 8,357 & 8,247 & 8,238 & \\
+    Base  &  3,508 &  3,126 & 2,979 & 2,927 & 2,921 & 2,920 & 2,934 & 2,948 \\
+    Small &  2,346 &  2,079 & 1,975 & 1,933 & 1,921 & 1,921 & 1,936 & 1,950 \\
+    Micro &  1,952 &  1,728 & 1,641 & 1,600 & 1,588 & 1,587 & 1,607 & 1,627 \\
+    Tiny  &    784 &    719 &   697 &   687 &   685 &   694 &   701 &   719 \\
+
+
+    \midrule
+    Shortlist \\
+    \acs{ar} -- Large & 41,168 & 27,977 & 18,914 & 13,597 & 10,946 & 9,643 & 9,154 & 9,090 \\
+    \acs{ar} -- Base  & 10,555 &  6,776 &  4,660 &  3,664 &  2,957 & 2,643 & 2,564 & 2,587 \\
+    \addlinespace
+    Large & 12,799 & 9,870 & 8,245 & 7,545 & 7,434 & 7,511 & 7,639 & \\
+    Base  &  2,549 & 2,298 & 2,263 & 2,306 & 2,399 & 2,503 & 2,609 & 2,707 \\
+    Small &  1,346 & 1,246 & 1,250 & 1,306 & 1,399 & 1,497 & 1,606 & 1,714 \\
+    Micro &    958 &   897 &   913 &   974 & 1,062 & 1,163 & 1,271 & 1,380 \\
+    Tiny  &    244 &   246 &   273 &   316 &   373 &   437 &   506 &   582 \\
+
+
+    \bottomrule
+  \end{tabular}
+
+  \caption{Wall times to translate one million sentences (in seconds) on 36 CPU
+    cores with different batch size settings. The graph shows the decoding
+    times with shortlisting.}%
+  \label{fig:throughput:cpu36}
+\end{figure}
+
+
+% ------------------------------------------------------------------------------
+\subsection{Discussion}%
+\label{subsec:results:discussion}
+% ------------------------------------------------------------------------------
+
+Tables \ref{tab:wmt14-bleu-scores} and \ref{tab:wmt14-weight-avg} in Section
+\ref{subsec:results:quality} show that we achieve state-of-the-art scores in
+\acl{nar} translation on the \acs{wmt}~14 test set, outperforming both
+single-step and iterative methods (see the results overview of the related work
+in Table \ref{tab:related:wmt14} in Section \ref{sec:nat:discussion}). However,
+the results on the \acs{wmt}~21 test set in Table \ref{tab:wmt21-scores} show
+that there is still a great deal of room for improvement, especially when
+looking at the \acs{comet} scores. We believe that these findings should
+motivate future research not to evaluate translation quality exclusively on the
+\acs{wmt}~14 test set.
+
+We compare our models with one of the best performing submissions in the
+efficiency task -- the University of Edinburgh's ``base'' model
+\citep{Behnke-wmt21-speed} -- in Table \ref{tab:efficiency:comparison}. It is
+clear from the comparison that the Edinburgh \acl{ar} model is superior to our
+\ac{nar} models in most regards. One exception is the GPU decoding latency. As
+we discuss in Section \ref{sec:nat:discussion}, these conditions are the only
+scenario considered in most of the related studies.
+
+\begin{table}
+  \centering
+
+  \begin{tabular}{lrrrrrr}
+    \toprule
+    & \multicolumn{3}{c}{Translation quality} & \multicolumn{3}{c}{Decoding time (seconds)} \\
+    & {\small \acs{chrf}} & {\small \acs{comet}} & {\small \acs{bleu}} & {\small GPU, b>1} & {\small GPU, b=1} & {\small CPU, b>1} \\
+    \midrule
+    Edinburgh base & 61.5 & 0.527 & 55.3 & 140 & 16,851 & 500 \\
+    \midrule
+    \acs{ar} -- Large (teacher) & 59.2 & 0.411 & 50.5 & 1,918 & {\it > 24h} & 9,090 \\
+    \acs{ar} -- Base (student) & 59.5 & 0.455 & 51.6 & 1,465 & {\it > 24h} & 2,587 \\
+    \addlinespace
+    \acs{nar} -- Large & 58.6 & 0.149 & 47.8 & 782 & 7,020 & 7,434 \\
+    \acs{nar} -- Micro & 57.3 & -0.008 & 43.5 & 311 & 2,322 & 897 \\
+    \bottomrule
+  \end{tabular}
+
+  \caption{Comparison of our models with the Edinburgh ``base'' model submitted
+    to the \acs{wmt} Efficiency Shared Task \citep{Behnke-wmt21-speed}. Columns
+    denoted \emph{b>1} show the best result using batching, \emph{b=1} is
+    measured with a single sentence in the batch. CPU times were measured using
+    36 CPU cores.} %
+  \label{tab:efficiency:comparison}
+\end{table}
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Conclusions}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+In this thesis, we explored the possibilities of \ac{nar} models for
+\ac{nmt}. We described the commonly used \ac{nmt} models and showed techniques
+to effectively train them and to use them for translation.
+
+We presented a comprehensive survey of the related research efforts that have
+been made so far in this rapidly developing field. We described \ac{nar}
+methods based on latent variables, iterative refinement, or on the relaxed
+alignment between the output predictions and the ground-truth labels.
+
+We pointed out some of the drawbacks in related \ac{nar} approaches, such as
+using weaker baselines both in terms of translation quality and decoding speed,
+and identified some of the flaws in the evaluation methodology.
+
+In the first of the two experimental chapters (Chapter \ref{chap:nar-nmt-ctc}),
+we proposed a novel method for \ac{nar} \ac{nmt} based on \ac{ctc} which has
+been adopted by the \ac{nar} research community as one of the basic approaches
+since its original publication.
+
+In Chapter \ref{chap:experiments}, we aim at improving our \acs{ctc}-based
+approach by using knowledge distillation using a strong \ac{ar} teacher model.
+We compare our results to both the \acs{wmt}~14 benchmark and the results of
+the \acs{wmt}~21 Efficiency Shared Task \citep{heafield-etal-2021-findings}. We
+find that even though our models are among the best performing on \acs{wmt}~14,
+there is a large room for improvement when we compare them to highly optimized
+\acl{ar} models submitted to the efficiency task.
+
+To conclude, over the past few years, the research community has set its hopes
+on the \ac{nar} models because, in theory, the decoding has lower time
+complexity. Moreover, the literature on this topic often claims that \ac{nar}
+models already match the performance of their \ac{ar} counterparts. However,
+our findings suggest that, in fair comparison with strong efficient baselines,
+many research studies concluding that \ac{nar} models are superior over \ac{ar}
+models may be overclaiming. To avoid these problems in the future, research of
+\ac{nar} models should take into account findings of the efficiency task,
+evaluate the translation quality also on newer test sets, and measure the
+decoding speed under various conditions, such as batched GPU and CPU decoding.
+
 
 
 %%% Local Variables:
