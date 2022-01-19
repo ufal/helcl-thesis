@@ -1232,9 +1232,8 @@ We also notice that increasing the batch size can slow the decoding speed
 down. There may be several reasons for this behavior. First, the size of the
 shortlist grows proportionally with the batch size, as there are more possible
 target words. Second, when the batch is too large, much of the computation is
-wasted on the padded positions in shorter sentences (as explained in Section
-\ref{sec:training:methodology}). These issues are not evident in GPU decoding
-due to a higher level of parallelism.
+wasted on the padded positions in shorter sentences. These issues are not
+evident in GPU decoding due to a higher level of parallelism.
 
 It is apparent from the data table in Figure \ref{fig:throughput:cpu36} that
 the use of a lexical shortlist improves the decoding speed of both \ac{ar} and
@@ -1305,16 +1304,14 @@ dataset would take around 100 hours using the large \ac{nar} model and around
 \label{subsec:results:discussion}
 % ------------------------------------------------------------------------------
 
-Tables \ref{tab:wmt14-bleu-scores} and \ref{tab:wmt14-weight-avg} in Section
-\ref{subsec:results:quality} show that we achieve state-of-the-art scores in
-\acl{nar} translation on the \acs{wmt}~14 test set, outperforming both
-single-step and iterative methods (see the results overview of the related work
-in Table \ref{tab:related:wmt14} in Section \ref{sec:nat:discussion}). However,
-the results on the \acs{wmt}~21 test set in Table \ref{tab:wmt21-scores} show
-that there is still a great deal of room for improvement, especially when
-looking at the \acs{comet} scores. We believe that these findings should
-motivate future research not to evaluate translation quality exclusively on the
-\acs{wmt}~14 test set.
+Table \ref{tab:wmt14-weight-avg} in Section \ref{subsec:results:quality} shows
+that we achieve state-of-the-art scores in \acl{nar} translation on the
+\acs{wmt}~14 test set, outperforming both single-step and iterative
+methods. However, the results on the \acs{wmt}~21 test set in Table
+\ref{tab:wmt21-scores} show that there is still a great deal of room for
+improvement, especially when looking at the \acs{comet} scores. We believe that
+these findings should motivate future research not to evaluate translation
+quality exclusively on the \acs{wmt}~14 test set.
 
 We compare our models with one of the best performing submissions in the
 efficiency task -- the University of Edinburgh's ``base'' model
