@@ -1,7 +1,186 @@
-
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Introduction}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+In real-world applications of \ac{mt}, efficiency is often crucial.  Most
+commercial \ac{nmt} models are available through a cloud-based service, such as
+Microsoft Translator\footnote{\url{https://microsoft.com/translator/}} or
+Google Translate.\footnote{\url{https://translate.google.com/}} Scaling
+cloud-based solutions for large user bases is simple but costly. Even with a
+large pool of computational resources, it is worthwhile to implement
+optimizations that decrease model latency and improve user experience.
 
-\JH{ahoj}
+Locally deployed \ac{nmt} models provide a number of advantages over
+cloud-based solutions. First, the service does not rely on the internet
+connection. Second, the data is not being sent to a third party server and,
+therefore, it is suitable for translating private or confidential data.
+However, without optimization, running state-of-the-art translation models
+locally often requires specialized hardware, such as one or more
+GPUs. Otherwise, the time to translate a single sentence can easily exceed one
+second on a standard CPU.
+
+Higher decoding speeds can be achieved by model optimization. In their 2019
+submission to the \ac{wngt} Efficiency Shared Task,
+\citet{kim-etal-2019-research} successfully employed knowledge distillation,
+quantization, shortlisting \citep{jean-etal-2015-using} and a simpler recurrent
+unit design to bring the throughput of a translation model up to 3,600 words
+per second on a CPU, with a modest drop in the translation quality. Following
+this work, \citet{bogoychev-etal-2020-edinburghs} reported further improvements
+with attention head pruning \citep{voita-etal-2019-analyzing}. Their work has
+been part of the Bergamot Research Project, which aims to bring offline
+translation models to a browser.\footnote{\url{https://browser.mt/}}
+
+\Ac{nar} models present an alternative approach to model optimization, using
+different architecture and a different decoding algorithm which has lower time
+complexity.  In \ac{nmt}, a non-autoregressive decoding algorithm does not
+access previously decoded outputs, imposing conditional independence assumption
+on the output token probability distributions. This assumption allows for
+parallelization of the decoding, which can significantly reduce the latency of
+the translation system. On the other hand, it also presents a challenge to the
+language model, which usually leads to poorer translation quality.
+
+
+
+
+% 20 stran:
+
+% intro          1
+% NAT background 6
+% CTC            4
+% experiments    4
+% concl.         1
+
+
+\chapter{Non-Autoregressive Neural Machine Translation}
+
+The defining feature of a \ac{nar} model is the assumption of
+conditional independence between the output distributions across time
+steps. The output distribution in autoregressive models is defined as follows:
+%
+\begin{equation}
+  p(y|x) = \prod_{t=1}^{T_y}p(y_t|y_{<t},x,\theta)
+  \label{eq:output-distribution}
+\end{equation}
+%
+Unlike Equation \ref{eq:output-distribution}, \Ac{nar} models do not condition
+the output token probabilities on previously decoded outputs $y_{<t}$.  The
+probability of an output sentence $y$ given an input sequence $x$ can then be
+modeled as:
+%
+\begin{equation}
+  p(y|x) = \prod_{t=1}^{T_y}p(y_t|x,\theta)
+  \label{eq:nat-output-distribution}
+\end{equation}
+
+Although technically possible, making the outputs in \acs{rnn}-based models
+conditionally independent does not reduce the time complexity because in
+\acsp{rnn}, the value of each hidden state depends on the value of the
+preceding state. However, in the Transformer model, hidden states in each layer
+depend only on the states from the previous layer. This allows for parallel
+computation at the layer level
+
+
+In the following paragraphs, we discuss the necessary alterations to the
+Transformer architecture. Since the outputs are conditionally independent, we
+cannot feed the previously decoded outputs into the Transformer decoder. We
+need to provide the input to the decoder and estimate the target length. The
+causal mask over decoder self-attention is now unnecessary. We also address the
+main issue and the reason \ac{ar} models are still superior in modeling
+language.
+
+% ------------------------------------------------------------------------------
+\paragraph{Multimodality Problem.} In one of the first applications of a
+non-autoregressive model to \ac{nmt}, \citet{gu2017nonautoregressive} describe
+the \emph{multimodality problem} which arises when the outputs are
+conditionally independent.
+
+When estimating the probability of a word on a given position, there may be
+multiple words which get a high probability. These words are the so-called
+\emph{modes} of the distribution. In \acl{ar} models, once a word is selected,
+other modes are ignored in the following time steps. However, a \acl{nar} model
+does not base its decision for a given position on the preceding ones, so when
+multiple positions have multiple modes, the model has no means of coordinating
+the selection of modes across different time steps.
+
+A well-known example of the multimodality problem is the translation of the
+sentence ``thank you'' into German, which has two equally likely translations:
+``vielen dank'' and ``danke schön.'' In this case, the pair of German tokens
+``danke'' and ``vielen'' create the two modes in the first position, and the
+tokens ``dank'' and ``schön'' are the modes in the second position. If an
+\acl{ar} model chooses to generate ``danke'' in the first position, the token
+``dank'' in the second position will no longer receive high probability from
+the model. However, when a \acl{nar} model assigns high probabilities to the
+correct translations, it also has to assign high probabilities to the other
+(incorrect) two combinations, ``danke dank'' and ``vielen schön''
+\citep{gu2017nonautoregressive}.
+
+% ------------------------------------------------------------------------------
+\paragraph{Decoder Inputs.} A \acs{nar} Transformer decoder cannot
+receive the previously decoded tokens on the input. A solution proposed by
+\citet{gu2017nonautoregressive} is to use a simple fertility model, which also
+serves as the explicit target length estimator.
+
+Compared to the \acl{ar} Transformer, the model has the following
+modifications. First, the inputs to the decoder are made up of the sequence of
+encoder inputs, either uniformly stretched to the predicted target sentence
+length, or copied using a fertility model. Second, the decoder self-attention
+does not use the causal mask, since all states can now attend to all other
+states in both directions. Third, a \emph{positional attention} sub-layer is
+added to every decoder layer, where the positional encoding (see Equation
+\ref{eq:positional-encoding} in Section \ref{sec:encdec:transformer}) is used
+as queries and keys, and the decoder states as
+values. \citet{gu2017nonautoregressive} argue that providing positional
+information directly to the decoder layers could improve the potential of the
+decoder to model local reodering.
+
+In \citet{gu2017nonautoregressive}, the multimodality problem (and length
+estimation) is addressed by introducing latent fertility variables
+$F = f_1, \ldots, f_{T_x}$ sampled from a prior distribution. Each
+$f_i \in \mathbb{N}_0$ denotes the number of times $x_i$ is copied to the
+decoder input (summing up to the target length $T_y$). The output probability
+is then conditioned on the latent vector $F$, which is marginalized out:
+%
+\begin{equation}
+  p(y|x, \theta) = \sum_{F \in \mathcal{F}} p(F|x, \theta) \cdot p(y|x, F, \theta)
+\end{equation}
+%
+where the fertility model $p(F|x, \theta)$ and the translation model
+$p(y|x, F, \theta)$ can be trained jointly using a variational lower bound with
+a candidate distribution $q$:
+\begin{align}
+  \begin{split}
+    \mathcal{L}(\theta)
+    & = \log p(y|x, \theta) = \log \sum_{F \in \mathcal{F}} p(F| x, \theta ) \cdot p(y | x, F, \theta) \\
+    & \geq \mathbb{E}_{F \sim q} \left(\sum_{t=1}^{T_y} \log p(y_t | x, F,
+      \theta) + \sum_{t=1}^{T_x} \log p(f_t | x, \theta) \right) +
+    \mathcal{H}(q)
+  \end{split}
+\end{align}
+%
+where $q$ is an external deterministic fertility model (and, therefore,
+$\mathcal{H}$ is a constant), and the expectation is also deterministic.  The
+fertility model depends on an external module which is not trained together
+with the model. The authors fine-tune the trained translation model using
+reinforcement learning \citep{williams1992simple} to estimate the gradients of
+the fertility model.
+
+During decoding, marginalizing over all possible fertility values is
+intractable. Therefore, \citet{gu2017nonautoregressive} experiment with three
+approximation methods -- argmax, average decoding, and \ac{npd}. In argmax
+decoding, the fertility with the highest probability is chosen in each step,
+similarly to greedy decoding. The average method chooses the expected fertility
+given the distribution in each position. \ac{npd} is based on sampling and
+rescoring with an \acl{ar} model, as explained below.
+
+
+\chapter{Connectionist Temporal Classification}
+
+\chapter{Experiments}
+
+\chapter{Conclusions}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:
