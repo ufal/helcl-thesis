@@ -85,13 +85,11 @@ In the following paragraphs, we discuss the necessary alterations to the
 Transformer architecture. Since the outputs are conditionally independent, we
 cannot feed the previously decoded outputs into the Transformer decoder. We
 need to provide the input to the decoder and estimate the target length. The
-causal mask over decoder self-attention is now unnecessary. We also address the
-main issue and the reason \ac{ar} models are still superior in modeling
-language.
+causal mask over decoder self-attention is now unnecessary.
 
 % ------------------------------------------------------------------------------
-\paragraph{Multimodality Problem.} In one of the first applications of a
-non-autoregressive model to \ac{nmt}, \citet{gu2017nonautoregressive} describe
+\paragraph{Multimodality Problem.} In one of the first applications of
+non-autoregressive models to \ac{nmt}, \citet{gu2017nonautoregressive} describe
 the \emph{multimodality problem} which arises when the outputs are
 conditionally independent.
 
@@ -133,44 +131,44 @@ values. \citet{gu2017nonautoregressive} argue that providing positional
 information directly to the decoder layers could improve the potential of the
 decoder to model local reodering.
 
-In \citet{gu2017nonautoregressive}, the multimodality problem (and length
-estimation) is addressed by introducing latent fertility variables
-$F = f_1, \ldots, f_{T_x}$ sampled from a prior distribution. Each
-$f_i \in \mathbb{N}_0$ denotes the number of times $x_i$ is copied to the
-decoder input (summing up to the target length $T_y$). The output probability
-is then conditioned on the latent vector $F$, which is marginalized out:
-%
-\begin{equation}
-  p(y|x, \theta) = \sum_{F \in \mathcal{F}} p(F|x, \theta) \cdot p(y|x, F, \theta)
-\end{equation}
-%
-where the fertility model $p(F|x, \theta)$ and the translation model
-$p(y|x, F, \theta)$ can be trained jointly using a variational lower bound with
-a candidate distribution $q$:
-\begin{align}
-  \begin{split}
-    \mathcal{L}(\theta)
-    & = \log p(y|x, \theta) = \log \sum_{F \in \mathcal{F}} p(F| x, \theta ) \cdot p(y | x, F, \theta) \\
-    & \geq \mathbb{E}_{F \sim q} \left(\sum_{t=1}^{T_y} \log p(y_t | x, F,
-      \theta) + \sum_{t=1}^{T_x} \log p(f_t | x, \theta) \right) +
-    \mathcal{H}(q)
-  \end{split}
-\end{align}
-%
-where $q$ is an external deterministic fertility model (and, therefore,
-$\mathcal{H}$ is a constant), and the expectation is also deterministic.  The
-fertility model depends on an external module which is not trained together
-with the model. The authors fine-tune the trained translation model using
-reinforcement learning \citep{williams1992simple} to estimate the gradients of
-the fertility model.
+% In \citet{gu2017nonautoregressive}, the multimodality problem (and length
+% estimation) is addressed by introducing latent fertility variables
+% $F = f_1, \ldots, f_{T_x}$ sampled from a prior distribution. Each
+% $f_i \in \mathbb{N}_0$ denotes the number of times $x_i$ is copied to the
+% decoder input (summing up to the target length $T_y$). The output probability
+% is then conditioned on the latent vector $F$, which is marginalized out:
+% %
+% \begin{equation}
+%   p(y|x, \theta) = \sum_{F \in \mathcal{F}} p(F|x, \theta) \cdot p(y|x, F, \theta)
+% \end{equation}
+% %
+% where the fertility model $p(F|x, \theta)$ and the translation model
+% $p(y|x, F, \theta)$ can be trained jointly using a variational lower bound with
+% a candidate distribution $q$:
+% \begin{align}
+%   \begin{split}
+%     \mathcal{L}(\theta)
+%     & = \log p(y|x, \theta) = \log \sum_{F \in \mathcal{F}} p(F| x, \theta ) \cdot p(y | x, F, \theta) \\
+%     & \geq \mathbb{E}_{F \sim q} \left(\sum_{t=1}^{T_y} \log p(y_t | x, F,
+%       \theta) + \sum_{t=1}^{T_x} \log p(f_t | x, \theta) \right) +
+%     \mathcal{H}(q)
+%   \end{split}
+% \end{align}
+% %
+% where $q$ is an external deterministic fertility model (and, therefore,
+% $\mathcal{H}$ is a constant), and the expectation is also deterministic.  The
+% fertility model depends on an external module which is not trained together
+% with the model. The authors fine-tune the trained translation model using
+% reinforcement learning \citep{williams1992simple} to estimate the gradients of
+% the fertility model.
 
-During decoding, marginalizing over all possible fertility values is
-intractable. Therefore, \citet{gu2017nonautoregressive} experiment with three
-approximation methods -- argmax, average decoding, and \ac{npd}. In argmax
-decoding, the fertility with the highest probability is chosen in each step,
-similarly to greedy decoding. The average method chooses the expected fertility
-given the distribution in each position. \ac{npd} is based on sampling and
-rescoring with an \acl{ar} model, as explained below.
+% During decoding, marginalizing over all possible fertility values is
+% intractable. Therefore, \citet{gu2017nonautoregressive} experiment with three
+% approximation methods -- argmax, average decoding, and \ac{npd}. In argmax
+% decoding, the fertility with the highest probability is chosen in each step,
+% similarly to greedy decoding. The average method chooses the expected fertility
+% given the distribution in each position. \ac{npd} is based on sampling and
+% rescoring with an \acl{ar} model, as explained below.
 
 \paragraph{Knowledge Distillation.} To tackle the multimodality problem from
 another angle, \citet{gu2017nonautoregressive} propose to use sequence-level
@@ -231,7 +229,7 @@ latency of 607 ms \citep{wang-etal-2019-nonautoregressive,
 not used in the presented \ac{nar} models for the most part.
 
 % -----------------------------------------------------------------------------
-\paragraph{Evaluation Methodology.} Another aspect we need to address is the
+\paragraph{Evaluation Methodology.} Another aspect to be addressed is the
 evaluation methodology itself. Setting aside the fact that automatic quality
 evaluation using \acs{bleu} is the only reported metric, perhaps complemented
 by a cursory manual evaluation on a small sample, the evaluation of the speed
@@ -375,6 +373,7 @@ illustrated in Figure~\ref{fig:ctc-equivalent-sequences}.
           & \text{a <blank> cat sat on a <blank> mat} \\
           & \text{a a cat cat sat on a mat} \\
           & \text{a <blank> cat cat sat on a mat} \\
+          & \ldots
         \end{cases}
     \end{equation*}
   \end{minipage}
@@ -538,24 +537,7 @@ WMT~13 test set \citep{bojar-etal-2013-findings}, and we evaluate translation
 quality on the WMT~14 test set \citep{bojar-etal-2014-findings}. For
 English--Romanian, the data consist of the Europarl corpus and the SETIMES
 corpus distributed by OPUS \citep{tiedemann-2012-parallel}. We use the
-development and test set from the WMT~16 \citep{bojar-etal-2016-findings}. Data
-sizes are shown in Table~\ref{tab:end-to-end:data}.
-
-\begin{table}
-  \centering
-  \begin{tabular}{lrr}
-    \toprule
-     & Sentence pairs & Vocabulary size \\
-    \midrule
-    En -- De & 4.58 M & 41,488 \\
-    En -- Ro & 613 k & 38,440 \\
-    \bottomrule
-  \end{tabular}
-
-  \caption{The sizes of the parallel training data and the wordpiece
-    vocabularies for English--German and English--Romanian translation.}%
-  \label{tab:end-to-end:data}
-\end{table}
+development and test set from the WMT~16 \citep{bojar-etal-2016-findings}.
 
 We preprocess the data with scripts from the \texttt{mosesdecoder}
 repository,\footnote{\url{https://github.com/moses-smt/mosesdecoder/}} a part
@@ -671,13 +653,12 @@ The approach of \citet{lee-etal-2018-deterministic} is iterative. We show the
 performance of this method with 1 iteration and with 10 iterations. Note that
 using more iterations slows the decoding speed of the iterative model.
 
-Compared to single-pass models, the performance of the English--German
-\acs{ctc}-based models is similar. However, the performance of the
-English--Romanian models is poor. This is probably due to issues with Romanian
-diacritics in the data, as suggested also by the poorer performance of our
-autoregressive baseline. Also, the enhanced techniques (\ac{npd} and iterative
-refiniment) outperform our method in all scenarios, but at a computational
-cost.
+The performance of the English--German \acs{ctc}-based models is similar to
+single-pass models. However, the performance of the English--Romanian models is
+poor. This is probably due to issues with Romanian diacritics in the data, as
+suggested also by the poorer performance of our autoregressive baseline. Also,
+the enhanced techniques (\ac{npd} and iterative refiniment) outperform our
+method in all scenarios, but at a computational cost.
 
 We also evaluate the effect of weight averaging and beam search. As opposed to
 decoding from an \ac{ar} model, beam search in \acs{ctc}-based \ac{nar} models
@@ -899,10 +880,10 @@ and the authentic monolingual data (in the source language) using the ensemble
 of the teacher models. We do not create wholly synthetic datasets by
 forward-translating backtranslated data.
 
-For generating the knowledge-distilled dataset, we use beam search with the
-beam size of 12 and the normalization parameter set to 0.8. Similarly to
-generating the backtranslated data, we limit the target sentence length to 150
-tokens.
+% For generating the knowledge-distilled dataset, we use beam search with the
+% beam size of 12 and the normalization parameter set to 0.8. Similarly to
+% generating the backtranslated data, we limit the target sentence length to 150
+% tokens.
 
 
 % ------------------------------------------------------------------------------
@@ -1248,11 +1229,11 @@ using multiple CPUs for the decoding, the program makes a copy of the whole
 model for each CPU core. When the batch size is too large, this will eventually
 fill the whole RAM, and the process is killed.
 
-We tried to measure single-core CPU latency, but the decoding speed was too
-slow to compete with efficiency task submissions. Based on the decoding time on
-a smaller sample of the data, we estimate the time to translate the whole
-dataset would take around 100 hours using the large \ac{nar} model and around
-15 hours using the tiny model.
+% We tried to measure single-core CPU latency, but the decoding speed was too
+% slow to compete with efficiency task submissions. Based on the decoding time on
+% a smaller sample of the data, we estimate the time to translate the whole
+% dataset would take around 100 hours using the large \ac{nar} model and around
+% 15 hours using the tiny model.
 
 \begin{figure}
   \centering
@@ -1305,7 +1286,7 @@ dataset would take around 100 hours using the large \ac{nar} model and around
 % ------------------------------------------------------------------------------
 
 Table \ref{tab:wmt14-weight-avg} in Section \ref{subsec:results:quality} shows
-that we achieve state-of-the-art scores in \acl{nar} translation on the
+that we achieve state-of-the-art scores in non-autoreg\-ressive translation on the
 \acs{wmt}~14 test set, outperforming both single-step and iterative
 methods. However, the results on the \acs{wmt}~21 test set in Table
 \ref{tab:wmt21-scores} show that there is still a great deal of room for
