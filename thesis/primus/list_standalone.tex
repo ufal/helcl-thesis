@@ -1,0 +1,129 @@
+\documentclass[9pt,notitlepage,a5paper,openright]{extreport}
+\special{papersize=148mm,210mm}
+\pagestyle{empty}
+\pagenumbering{gobble}
+
+%\usepackage[a-2u]{pdfx}
+\usepackage{fontspec}
+
+\usepackage[czech,english]{babel}
+\usepackage{lmodern}
+\usepackage{textcomp}
+\usepackage[defaultlines=4,all]{nowidow}
+
+\usepackage{graphicx} % nezbytné pro standardní vkládání obrázků do dokumentu
+\usepackage[usenames,dvipsnames,svgnames,table,rgb]{xcolor}
+\usepackage[twoside, inner=2.0cm, outer=1.5cm, top=1.8cm, bottom=2.0cm]{geometry} % nastavení dané velikosti okrajů
+\usepackage[round]{natbib}
+\usepackage{amssymb,latexsym,pifont}
+\usepackage{amsmath}
+\usepackage{setspace} % radkovani
+
+
+\usepackage{subcaption} % sub figures in a fiture
+\usepackage{standalone} % include standoalone tikz images
+\usepackage{bibentry}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=false,
+    pdfborder={0 0 0},
+}
+
+
+% Czech babel conflicts with cline, hacky fix (http://tex.stackexchange.com/questions/111999/slovak-and-czech-babel-gives-problems-with-cmidrule-and-cline):
+% - basically disables hyphenation in tables, but it's not used anyway so it doesn't matter
+\usepackage{etoolbox}
+\preto\tabular{\shorthandoff{-}}
+\preto\tikzpicture{\shorthandoff{-}}
+
+\setmainfont[Ligatures=Common]{Linux Libertine}
+\setsansfont[Scale=MatchLowercase]{DejaVu Sans}
+\setmonofont[Scale=MatchLowercase]{DejaVu Sans Mono}
+
+\setstretch{1.1} % radkovani
+
+\makeatletter
+\def\@makechapterhead#1{
+  {\parindent \z@ \raggedright \normalfont
+   \Huge\bfseries \thechapter. #1
+   \par\nobreak
+   \vskip 20\p@
+}}
+\def\@makeschapterhead#1{
+  {\parindent \z@ \raggedright \normalfont
+   \Huge\bfseries #1
+   \par\nobreak
+   \vskip 20\p@
+}}
+\makeatother
+
+% force-ordering citations according to dummy keys
+\newcommand{\dummybiborderkey}[1]{}
+
+\title{Non-Autoregressive Neural Machine Translation}
+
+
+\begin{document}
+%\nobibliography*{references}
+
+%\addcontentsline{toc}{chapter}{List of Publications}
+%\include{list_of_publications}
+
+
+\chapter*{List of Publications}
+
+\small
+\bibliographystyle{csplainnat}
+\nobibliography{anthology,references}
+
+% citace pocitany 9.11.2021
+
+
+\noindent \bibentry{chen-etal-2021-university}
+\vspace{4mm}
+
+\noindent \bibentry{birch-etal-2021-surprise}
+\vspace{4mm}
+
+\noindent \bibentry{libovicky-etal-2020-expand}
+%\vspace{4mm}\noindent \bibentry{kasner-etal-2020-improving}
+\vspace{4mm}
+
+\noindent \bibentry{helcl-etal-2019-cuni}
+\vspace{4mm}
+
+\noindent \bibentry{helcl-etal-2018-cuni}
+\vspace{4mm}
+
+\noindent \bibentry{helcl-etal-2018-neural}
+\vspace{4mm}
+
+\noindent \bibentry{libovicky-helcl-2018-end}
+\vspace{4mm}
+
+\noindent \bibentry{libovicky-etal-2018-input}
+\vspace{4mm}
+
+\noindent \bibentry{libovicky2018solving}
+\vspace{4mm}
+
+\noindent \bibentry{miceli-barone-etal-2017-deep}
+\vspace{4mm}
+
+\noindent \bibentry{helcl-libovicky-2017-neural}
+\vspace{4mm}
+
+\noindent \bibentry{libovicky-helcl-2017-attention}
+\vspace{4mm}
+
+\noindent \bibentry{bojar2016ufal}
+\vspace{4mm}
+
+\noindent \bibentry{libovicky-etal-2016-cuni}
+
+\vfill
+\normalsize
+
+
+\end{document}
