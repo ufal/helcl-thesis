@@ -1,3 +1,99 @@
+@misc{bogoychev2023opuscleaner,
+      title={OpusCleaner and OpusTrainer, open source toolkits for training Machine Translation and Large language models},
+      author={Nikolay Bogoychev and Jelmer van der Linde and Graeme Nail and Barry Haddow and Jaume Zaragoza-Bernabeu and Gema Ramírez-Sánchez and Lukas Weymann and Tudor Nicolae Mateiu and Jindřich Helcl and Mikko Aulamo},
+      year={2023},
+      eprint={2311.14838},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
+
+@inproceedings{helcl-libovicky-2023-cuni,
+    title = "{CUNI} Submission to {MRL} 2023 Shared Task on Multi-lingual Multi-task Information Retrieval",
+    author = "Helcl, Jind{\v{r}}ich  and
+      Libovick{\'y}, Jind{\v{r}}ich",
+    editor = "Ataman, Duygu",
+    booktitle = "Proceedings of the 3rd Workshop on Multi-lingual Representation Learning (MRL)",
+    month = dec,
+    year = "2023",
+    address = "Singapore",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2023.mrl-1.23",
+    doi = "10.18653/v1/2023.mrl-1.23",
+    pages = "302--309",
+}
+
+
+@inproceedings{helcl-2022-cuni,
+    title = "{CUNI} Non-Autoregressive System for the {WMT} 22 Efficient Translation Shared Task",
+    author = "Helcl, Jind{\v{r}}ich",
+    booktitle = "Proceedings of the Seventh Conference on Machine Translation (WMT)",
+    month = dec,
+    year = "2022",
+    address = "Abu Dhabi, United Arab Emirates (Hybrid)",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2022.wmt-1.64",
+    pages = "668--670",
+    abstract = "We present a non-autoregressive system submission to the WMT 22 Efficient Translation Shared Task. Our system was used by Helcl et al. (2022) in an attempt to provide fair comparison between non-autoregressive and autoregressive models. This submission is an effort to establish solid baselines along with sound evaluation methodology, particularly in terms of measuring the decoding speed. The model itself is a 12-layer Transformer model trained with connectionist temporal classification on knowledge-distilled dataset by a strong autoregressive teacher model.",
+}
+
+
+@inproceedings{popel-etal-2022-cuni,
+    title = "{CUNI} Systems for the {WMT} 22 {C}zech-{U}krainian Translation Task",
+    author = "Popel, Martin  and
+      Libovick{\'y}, Jind{\v{r}}ich  and
+      Helcl, Jind{\v{r}}ich",
+    booktitle = "Proceedings of the Seventh Conference on Machine Translation (WMT)",
+    month = dec,
+    year = "2022",
+    address = "Abu Dhabi, United Arab Emirates (Hybrid)",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2022.wmt-1.30",
+    pages = "352--357",
+    abstract = "We present Charles University submissions to the WMT 22 GeneralTranslation Shared Task on Czech-Ukrainian and Ukrainian-Czech machine translation. We present two constrained submissions based on block back-translation and tagged back-translation and experiment with rule-basedromanization of Ukrainian. Our results show that the romanization onlyhas a minor effect on the translation quality. Further, we describe Charles Translator,a system that was developed in March 2022 as a response to the migrationfrom Ukraine to the Czech Republic. Compared to our constrained systems,it did not use the romanization and used some proprietary data sources.",
+}
+
+
+@article{haddow-etal-2022-survey,
+    title = "Survey of Low-Resource Machine Translation",
+    author = "Haddow, Barry  and
+      Bawden, Rachel  and
+      Miceli Barone, Antonio Valerio  and
+      Helcl, Jind{\v{r}}ich  and
+      Birch, Alexandra",
+    journal = "Computational Linguistics",
+    volume = "48",
+    number = "3",
+    month = sep,
+    year = "2022",
+    address = "Cambridge, MA",
+    publisher = "MIT Press",
+    url = "https://aclanthology.org/2022.cl-3.6",
+    doi = "10.1162/coli_a_00446",
+    pages = "673--732",
+    abstract = "We present a survey covering the state of the art in low-resource machine translation (MT) research. There are currently around 7,000 languages spoken in the world and almost all language pairs lack significant resources for training machine translation models. There has been increasing interest in research addressing the challenge of producing useful translation models when very little translated training data is available. We present a summary of this topical research field and provide a description of the techniques evaluated by researchers in several recent shared tasks in low-resource MT.",
+}
+
+
+@inproceedings{helcl-etal-2022-non,
+    title = "Non-Autoregressive Machine Translation: It{'}s Not as Fast as it Seems",
+    author = "Helcl, Jind{\v{r}}ich  and
+      Haddow, Barry  and
+      Birch, Alexandra",
+    editor = "Carpuat, Marine  and
+      de Marneffe, Marie-Catherine  and
+      Meza Ruiz, Ivan Vladimir",
+    booktitle = "Proceedings of the 2022 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies",
+    month = jul,
+    year = "2022",
+    address = "Seattle, United States",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2022.naacl-main.129",
+    doi = "10.18653/v1/2022.naacl-main.129",
+    pages = "1780--1790",
+    abstract = "Efficient machine translation models are commercially important as they can increase inference speeds, and reduce costs and carbon emissions. Recently, there has been much interest in non-autoregressive (NAR) models, which promise faster translation. In parallel to the research on NAR models, there have been successful attempts to create optimized autoregressive models as part of the WMT shared task on efficient translation. In this paper, we point out flaws in the evaluation methodology present in the literature on NAR models and we provide a fair comparison between a state-of-the-art NAR model and the autoregressive submissions to the shared task. We make the case for consistent evaluation of NAR models, and also for the importance of comparing NAR models with other widely used methods for improving efficiency. We run experiments with a connectionist-temporal-classification-based (CTC) NAR model implemented in C++ and compare it with AR models using wall clock times. Our results show that, although NAR models are faster on GPUs, with small batch sizes, they are almost always slower under more realistic usage conditions. We call for more realistic and extensive evaluation of NAR models in future work.",
+}
+
+
 @inproceedings{Behnke-wmt21-speed,
   author = {Maximiliana Behnke and Nikolay Bogoychev and Alham Fikri Aji and Kenneth Heafield and Graeme Nail and Qianqian Zhu and Svetlana Tchistiakova and Jelmer van der Linde and Pinzhen Chen and Sidharth Kashyap and Roman Grundkiewicz},
   title = {Efficient Machine Translation with Model Pruning and Quantization},
